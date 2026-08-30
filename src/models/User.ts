@@ -5,7 +5,8 @@ class User extends Model {
     declare id: number;
     declare name: string;
     declare email: string;
-    declare password: string;
+    declare password: string | null;
+    declare googleId: string | null;
 }
 
 User.init(
@@ -29,7 +30,13 @@ User.init(
 
         password: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
+        },
+
+        googleId: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            unique: true,
         },
     },
     {

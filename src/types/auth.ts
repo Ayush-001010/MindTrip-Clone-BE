@@ -1,6 +1,13 @@
-import { Request } from "express";
-export interface AuthenticatedRequest extends Request {
-    user?: {
-        userId: number;
-    };
+import "express";
+
+declare global {
+    namespace Express {
+        interface Request {
+            auth?: {
+                userId: number;
+            };
+        }
+    }
 }
+
+export {};

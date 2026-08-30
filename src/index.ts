@@ -3,10 +3,11 @@ import dotenv from "dotenv";
 import sequelize from "./config/database";
 import User  from "./models/User";
 import authRoutes from "./routes/authRoutes";
+import passport from "./config/passport";
 dotenv.config();
 
 const app = express();
-
+app.use(passport.initialize());
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
