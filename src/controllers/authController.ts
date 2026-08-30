@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import User from "../models/User";
 import { generateToken } from "../utils/jwt";
 
+
 export const registerUser = async (req: Request, res: Response) => {
   try {
     console.log("REGISTER BODY:", req.body);
@@ -19,6 +20,7 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
 
     const user = await User.create({
       name,
