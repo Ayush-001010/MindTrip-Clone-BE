@@ -3,18 +3,18 @@ import rateLimiterMiddleware from "./Middleware/RateLimitter";
 import sequelize from "./DB/dbConfig";
 import homeRoutes from "./Routes/Home";
 import dotenv from "dotenv";
-import models from "./DB/model";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
+// Please add cors
+
 const port = Number(process.env.PORT) || 3000;
 
 app.use(express.json());
+app.use(cors({ origin: "*" }));
 
-app.get("/", rateLimiterMiddleware, (req, res) => {
-  res.send("Hello, World!");
-});
 
 app.use("/home", homeRoutes);
 

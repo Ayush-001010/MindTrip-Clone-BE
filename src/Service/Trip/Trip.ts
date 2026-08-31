@@ -14,7 +14,7 @@ export default class Trip implements ITripInterface {
         this.cloudServiceInstance = CloudFactory.getCloudServiceInstance();
     }
     exploreTrip = async (pageNo : number) : Promise<APIResponseInterface<IExploreTrip[] | null>> => {
-        const dbFetchExploreTripResponse = await this.dataBaseServiceInstance.fetchData<IExploreTrip[]>("ExploreTrip", 10, (pageNo - 1) * 10);
+        const dbFetchExploreTripResponse = await this.dataBaseServiceInstance.fetchData<IExploreTrip[]>("ExploreTrip", 4, (pageNo - 1) * 4);
         console.log("Fetch Data From Database : ", dbFetchExploreTripResponse);
 
         if(dbFetchExploreTripResponse.dataSuccess){

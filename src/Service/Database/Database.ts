@@ -5,6 +5,7 @@ import { IDatabaseResponse } from "../../Interface/ResponseInterface/IDatabaseRe
 export default class DataBaseService implements IDataBaseService {
   fetchData = async <T>(tableName: keyof Models, limit?: number, skip?: number): Promise<IDatabaseResponse<T>> => {
     try {
+      console.log(`Fetching data from table: ${tableName} with limit: ${limit} and skip: ${skip}`);
       const data = await models[tableName].findAll({ limit, offset: skip });
       return { dataSuccess: true, data: data as T };
     } catch (error) {

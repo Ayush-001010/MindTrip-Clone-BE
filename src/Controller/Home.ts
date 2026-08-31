@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import {  validationResult } from 'express-validator';
 import APIResponseInterface from '../Interface/ResponseInterface/APIResponseInterface';
 import Trip from '../Service/Trip/Trip';
-import IExploreTrip from '../Interface/DataInterface/IExploreTrip';
 
 export const exploreTrip = async  (req : Request, res: Response) => {
     try {
