@@ -4,9 +4,16 @@ import sequelize from "./config/database";
 import User  from "./models/User";
 import authRoutes from "./routes/authRoutes";
 import passport from "./config/passport";
+import cors from "cors";
 dotenv.config();
 
 const app = express();
+app.use(
+    cors({
+        origin: "http://localhost:5173",
+        credentials: true,
+    })
+);
 app.use(passport.initialize());
 const port = process.env.PORT || 3000;
 

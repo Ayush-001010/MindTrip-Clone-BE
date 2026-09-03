@@ -5,6 +5,7 @@ import { generateToken } from "../utils/jwt";
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
+    console.log("REGISTER BODY:", req.body);
     const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({
