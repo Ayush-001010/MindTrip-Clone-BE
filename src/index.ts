@@ -1,14 +1,14 @@
 import express from "express";
-
 import User  from "./models/User";
-import authRoutes from "./routes/authRoutes";
 import passport from "./config/passport";
 import cors from "cors";
 import sequelize from "./DB/dbConfig";
 import homeRoutes from "./Routes/Home";
 import dotenv from "dotenv";
-
 import { CopilotClient, RuntimeConnection } from "@github/copilot-sdk";
+import authRoutes from "./Routes/authRoutes";
+
+
 
 dotenv.config();
 
@@ -31,23 +31,23 @@ app.get("/health", (_req, res) => {
     });
 });
 
-const startServer = async () => {
-    try {
-        await sequelize.authenticate();
-        console.log("Database connected successfully");
+// const startServer = async () => {
+//     try {
+//         await sequelize.authenticate();
+//         console.log("Database connected successfully");
 
-        await sequelize.sync();
-        console.log("Database tables synced successfully");
+//         await sequelize.sync();
+//         console.log("Database tables synced successfully");
 
-        app.listen(port, () => {
-            console.log(`Server listening on http://localhost:${port}`);
-        });
-    } catch (error) {
-        console.error("Unable to start server:", error);
-    }
-};
+//         app.listen(port, () => {
+//             console.log(`Server listening on http://localhost:${port}`);
+//         });
+//     } catch (error) {
+//         console.error("Unable to start server:", error);
+//     }
+// };
 
-startServer();
+// startServer();
 app.use(cors({ origin: "*" }));
 
 app.use("/home", homeRoutes);

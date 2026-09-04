@@ -8,7 +8,7 @@ import {
     googleCallback,
 } from "../controllers/authController";
 
-import { authenticateToken } from "../middleware/authMiddleware";
+import { authenticateToken } from "../Middleware/authMiddleware";
 
 const router = Router();
 
