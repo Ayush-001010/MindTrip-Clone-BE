@@ -48,4 +48,5 @@ router.get(
     getCurrentUser
 );
 
+
 export default router;
