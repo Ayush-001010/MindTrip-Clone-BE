@@ -6,15 +6,11 @@ import sequelize from "./DB/dbConfig";
 import homeRoutes from "./Routes/Home";
 import copilotRoutes from "./Routes/Copilot";
 import dotenv from "dotenv";
-<<<<<<< HEAD
-import cors from "cors";
 import commonRoutes from "./Routes/Common";
-=======
 import { CopilotClient, RuntimeConnection } from "@github/copilot-sdk";
 import authRoutes from "./Routes/authRoutes";
 import hotelRoutes from "./Routes/hotelRoutes";
 import placeRoutes from "./Routes/placeRoutes";
->>>>>>> 89223b9231a53a99b800062253fe3a784fb7e081
 
 dotenv.config();
 
