@@ -4,6 +4,7 @@ import homeRoutes from "./Routes/Home";
 import copilotRoutes from "./Routes/Copilot";
 import dotenv from "dotenv";
 import cors from "cors";
+import commonRoutes from "./Routes/Common";
 
 dotenv.config();
 
@@ -15,38 +16,7 @@ app.use(cors({ origin: "*" }));
 
 app.use("/home", homeRoutes);
 app.use("/copilot", copilotRoutes);
-
-// const testingFunction = async () => {
-//   try {
-//     const client = new CopilotClient({
-//       connection: RuntimeConnection.forUri("localhost:4321"),
-//       mode: "empty",
-//     });
-
-//     const session = await client.createSession({
-//       sessionId: `user-123-${Date.now()}`,
-//       model: "gpt-5.4-mini",
-//       availableTools: [],
-//     });
-
-//     const response = await session.sendAndWait({
-//       prompt: `Summarize this support request:
-
-// Customer says the login page keeps redirecting after entering correct credentials.
-// This issue started after yesterday's deployment.
-// It affects Safari users mostly.
-// Priority is high because multiple customers reported it.
-// `,
-//     });
-
-//     console.log(response?.data.content);
-//     await client.stop();
-//   } catch (error) {
-//     console.error("Copilot SDK error:", error);
-//   }
-// };
-
-// testingFunction();
+app.use("/common", commonRoutes);
 
 app.listen(port, () => {
   sequelize.sync().then(() => {
