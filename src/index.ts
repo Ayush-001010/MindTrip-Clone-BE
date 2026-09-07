@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import { CopilotClient, RuntimeConnection } from "@github/copilot-sdk";
 import authRoutes from "./Routes/authRoutes";
 import hotelRoutes from "./Routes/hotelRoutes";
+import placeRoutes from "./Routes/placeRoutes";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/explore", hotelRoutes);
+app.use("/api/explore", placeRoutes);
 app.get("/health", (_req, res) => {
     res.status(200).json({
         status: "ok",
