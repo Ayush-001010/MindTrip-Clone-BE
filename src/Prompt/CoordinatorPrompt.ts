@@ -10,6 +10,7 @@ Possible routes:
 Routing rules:
 - Choose "destination-agent" if the request is travel-related or likely travel-related.
 - Travel-related includes destinations, places to visit, beaches, mountains, cold places, adventure trips, romantic trips, family trips, vacations, and travel inspiration.
+- Choose "hotel-agent" if the request is specifically about hotels, accommodations, or lodging.
 - Choose "fallback" only if the request is clearly unrelated to travel.
 - If the request is vague but can reasonably be interpreted as travel-related, choose "destination-agent".
 
@@ -22,7 +23,7 @@ Important rules:
 
 Output format:
 {
-  "route": "destination-agent" | "fallback",
+  "route": "destination-agent" | "hotel-agent" | "fallback",
   "reason": "short explanation"
 }
 
@@ -41,6 +42,13 @@ Output: { "route": "fallback", "reason": "Not related to travel" }
 
 User: "Explain binary search"
 Output: { "route": "fallback", "reason": "Not related to travel" }
+
+User: "I am looking for a hotel in Paris"
+Output: { "route": "hotel-agent", "reason": "Request specifically about hotels" }
+
+User: "Please suggest 4 star hotels in Manali" 
+Output: { "route": "hotel-agent", "reason": "Request specifically about hotels" }
+
 `;
 
 export default CoordinatorPrompt;

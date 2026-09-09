@@ -5,6 +5,13 @@ export default class CopilotManager {
   tripItinerary = async (userMessage: string, tripID: string) => {
     try {
       const databaseInstance = new DataBaseService();
+      const records = await databaseInstance.fetchData<any>(
+        "TripChat",
+        undefined,
+        undefined,
+        { tripID: tripID, userID: "123" },
+        [["messageDate", "ASC"]],
+      );
       const dbResponse = await databaseInstance.createData<any>("TripChat", {
         userID: "123",
         tripID: tripID,
@@ -12,17 +19,21 @@ export default class CopilotManager {
         response: "",
         messageDate: new Date(),
       });
-      console.log("Database response after inserting user message:", dbResponse);
+      console.log(
+        "Database response after inserting user message:",
+        dbResponse,
+      );
       if (dbResponse.dataSuccess) {
+        console.log("Fetched records after inserting user message:", records);
         console.log("Data inserted successfully");
         const copilotInstance = new CopilotService();
         const copilotResponse =
-          await copilotInstance.coordinatorAgent(userMessage);
+          await copilotInstance.coordinatorAgent(userMessage , records.data);
         if (copilotResponse.success) {
           const updateResponse = await databaseInstance.updateData(
             "TripChat",
             { response: JSON.stringify(copilotResponse.data) },
-            { id: (dbResponse.data.dataValues.id) },
+            { id: dbResponse.data.dataValues.id },
           );
           if (updateResponse.dataSuccess) {
             console.log("Data updated successfully");
@@ -44,15 +55,15 @@ export default class CopilotManager {
       };
     }
   };
-  fetchTripChat = async (tripID: string,userID:string) => {
-    try{
+  fetchTripChat = async (tripID: string, userID: string) => {
+    try {
       const databaseInstance = new DataBaseService();
       const dbResponse = await databaseInstance.fetchData<any>(
         "TripChat",
         undefined,
         undefined,
         { tripID: tripID, userID: userID },
-        [["messageDate", "ASC"]]
+        [["messageDate", "ASC"]],
       );
       if (dbResponse.dataSuccess) {
         console.log("Data fetched successfully");
