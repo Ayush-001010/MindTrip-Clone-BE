@@ -17,44 +17,37 @@ export const getHotels = async (
             });
         }
 
-        const today = new Date();
-
-        const defaultCheckIn = today
-            .toISOString()
-            .split("T")[0];
-
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-
-        const defaultCheckOut = tomorrow
-            .toISOString()
-            .split("T")[0];
-
-        const checkInDate =
-            (req.query.checkInDate as string) ||
-            defaultCheckIn;
-
-        const checkOutDate =
-            (req.query.checkOutDate as string) ||
-            defaultCheckOut;
-
-        const adults =
-            Number(req.query.adults) || 2;
-
-        const hotels = await hotelService.getHotels(
-            city,
-            checkInDate,
-            checkOutDate,
-            adults
+        const page = Math.max(
+            1,
+            Number(req.query.page) || 1
         );
+
+        const limit = Math.min(
+            4,
+            Math.max(
+                1,
+                Number(req.query.limit) || 4
+            )
+        );
+
+        const result =
+            await hotelService.getHotels(
+                city,
+                page,
+                limit
+            );
 
         return res.status(200).json({
             success: true,
-            data: hotels,
+            data: result.data,
+            pagination: result.pagination,
         });
 
     } catch (error) {
-        console.error("Hotel controller error:", error);
+        console.error(
+            "Hotel controller error:",
+            error
+        );
 
         return res.status(500).json({
             success: false,

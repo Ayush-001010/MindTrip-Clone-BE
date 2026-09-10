@@ -1,5 +1,5 @@
 import IExplorePlace from "../../Interface/DataInterface/IExplorePlace";
-
+import RedisStore from "../RateLimiter/RateLimiterStore/RedisStore";
 
 interface SerpApiPlace {
   place_id?: string;
@@ -26,77 +26,116 @@ interface SerpApiResponse {
 }
 
 class PlaceService {
+  private redisStore = new RedisStore();
+
   async getPlaces(
     city: string,
-    type: "restaurants" | "things-to-do"
-  ): Promise<IExplorePlace[]> {
+    type: "restaurants" | "things-to-do" | "activities",
+    page: number,
+    limit: number
+  ) {
     const apiKey = process.env.SERPAPI_API_KEY;
 
     if (!apiKey) {
       throw new Error("SERPAPI_API_KEY is missing");
     }
 
-    const query =
-      type === "restaurants"
-        ? `restaurants in ${city}`
-        : `things to do in ${city}`;
+    const normalizedCity = city.trim().toLowerCase();
 
-    const url = new URL("https://serpapi.com/search");
+    const cacheKey = `explore:places:${normalizedCity}:${type}`;
 
-    url.searchParams.set("engine", "google_maps");
-    url.searchParams.set("type", "search");
-    url.searchParams.set("q", query);
-    url.searchParams.set("hl", "en");
-    url.searchParams.set("gl", "in");
-    url.searchParams.set("api_key", apiKey);
+    const redisClient = this.redisStore.getRedisClient();
 
-    const response = await fetch(url.toString());
+    /*
+     * 1. Try Redis first
+     */
+    const cachedPlaces = await redisClient.get(cacheKey);
 
-    if (!response.ok) {
-      throw new Error(
-        `SerpApi request failed with status ${response.status}`
-      );
+    let places: IExplorePlace[];
+
+    if (cachedPlaces) {
+      places = JSON.parse(cachedPlaces) as IExplorePlace[];
+    } else {
+      const query =
+        type === "restaurants"
+          ? `restaurants in ${city}`
+          : type === "things-to-do"
+          ? `things to do in ${city}`
+          : `activities in ${city}`;
+
+      const url = new URL("https://serpapi.com/search");
+
+      url.searchParams.set("engine", "google_maps");
+
+      url.searchParams.set("type", "search");
+
+      url.searchParams.set("q", query);
+      url.searchParams.set("hl", "en");
+      url.searchParams.set("gl", "in");
+      url.searchParams.set("api_key", apiKey);
+
+      const response = await fetch(url.toString());
+
+      if (!response.ok) {
+        throw new Error(
+          `SerpApi request failed with status ${response.status}`
+        );
+      }
+
+      const data = (await response.json()) as SerpApiResponse;
+
+      places = (data.local_results || [])
+        .filter(
+          (place) =>
+            place.gps_coordinates?.latitude !== undefined &&
+            place.gps_coordinates?.longitude !== undefined
+        )
+        .map((place, index) => ({
+          id: place.place_id || `${type}-${city}-${index}`,
+
+          name: place.title || place.name || "Unknown place",
+
+          description: place.description,
+
+          type: place.type,
+
+          address: place.address,
+
+          latitude: place.gps_coordinates!.latitude!,
+
+          longitude: place.gps_coordinates!.longitude!,
+
+          rating: place.rating,
+
+          reviews: place.reviews,
+
+          price: place.price,
+
+          image: place.thumbnail,
+
+          link: place.links?.website,
+        }));
+
+      /*
+       * 3. Store complete data in Redis
+       *
+       * 1 hour cache
+       */
+      await redisClient.set(cacheKey, JSON.stringify(places), "EX", 3600);
     }
-
-    const data =
-      (await response.json()) as SerpApiResponse;
-
-    return (data.local_results || [])
-      .filter(
-        (place) =>
-          place.gps_coordinates?.latitude !== undefined &&
-          place.gps_coordinates?.longitude !== undefined
-      )
-      .map((place, index) => ({
-        id:
-          place.place_id ||
-          `${type}-${city}-${index}`,
-
-        name:
-          place.title ||
-          place.name ||
-          "Unknown place",
-
-        description: place.description,
-
-        type: place.type,
-
-        address: place.address,
-
-        latitude: place.gps_coordinates!.latitude!,
-
-        longitude: place.gps_coordinates!.longitude!,
-
-        rating: place.rating,
-
-        reviews: place.reviews,
-
-        price: place.price,
-
-        image: place.thumbnail,
-
-        link: place.links?.website,
-      }));
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedPlaces = places.slice(startIndex, endIndex);
+    const hasMore = endIndex < places.length;
+    return {
+      data: paginatedPlaces,
+      pagination: {
+        page,
+        limit,
+        total: places.length,
+        hasMore,
+      },
+    };
   }
 }
 
