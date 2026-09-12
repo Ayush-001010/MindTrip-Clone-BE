@@ -17,6 +17,10 @@ export const getPlaces = async (req: Request, res: Response) => {
     const page = Math.max(1, Number(req.query.page) || 1);
 
     const limit = Math.min(4, Math.max(1, Number(req.query.limit) || 4));
+    const activityType =
+  req.query.activityType !== undefined
+    ? String(req.query.activityType)
+    : undefined;
 
     if (!city) {
       return res.status(400).json({
@@ -45,7 +49,7 @@ export const getPlaces = async (req: Request, res: Response) => {
       });
     }
 
-    const result = await placeService.getPlaces(city, type, page, limit,minRating);
+    const result = await placeService.getPlaces(city, type, page, limit,minRating,activityType);
 
     return res.status(200).json({
       success: true,
