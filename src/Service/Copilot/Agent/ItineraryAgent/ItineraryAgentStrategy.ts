@@ -1,10 +1,10 @@
-import CopilotClientFactory from "../../../Factory/CopilotClientFactory";
-import IAgentStrategy from "../../../Interface/ClassInterface/IAgentStrategy";
-import ITripHistory from "../../../Interface/DataInterface/ITripHistory";
-import ItineraryPrompt from "../../../Prompt/ItineraryPrompt";
-import ItineraryPlannerAgent from "../../../Prompt/ItineraryPlannerAgent";
-import InformationGatherPrompt from "../../../Prompt/InformationGatherPrompt";
-import ItineraryCreationAgent from "../../../Prompt/ItineraryCreationAgent";
+import CopilotClientFactory from "../../../../Factory/CopilotClientFactory";
+import IAgentStrategy from "../../../../Interface/ClassInterface/IAgentStrategy";
+import ITripHistory from "../../../../Interface/DataInterface/ITripHistory";
+import ItineraryPrompt from "../../../../Prompt/ItineraryPrompt";
+import ItineraryPlannerAgent from "../../../../Prompt/ItineraryPlannerAgent";
+import InformationGatherPrompt from "../../../../Prompt/InformationGatherPrompt";
+import ItineraryCreationAgent from "../../../../Prompt/ItineraryCreationAgent";
 
 export default class ItineraryAgentStrategy implements IAgentStrategy {
    
@@ -69,7 +69,7 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
         return JSON.parse(response?.data?.content || "{}");
     }
 
-    executeAgent = async (prompt: string, history: Array<ITripHistory>) => {
+    executeAgent = async (prompt: string, history?: Array<ITripHistory>) => {
         
         // Decide which sub-agent to route the request to based on the user's input and history.
         const copilotInstance = CopilotClientFactory.getInstance();
@@ -103,13 +103,13 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
 
         switch(parsedResponse.route){
             case "information-gather-agent":
-                const responseFromQuestionGratherAgent = await this.questionGratherAgent(prompt, history);
+                const responseFromQuestionGratherAgent = await this.questionGratherAgent(prompt, history || []);
                 return responseFromQuestionGratherAgent;
             case "itinerary-planning-agent":
-                const responseFromPlanningItineraryAgent = await this.planningItineraryAgent(prompt, history);
+                const responseFromPlanningItineraryAgent = await this.planningItineraryAgent(prompt, history || []);
                 return responseFromPlanningItineraryAgent;
             case "itinerary-creation-agent":
-                const responseFromCreatingItineraryAgent = await this.creatingItineraryAgent(prompt, history);
+                const responseFromCreatingItineraryAgent = await this.creatingItineraryAgent(prompt, history || []);
                 return responseFromCreatingItineraryAgent;
             default:
                 console.log("Unknown route, returning null.");
