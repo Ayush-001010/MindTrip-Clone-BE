@@ -49,7 +49,7 @@ export default class HotelAgentStrategy implements IAgentStrategy {
       } catch (err) {
         console.error("searchHotel tool error:", err);
         try {
-          fs.appendFileSync(
+          fs.appendFileSync( 
             path.resolve(process.cwd(), "debug", "searchHotel.log"),
             `${new Date().toISOString()} - error: ${String(err)}\n`,
           );
