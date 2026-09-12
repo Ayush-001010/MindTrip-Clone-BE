@@ -4,6 +4,7 @@ import ITripHistory from "../../../Interface/DataInterface/ITripHistory";
 import ItineraryPrompt from "../../../Prompt/ItineraryPrompt";
 import ItineraryPlannerAgent from "../../../Prompt/ItineraryPlannerAgent";
 import InformationGatherPrompt from "../../../Prompt/InformationGatherPrompt";
+import ItineraryCreationAgent from "../../../Prompt/ItineraryCreationAgent";
 
 export default class ItineraryAgentStrategy implements IAgentStrategy {
    
@@ -48,6 +49,25 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
         });
         return JSON.parse(response?.data?.content || "{}");
     }
+    private creatingItineraryAgent = async (prompt: string, history: Array<ITripHistory>) => {
+        const copilotInstance = CopilotClientFactory.getInstance();
+        const session = await copilotInstance.createSession({
+            model:"gpt-5.4",
+            sessionId:"itinerary-creation-session",
+            systemMessage :{
+                content: ItineraryCreationAgent
+            },
+            tools: [],
+            availableTools: [],
+        });
+        const response = await session.sendAndWait({
+            prompt: JSON.stringify({
+                history: history,
+                userPrompt: prompt
+            })
+        });
+        return JSON.parse(response?.data?.content || "{}");
+    }
 
     executeAgent = async (prompt: string, history: Array<ITripHistory>) => {
         
@@ -69,7 +89,7 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
             })
         });
 
-        let parsedResponse : { route: "information-gather-agent" | "itinerary-planning-agent" };
+        let parsedResponse : { route: "information-gather-agent" | "itinerary-planning-agent" | "itinerary-creation-agent" };
 
         try{
             parsedResponse = JSON.parse(response?.data?.content || "{}");
@@ -88,6 +108,9 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
             case "itinerary-planning-agent":
                 const responseFromPlanningItineraryAgent = await this.planningItineraryAgent(prompt, history);
                 return responseFromPlanningItineraryAgent;
+            case "itinerary-creation-agent":
+                const responseFromCreatingItineraryAgent = await this.creatingItineraryAgent(prompt, history);
+                return responseFromCreatingItineraryAgent;
             default:
                 console.log("Unknown route, returning null.");
                 return null;
