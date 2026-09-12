@@ -19,13 +19,7 @@ export default class CopilotManager {
         response: "",
         messageDate: new Date(),
       });
-      console.log(
-        "Database response after inserting user message:",
-        dbResponse,
-      );
       if (dbResponse.dataSuccess) {
-        console.log("Fetched records after inserting user message:", records);
-        console.log("Data inserted successfully");
         const copilotInstance = new CopilotService();
         const copilotResponse =
           await copilotInstance.coordinatorAgent(userMessage , records.data);
@@ -36,7 +30,6 @@ export default class CopilotManager {
             { id: dbResponse.data.dataValues.id },
           );
           if (updateResponse.dataSuccess) {
-            console.log("Data updated successfully");
             return copilotResponse;
           } else {
             throw new Error("Failed to update the response in the database.");
