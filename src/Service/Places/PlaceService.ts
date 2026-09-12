@@ -32,7 +32,8 @@ class PlaceService {
     city: string,
     type: "restaurants" | "things-to-do" | "activities",
     page: number,
-    limit: number
+    limit: number,
+    minRating?: number
   ) {
     const apiKey = process.env.SERPAPI_API_KEY;
 
@@ -41,18 +42,12 @@ class PlaceService {
     }
 
     const normalizedCity = city.trim().toLowerCase();
-
     const cacheKey = `explore:places:${normalizedCity}:${type}`;
-
     const redisClient = this.redisStore.getRedisClient();
-
-    /*
-     * 1. Try Redis first
-     */
     const cachedPlaces = await redisClient.get(cacheKey);
 
     let places: IExplorePlace[];
-
+    
     if (cachedPlaces) {
       places = JSON.parse(cachedPlaces) as IExplorePlace[];
     } else {
@@ -123,16 +118,27 @@ class PlaceService {
        */
       await redisClient.set(cacheKey, JSON.stringify(places), "EX", 3600);
     }
+    let filteredPlaces = places;
+
+    if (minRating !== undefined) {
+      filteredPlaces = places.filter(
+        (place) => place.rating !== undefined && place.rating >= minRating
+      );
+    }
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
-    const paginatedPlaces = places.slice(startIndex, endIndex);
-    const hasMore = endIndex < places.length;
+    const paginatedPlaces = filteredPlaces.slice(
+      startIndex,
+      endIndex
+    );
+    
+    const hasMore = endIndex < filteredPlaces.length;
     return {
       data: paginatedPlaces,
       pagination: {
         page,
         limit,
-        total: places.length,
+        total: filteredPlaces.length,
         hasMore,
       },
     };
