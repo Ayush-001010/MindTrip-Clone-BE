@@ -134,9 +134,8 @@ export const googleCallback = async (req: Request, res: Response) => {
     }
 
     const token = generateToken(user.id);
-
     return res.redirect(
-      `${process.env.FRONTEND_URL}/auth/callback?token=${token}`
+      `${process.env.FRONTEND_URL}/#/auth/callback?token=${token}`
     );
   } catch (error) {
     console.error("Google authentication error:", error);
