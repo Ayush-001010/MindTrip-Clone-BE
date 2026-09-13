@@ -11,7 +11,7 @@ class PolicyProvider {
             else {
                 return {
                     strategy: "sliding-log",
-                    limit: 5,
+                    limit: 10,
                     duration: 2
                 };
             }

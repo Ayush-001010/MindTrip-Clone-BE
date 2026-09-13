@@ -2,7 +2,6 @@ import ICopilotService from "../../Interface/ClassInterface/ICopilotService";
 import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
 import CopilotClientFactory from "../../Factory/CopilotClientFactory";
 import CoordinatorPrompt from "../../Prompt/CoordinatorPrompt";
-import DestinationPrompt from "../../Prompt/DestinationPrompt";
 import ITripChat from "../../Interface/DataInterface/ITripChat";
 import {RouteResult,} from "../../Interface/DataInterface/ICopilot";
 import ITripHistory from "../../Interface/DataInterface/ITripHistory";
