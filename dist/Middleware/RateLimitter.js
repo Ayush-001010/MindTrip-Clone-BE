@@ -7,10 +7,15 @@ const PolicyProvider_1 = __importDefault(require("../Service/RateLimiter/PolicyP
 const RateLimitStrategyFactory_1 = __importDefault(require("../Service/RateLimiter/RateLimitStrategyFactory"));
 const rateLimiterMiddleware = async (req, res, next) => {
     try {
-        // Dummy User Object for Rate Limiter
+        const userId = req.auth?.userId;
+        if (!userId) {
+            return res.status(401).json({
+                message: "User authentication required",
+            });
+        }
         const user = {
-            userName: 'JohnDoe',
-            isUserHasPremiumAccess: false
+            userName: `user:${userId}`,
+            isUserHasPremiumAccess: false,
         };
         // Get Police for Rate Limiter
         const policy = (new PolicyProvider_1.default()).getPolicy(user);

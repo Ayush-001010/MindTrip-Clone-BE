@@ -4,22 +4,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.io = void 0;
+require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
 const cors_1 = __importDefault(require("cors"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const socket_io_1 = require("socket.io");
-const passport_1 = __importDefault(require("./config/passport"));
 const dbConfig_1 = __importDefault(require("./DB/dbConfig"));
 const socketOpt_1 = require("./Socket/socketOpt");
 const Home_1 = __importDefault(require("./Routes/Home"));
-const Copilot_1 = __importDefault(require("./Routes/Copilot"));
 const Common_1 = __importDefault(require("./Routes/Common"));
 const authRoutes_1 = __importDefault(require("./Routes/authRoutes"));
 const hotelRoutes_1 = __importDefault(require("./Routes/hotelRoutes"));
 const placeRoutes_1 = __importDefault(require("./Routes/placeRoutes"));
 const tripRoutes_1 = __importDefault(require("./Routes/tripRoutes"));
-dotenv_1.default.config();
+const Copilot_1 = __importDefault(require("./Routes/Copilot"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
 app.use((0, cors_1.default)({
@@ -27,7 +25,7 @@ app.use((0, cors_1.default)({
     credentials: true,
 }));
 app.use(express_1.default.json());
-app.use(passport_1.default.initialize());
+// app.use(passport.initialize());
 const server = http_1.default.createServer(app);
 exports.io = new socket_io_1.Server(server, {
     cors: {

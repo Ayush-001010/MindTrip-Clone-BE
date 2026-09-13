@@ -1,19 +1,17 @@
+import "dotenv/config";
 import express from "express";
 import http from "http";
 import cors from "cors";
-import dotenv from "dotenv";
 import { Server } from "socket.io";
 import sequelize from "./DB/dbConfig";
 import { initSocket } from "./Socket/socketOpt";
 import homeRoutes from "./Routes/Home";
-import dotenv from "dotenv";
 import commonRoutes from "./Routes/Common";
 import authRoutes from "./Routes/authRoutes";
 import hotelRoutes from "./Routes/hotelRoutes";
 import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
-
-dotenv.config();
+import copilotRoutes from "./Routes/Copilot";
 
 
 const app = express();

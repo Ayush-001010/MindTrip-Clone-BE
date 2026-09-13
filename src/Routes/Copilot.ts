@@ -14,16 +14,16 @@ const route = Router();
 
 route.post(
   "/ItineraryChat",
-  authenticateToken,
-  rateLimiterMiddleware,
+  // authenticateToken,
+  // rateLimiterMiddleware,
   tripItineraryValidation,
   TripItinerary
 );
 
 route.post(
   "/fetchTripChat",
-  authenticateToken,
-  rateLimiterMiddleware,
+  // authenticateToken,
+  // rateLimiterMiddleware,
   fetchTripChatValidation,
   fetchTripChat
 );
