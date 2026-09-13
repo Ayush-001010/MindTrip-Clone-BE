@@ -1,3 +1,4 @@
+import axios from "axios";
 import IHotel from "../../Interface/DataInterface/IHotel";
 import RedisStore from "../RateLimiter/RateLimiterStore/RedisStore";
 interface SerpApiHotel {

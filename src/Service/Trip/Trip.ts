@@ -4,6 +4,9 @@ import IExploreTrip from "../../Interface/DataInterface/IExploreTrip";
 import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
 import CloudFactory from "../Cloud/CloudFactory";
 import DataBaseService from "../Database/Database";
+import CommonService from "../Common/CommonService";
+import { v4 as uuidv4 } from 'uuid';
+import ITripDetails from "../../Interface/DataInterface/ITripDetails";
 
 export default class Trip implements ITripInterface {
     dataBaseServiceInstance : DataBaseService;
@@ -13,6 +16,7 @@ export default class Trip implements ITripInterface {
         this.dataBaseServiceInstance = new DataBaseService();    
         this.cloudServiceInstance = CloudFactory.getCloudServiceInstance();
     }
+
     exploreTrip = async (pageNo : number) : Promise<APIResponseInterface<IExploreTrip[] | null>> => {
         const dbFetchExploreTripResponse = await this.dataBaseServiceInstance.fetchData<IExploreTrip[]>("ExploreTrip", 4, (pageNo - 1) * 4);
         console.log("Fetch Data From Database : ", dbFetchExploreTripResponse);
@@ -29,5 +33,106 @@ export default class Trip implements ITripInterface {
         } else {
             return { success: false, error : "Failed to fetch data from database", data: null };
         }
+    }
+
+    createNewTrip = async (userID : string) : Promise<APIResponseInterface<{ "url" : string }>> => {
+        try {
+            const commonServiceInstance = CommonService.getInstance();
+            const tripID = uuidv4();
+            // Use UUID path so we encode 16 raw bytes (short ~22 chars)
+            const base62 = commonServiceInstance.convertBase62(tripID, { isUUID: true });
+            const dbResponse = await this.dataBaseServiceInstance.createData("TripID", {
+                userID: userID,
+                tripID: tripID,
+                base62: base62
+            });
+            if(dbResponse.dataSuccess){
+                return { success: true, data: { "url": base62 } };
+            } else {
+                return { success: false, error: "Failed to create new trip" };
+            }
+        } catch(error){
+            console.log("Error  ",error);
+            return { success: false, error: "Failed to create new trip"};
+        }
+    }
+
+    fetchTripDetails = async (tripID : string) : Promise<APIResponseInterface<ITripDetails|null>> => {
+        const dbFetchTripDetailsResponse = await this.dataBaseServiceInstance.fetchData<ITripDetails[]>("TripDetails", 1, 0, { tripID });
+        console.log("Fetch Trip Details From Database : ", dbFetchTripDetailsResponse);
+
+        if(dbFetchTripDetailsResponse.dataSuccess){
+            const tripDetailsData = dbFetchTripDetailsResponse.data?.[0] || null;
+            return { success: true, data: tripDetailsData };
+        } else {
+            return { success: false, error : "Failed to fetch trip details from database", data: null };
+        }
+    }
+
+    fetchTripMemberDetails = async (tripID : string) : Promise<APIResponseInterface<Array<{
+        "userId": string;
+        "userName": string;
+        "userEmail": string;
+    }>|null>> => {
+        const dbTripIDFetchResponse = await this.dataBaseServiceInstance.fetchData<{
+            "id": string;
+        }[]>("TripID", 1, 0, { base62: tripID });
+        console.log("Fetch Trip ID From Database : ", dbTripIDFetchResponse);
+        if(!dbTripIDFetchResponse.dataSuccess){
+            return { success: false, error : "Failed to fetch trip ID from database", data: null };
+        }
+        const tripIDFromDB = dbTripIDFetchResponse.data?.[0]?.id || "";
+
+        const dbFetchTripMemberDetailsResponse = await this.dataBaseServiceInstance.fetchData<{
+            "userId": string;
+        }[]>("UserTripMappingTable", undefined, 0, { tripDetailsId: tripIDFromDB });
+        const result : Array<{
+            "userId": string;
+            "userName": string;
+            "userEmail": string;
+        }> = [];
+        if(dbFetchTripMemberDetailsResponse.dataSuccess){
+            for(const member of dbFetchTripMemberDetailsResponse.data || []){
+                const dpFetchUserDetailsResponse = await this.dataBaseServiceInstance.fetchData<{
+                    "id": string;
+                    "name": string;
+                    "email": string;
+                }[]>("User", 1, 0, { id: member.userId || "" });
+                if(dpFetchUserDetailsResponse.dataSuccess){
+                    const user = dpFetchUserDetailsResponse.data?.[0];
+                    if(user){
+                        result.push({
+                            "userId": user.id || "",
+                            "userName": user.name || "",
+                            "userEmail": user.email || ""
+                        });
+                    }
+                }
+            }
+            return { success: true, data: result };
+        }
+        console.log("Fetch Trip Member Details From Database : ", dbFetchTripMemberDetailsResponse);
+        
+        return { success: false, error : "Failed to fetch trip member details from database", data: null };
+    }
+
+    createUserInvite = async (tripID: string, inviteUserBy: string): Promise<APIResponseInterface<{
+        "url": string;
+    }>> => {
+        const inviteURLID = uuidv4();
+        const commonServiceInstance = CommonService.getInstance();
+        const base62InviteURLID = commonServiceInstance.convertBase62(inviteURLID , {
+            isUUID: true
+        });
+        const dbOptResponse = await this.dataBaseServiceInstance.createData("UserInvite",{
+            inviteURLID,
+            base62: base62InviteURLID,
+            tripID,
+            inviteUserBy
+        });
+        if(dbOptResponse.dataSuccess){
+            return { success: true, data: { "url": `http://localhost:5173/invite/${base62InviteURLID}` } };
+        }
+        return { success: false, error : "Failed to create user invite in database", data: {url : ""}};
     }
 }

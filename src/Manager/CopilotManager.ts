@@ -1,31 +1,61 @@
+import APIResponseInterface from "../Interface/ResponseInterface/APIResponseInterface";
 import CopilotService from "../Service/Copilot/CopilotService";
 import DataBaseService from "../Service/Database/Database";
 
 export default class CopilotManager {
-  tripItinerary = async (userMessage: string, tripID: string) => {
-    try {
-      const databaseInstance = new DataBaseService();
-      const dbResponse = await databaseInstance.createData<any>("TripChat", {
+
+  private databaseInstance: DataBaseService;
+
+  constructor() {
+    this.databaseInstance = new DataBaseService();
+  }
+
+  private createTripHistoryItem = async (userID: string, tripID: string, userMessage: string) => {
+    const dbResponse = await this.databaseInstance.createData<any>("TripChat", {
         userID: "123",
         tripID: tripID,
         message: userMessage,
         response: "",
         messageDate: new Date(),
       });
-      console.log("Database response after inserting user message:", dbResponse);
+      return dbResponse;
+  }
+
+  private updateTripHistoryItem = async (copilotResponse: APIResponseInterface<any> , id : string) => {
+    const updateResponse = await this.databaseInstance.updateData(
+      "TripChat",
+      { response: JSON.stringify(copilotResponse.data) },
+      { id },
+    );
+    return updateResponse;
+  }
+
+  private fetchTripHistory = async (tripID: string, userID: string) => {
+    const dbResponse = await this.databaseInstance.fetchData<any>(
+      "TripChat",
+      undefined,
+      undefined,
+      { tripID: tripID, userID: userID },
+      [["messageDate", "ASC"]],
+    );
+    return dbResponse;
+  }
+
+  tripItinerary = async (userMessage: string, tripID: string) => {
+    try {
+      const records = await this.fetchTripHistory(tripID, "123");
+
+      const dbResponse = await this.createTripHistoryItem("123", tripID, userMessage);
+      
       if (dbResponse.dataSuccess) {
-        console.log("Data inserted successfully");
+
         const copilotInstance = new CopilotService();
-        const copilotResponse =
-          await copilotInstance.coordinatorAgent(userMessage);
+        const copilotResponse = await copilotInstance.coordinatorAgent(userMessage , records.data);
+
         if (copilotResponse.success) {
-          const updateResponse = await databaseInstance.updateData(
-            "TripChat",
-            { response: JSON.stringify(copilotResponse.data) },
-            { id: (dbResponse.data.dataValues.id) },
-          );
+
+          const updateResponse = await this.updateTripHistoryItem(copilotResponse, dbResponse.data.dataValues.id);
           if (updateResponse.dataSuccess) {
-            console.log("Data updated successfully");
             return copilotResponse;
           } else {
             throw new Error("Failed to update the response in the database.");
@@ -36,23 +66,22 @@ export default class CopilotManager {
       }
     } catch (error) {
       console.log("Error in tripItinerary:", error);
-      return {
-        success: false,
-        data: {
+      return { success: false,data: {
           message: "An error occurred while processing your request.",
         },
       };
     }
   };
-  fetchTripChat = async (tripID: string,userID:string) => {
-    try{
+  
+  fetchTripChat = async (tripID: string, userID: string) => {
+    try {
       const databaseInstance = new DataBaseService();
       const dbResponse = await databaseInstance.fetchData<any>(
         "TripChat",
         undefined,
         undefined,
         { tripID: tripID, userID: userID },
-        [["messageDate", "ASC"]]
+        [["messageDate", "ASC"]],
       );
       if (dbResponse.dataSuccess) {
         console.log("Data fetched successfully");

@@ -1,6 +1,6 @@
 const DestinationPrompt = `
 You are a destination recommendation agent for a trip suggestion application.
-
+ 
 Your job is to recommend suitable travel destinations based on the user's request, preferences, and conversation context if available.
 
 Instructions:
@@ -26,7 +26,7 @@ Output format:
       "famousFood": [{"foodName" : "string" , "description" : "string"}],
       "popularAttractions": [{attractionName : "string" , "description" : "string"}],
       "isCrowded": true,
-      "crowded": [{level : "Low" | "Medium" | "High" , "description" : "string"}],
+      "crowded": {level : "Low" | "Medium" | "High" , "description" : "string"},
       "activities": [{activityName : "string" , "description" : "string" , "longitude" : "number" , "latitude" : "number" , "placeName" : "string"}], // Include the one of the places where the activity can be done & the coordinates of that place
       "cordinates": {"latitude": "number", "longitude": "number"}
     }
@@ -56,7 +56,7 @@ Good example:
       "famousFood": [{"foodName": "Sidu", "description": "a traditional Himachali bread made from wheat flour."}, {"foodName": "Trout Fish", "description": "locally sourced and cooked in a variety of styles."}, {"foodName": "Tudkiya Bhat", "description": "a fragrant rice dish cooked with lentils and yogurt."}],
       "popularAttractions": [{"attractionName": "Solang Valley", "description": "A popular destination for adventure sports and scenic views."}, {"attractionName": "Rohtang Pass", "description": "A high mountain pass offering breathtaking views and snow activities."}, {"attractionName": "Hadimba Temple", "description": "An ancient temple surrounded by cedar forests."}],
       "isCrowded": true,
-      "crowded": [{"level": "High", "description": "Manali can be crowded during peak tourist seasons, especially in winter and summer."}],
+      "crowded": {"level": "High", "description": "Manali can be crowded during peak tourist seasons, especially in winter and summer."},
       "cordinates": {"latitude": 32.2396, "longitude": 77.1887},
       "activities": [{"activityName": "Trekking", "description": "Explore the scenic trails and enjoy the natural beauty.", "placeName": "Hamta Pass", "latitude": 31.9630, "longitude": 77.1234}, {"activityName": "Skiing", "description": "Engage in winter sports and enjoy the snow.", "placeName": "Solang Valley", "latitude": 32.3900, "longitude": 77.1900}, {"activityName": "Local Culture Exploration", "description": "Visit local markets, temples, and interact with the local community.", "placeName": "Manali Town", "latitude": 32.2396, "longitude": 77.1887}]
     }
@@ -73,7 +73,7 @@ Good example:
             "popularAttractions": [{"attractionName": "Triund Hill", "description": "A scenic hill offering panoramic views of the Dhauladhar range."}],
             "isCrowded": true,
             "cordinates": {"latitude": 32.2100, "longitude": 76.3200},
-            "crowded": [{"level": "High", "description": "It's usually crowded during peak trekking seasons"}],
+            "crowded": {"level": "High", "description": "It's usually crowded during peak trekking seasons"},
             "activities": [{"activityName": "Trekking", "description": "Enjoy the moderate trek to Triund Hill with beautiful landscapes.", "placeName": "Triund Hill", "latitude": 32.2100, "longitude": 76.3200}, {"activityName": "Camping", "description": "Set up camp at designated spots and enjoy the serene environment.", "placeName": "Triund Hill", "latitude": 32.2100, "longitude": 76.3200}, {"activityName":"McLeod Ganj", "description": "Visit the nearby town known for its Tibetan culture and monasteries.", "placeName": "McLeod Ganj", "latitude": 32.2200, "longitude": 76.3200}]
         },
         {
@@ -84,7 +84,7 @@ Good example:
             "popularAttractions": [{"attractionName": "Valley of Flowers National Park", "description": "A UNESCO World Heritage site known for its diverse flora and stunning landscapes."}],
             "isCrowded": false,
             "cordinates": {"latitude": 30.7300, "longitude": 79.6000},
-            "crowded": [{"level": "Low", "description": "It's usually less crowded except during peak flowering season"}],
+            "crowded": {"level": "Low", "description": "It's usually less crowded except during peak flowering season"},
             "activities": [{"activityName": "Trekking", "description": "Explore the scenic trails and enjoy the natural beauty of the valley.", "placeName": "Valley of Flowers", "latitude": 30.7300, "longitude": 79.6000}, {"activityName": "Photography", "description": "Capture the vibrant flowers and picturesque landscapes.", "placeName": "Valley of Flowers", "latitude": 30.7300, "longitude": 79.6000}, {"activityName":"Bird Watching", "description": "Observe the diverse bird species that inhabit the valley.", "placeName": "Valley of Flowers", "latitude": 30.7300, "longitude": 79.6000}]
         }
     ]
