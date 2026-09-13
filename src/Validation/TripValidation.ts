@@ -7,3 +7,12 @@ export const createNewTripValidation = [
 export const fetchTripDetailsValidation = [
     body("tripID").notEmpty().withMessage("tripID is required")
 ];
+
+export const fetchTripMemberDetailsValidation = [
+    body("tripID").notEmpty().withMessage("tripID is required")
+]
+
+export const createUserInviteValidation = [
+    body("tripID").notEmpty().withMessage("tripID is required"),
+    body("inviteUserBy").notEmpty().withMessage("inviteUserBy is required")
+];

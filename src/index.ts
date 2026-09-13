@@ -3,10 +3,9 @@ import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
-import passport from "./config/passport";
+// import passport from "./config/passport";
 import sequelize from "./DB/dbConfig";
 import { initSocket } from "./Socket/socketOpt";
-
 import homeRoutes from "./Routes/Home";
 import copilotRoutes from "./Routes/Copilot";
 import commonRoutes from "./Routes/Common";
@@ -16,6 +15,7 @@ import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
 
 dotenv.config();
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -28,7 +28,7 @@ app.use(
 );
 
 app.use(express.json());
-app.use(passport.initialize());
+// app.use(passport.initialize());
 
 const server = http.createServer(app);
 
@@ -49,9 +49,11 @@ app.use("/copilot", copilotRoutes);
 app.use("/common", commonRoutes);
 app.use("/trip", tripRoutes);
 
+
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
+
 
 sequelize.sync().then(() => {
   server.listen(port, () => {

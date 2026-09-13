@@ -68,4 +68,71 @@ export default class Trip implements ITripInterface {
             return { success: false, error : "Failed to fetch trip details from database", data: null };
         }
     }
+
+    fetchTripMemberDetails = async (tripID : string) : Promise<APIResponseInterface<Array<{
+        "userId": string;
+        "userName": string;
+        "userEmail": string;
+    }>|null>> => {
+        const dbTripIDFetchResponse = await this.dataBaseServiceInstance.fetchData<{
+            "id": string;
+        }[]>("TripID", 1, 0, { base62: tripID });
+        console.log("Fetch Trip ID From Database : ", dbTripIDFetchResponse);
+        if(!dbTripIDFetchResponse.dataSuccess){
+            return { success: false, error : "Failed to fetch trip ID from database", data: null };
+        }
+        const tripIDFromDB = dbTripIDFetchResponse.data?.[0]?.id || "";
+
+        const dbFetchTripMemberDetailsResponse = await this.dataBaseServiceInstance.fetchData<{
+            "userId": string;
+        }[]>("UserTripMappingTable", undefined, 0, { tripDetailsId: tripIDFromDB });
+        const result : Array<{
+            "userId": string;
+            "userName": string;
+            "userEmail": string;
+        }> = [];
+        if(dbFetchTripMemberDetailsResponse.dataSuccess){
+            for(const member of dbFetchTripMemberDetailsResponse.data || []){
+                const dpFetchUserDetailsResponse = await this.dataBaseServiceInstance.fetchData<{
+                    "id": string;
+                    "name": string;
+                    "email": string;
+                }[]>("User", 1, 0, { id: member.userId || "" });
+                if(dpFetchUserDetailsResponse.dataSuccess){
+                    const user = dpFetchUserDetailsResponse.data?.[0];
+                    if(user){
+                        result.push({
+                            "userId": user.id || "",
+                            "userName": user.name || "",
+                            "userEmail": user.email || ""
+                        });
+                    }
+                }
+            }
+            return { success: true, data: result };
+        }
+        console.log("Fetch Trip Member Details From Database : ", dbFetchTripMemberDetailsResponse);
+        
+        return { success: false, error : "Failed to fetch trip member details from database", data: null };
+    }
+
+    createUserInvite = async (tripID: string, inviteUserBy: string): Promise<APIResponseInterface<{
+        "url": string;
+    }>> => {
+        const inviteURLID = uuidv4();
+        const commonServiceInstance = CommonService.getInstance();
+        const base62InviteURLID = commonServiceInstance.convertBase62(inviteURLID , {
+            isUUID: true
+        });
+        const dbOptResponse = await this.dataBaseServiceInstance.createData("UserInvite",{
+            inviteURLID,
+            base62: base62InviteURLID,
+            tripID,
+            inviteUserBy
+        });
+        if(dbOptResponse.dataSuccess){
+            return { success: true, data: { "url": `http://localhost:5173/invite/${base62InviteURLID}` } };
+        }
+        return { success: false, error : "Failed to create user invite in database", data: {url : ""}};
+    }
 }

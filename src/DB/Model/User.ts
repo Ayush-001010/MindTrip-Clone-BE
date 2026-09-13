@@ -1,15 +1,7 @@
-import { DataTypes, Model } from "sequelize";
-import sequelize from "../config/database";
+import sequelize from "../dbConfig";
+import { DataTypes } from "sequelize";
 
-class User extends Model {
-    declare id: number;
-    declare name: string;
-    declare email: string;
-    declare password: string | null;
-    declare googleId: string | null;
-}
-
-User.init(
+const User = sequelize.define("User",
     {
         id: {
             type: DataTypes.INTEGER,
@@ -39,12 +31,6 @@ User.init(
             unique: true,
         },
     },
-    {
-        sequelize,
-        modelName: "User",
-        tableName: "users",
-        timestamps: true,
-    }
 );
 
 export default User;
