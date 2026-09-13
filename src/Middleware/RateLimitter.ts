@@ -6,11 +6,18 @@ import RateLimitStrategyFactory from '../Service/RateLimiter/RateLimitStrategyFa
 
 const rateLimiterMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Dummy User Object for Rate Limiter
-        const user : IUserInfo = {
-            userName: 'JohnDoe',
-            isUserHasPremiumAccess: false
+        const userId = req.auth?.userId;
+        if (!userId) {
+            return res.status(401).json({
+                message: "User authentication required",
+            });
         }
+
+        const user: IUserInfo = {
+            userName: `user:${userId}`,
+            isUserHasPremiumAccess: false,
+        };
+
 
         // Get Police for Rate Limiter
         const policy : IPolicy = (new PolicyProvider()).getPolicy(user);
