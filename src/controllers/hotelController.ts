@@ -3,62 +3,47 @@ import HotelService from "../Service/Hotels/HotelService";
 
 const hotelService = new HotelService();
 
-export const getHotels = async (
-    req: Request,
-    res: Response
-) => {
-    try {
-        const city = req.query.city as string;
+export const getHotels = async (req: Request, res: Response) => {
+  try {
+    const city = req.query.city as string;
 
-        if (!city || !city.trim()) {
-            return res.status(400).json({
-                success: false,
-                message: "City is required",
-            });
-        }
-
-        const today = new Date();
-
-        const defaultCheckIn = today
-            .toISOString()
-            .split("T")[0];
-
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-
-        const defaultCheckOut = tomorrow
-            .toISOString()
-            .split("T")[0];
-
-        const checkInDate =
-            (req.query.checkInDate as string) ||
-            defaultCheckIn;
-
-        const checkOutDate =
-            (req.query.checkOutDate as string) ||
-            defaultCheckOut;
-
-        const adults =
-            Number(req.query.adults) || 2;
-
-        const hotels = await hotelService.getHotels(
-            city,
-            checkInDate,
-            checkOutDate,
-            adults
-        );
-
-        return res.status(200).json({
-            success: true,
-            data: hotels,
-        });
-
-    } catch (error) {
-        console.error("Hotel controller error:", error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Failed to fetch hotels",
-        });
+    if (!city || !city.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "City is required",
+      });
     }
+
+    const page = Math.max(1, Number(req.query.page) || 1);
+
+    const limit = Math.min(4, Math.max(1, Number(req.query.limit) || 4));
+    const minRating =
+      req.query.minRating !== undefined
+        ? Number(req.query.minRating)
+        : undefined;
+    if (
+      minRating !== undefined &&
+      (Number.isNaN(minRating) || minRating < 0 || minRating > 5)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "minRating must be between 0 and 5",
+      });
+    }
+
+    const result = await hotelService.getHotels(city, page, limit,minRating);
+
+    return res.status(200).json({
+      success: true,
+      data: result.data,
+      pagination: result.pagination,
+    });
+  } catch (error) {
+    console.error("Hotel controller error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch hotels",
+    });
+  }
 };

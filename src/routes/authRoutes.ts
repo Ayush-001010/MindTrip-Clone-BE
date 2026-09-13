@@ -9,6 +9,7 @@ import {
 } from "../controllers/authController";
 
 import { authenticateToken } from "../Middleware/authMiddleware";
+import rateLimiterMiddleware from "../Middleware/RateLimitter";
 
 const router = Router();
 
@@ -35,6 +36,7 @@ router.get(
 router.get(
     "/protected",
     authenticateToken,
+    rateLimiterMiddleware,
     (_req, res) => {
         res.status(200).json({
             message: "You have access to this protected route",
@@ -45,6 +47,7 @@ router.get(
 router.get(
     "/me",
     authenticateToken,
+    rateLimiterMiddleware,
     getCurrentUser
 );
 

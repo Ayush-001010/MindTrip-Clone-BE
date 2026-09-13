@@ -1,18 +1,26 @@
 import { Request, Response } from "express";
 import placeService from "../Service/Places/PlaceService";
 
-
-
-export const getPlaces = async (
-  req: Request,
-  res: Response
-) => {
+export const getPlaces = async (req: Request, res: Response) => {
   try {
     const city = String(req.query.city || "").trim();
 
-    const type = String(
-      req.query.type || ""
-    ) as "restaurants" | "things-to-do";
+    const type = String(req.query.type || "") as
+      | "restaurants"
+      | "things-to-do"
+      | "activities";
+    const minRating =
+      req.query.minRating !== undefined
+        ? Number(req.query.minRating)
+        : undefined;
+
+    const page = Math.max(1, Number(req.query.page) || 1);
+
+    const limit = Math.min(4, Math.max(1, Number(req.query.limit) || 4));
+    const activityType =
+  req.query.activityType !== undefined
+    ? String(req.query.activityType)
+    : undefined;
 
     if (!city) {
       return res.status(400).json({
@@ -20,26 +28,33 @@ export const getPlaces = async (
         error: "city is required",
       });
     }
-
     if (
-      type !== "restaurants" &&
-      type !== "things-to-do"
+      minRating !== undefined &&
+      (Number.isNaN(minRating) || minRating < 0 || minRating > 5)
     ) {
       return res.status(400).json({
         success: false,
-        error:
-          "type must be restaurants or things-to-do",
+        error: "minRating must be between 0 and 5",
       });
     }
 
-    const places = await placeService.getPlaces(
-      city,
-      type
-    );
+    if (
+      type !== "restaurants" &&
+      type !== "things-to-do" &&
+      type !== "activities"
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "type must be restaurants, things-to-do, or activities",
+      });
+    }
+
+    const result = await placeService.getPlaces(city, type, page, limit,minRating,activityType);
 
     return res.status(200).json({
       success: true,
-      data: places,
+      data: result.data,
+      pagination: result.pagination,
     });
   } catch (error) {
     console.error("Error fetching places:", error);
