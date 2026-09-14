@@ -12,6 +12,7 @@ import hotelRoutes from "./Routes/hotelRoutes";
 import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
 import copilotRoutes from "./Routes/Copilot";
+import passport from "./config/passport";
 
 
 const app = express();
@@ -25,7 +26,7 @@ app.use(
 );
 
 app.use(express.json());
-// app.use(passport.initialize());
+app.use(passport.initialize());
 
 const server = http.createServer(app);
 
