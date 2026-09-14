@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import SocketService from "../Service/SocketService/SocketService";
+import { fetchTripChat, tripItineraryHandler } from "../Controller/Copilot";
 
 export const initSocket = (io: Server) => {
     io.on("connection", (socket) => {
@@ -18,6 +19,18 @@ export const initSocket = (io: Server) => {
             }).catch((error) => {
                 console.error("Failed to handle room join:", error);
             });
+        });
+
+        socket.on("room:chat", async (data) => {
+            const { tripID , userPrompt } = data;
+            const response = await tripItineraryHandler(userPrompt, tripID);
+            io.to(tripID).emit("room:chat-response", { ...response });
+        });
+
+        socket.on("room:fetchOldChat", async (data) => {
+            const { tripID , userID } = data;
+            const response:any = await fetchTripChat(tripID, userID);
+            io.to(tripID).emit("room:oldChatDetails", { response });
         });
     });
 };

@@ -6,5 +6,8 @@ const activitesValidation = [
 const someRandomImagesValidation = [
     query("type").isString().withMessage("type must be a string").notEmpty().withMessage("type is required")
 ];
+const getPlaceImageValidation = [
+    query("placeName").isString().withMessage("placeName must be a string").notEmpty().withMessage("placeName is required")
+];
 
-export { activitesValidation, someRandomImagesValidation };
+export { activitesValidation, someRandomImagesValidation, getPlaceImageValidation };

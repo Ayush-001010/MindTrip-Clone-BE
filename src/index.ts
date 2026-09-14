@@ -11,7 +11,6 @@ import authRoutes from "./Routes/authRoutes";
 import hotelRoutes from "./Routes/hotelRoutes";
 import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
-import copilotRoutes from "./Routes/Copilot";
 
 
 const app = express();
@@ -42,7 +41,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/explore", hotelRoutes);
 app.use("/api/explore", placeRoutes);
 app.use("/home", homeRoutes);
-app.use("/copilot", copilotRoutes);
 app.use("/common", commonRoutes);
 app.use("/trip", tripRoutes);
 

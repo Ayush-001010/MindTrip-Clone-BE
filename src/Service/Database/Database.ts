@@ -24,8 +24,8 @@ export default class DataBaseService implements IDataBaseService {
   updateData = async<T>(tableName: keyof Models, data: Partial<T>, condition: object): Promise<IDatabaseResponse<T>> => {
     try {
       console.log(`Updating data in table: ${tableName} with condition: ${JSON.stringify(condition)}`);
-      await models[tableName].update(data as any, { where: condition as any, returning: true });
-      return { dataSuccess: true, data: null };
+      const response = await models[tableName].update(data as any, { where: condition as any, returning: true });
+      return { dataSuccess: true, data: response as T };
     } catch (error) {
         console.log(`Error updating data in table: ${tableName}`, error);
         return { dataSuccess: false, data: null };

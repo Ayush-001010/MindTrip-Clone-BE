@@ -33,7 +33,7 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
     private planningItineraryAgent = async (prompt: string, history: Array<ITripHistory>) => {
         const copilotInstance = CopilotClientFactory.getInstance();
         const session = await copilotInstance.createSession({
-            model:"gpt-5.4",
+            model:"gpt-5.5",
             sessionId:"itinerary-planning-session",
             systemMessage :{
                 content: ItineraryPlannerAgent
