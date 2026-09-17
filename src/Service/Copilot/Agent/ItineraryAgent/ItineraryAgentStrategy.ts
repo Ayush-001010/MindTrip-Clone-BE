@@ -7,66 +7,85 @@ import InformationGatherPrompt from "../../../../Prompt/InformationGatherPrompt"
 import ItineraryCreationAgent from "../../../../Prompt/ItineraryCreationAgent";
 
 export default class ItineraryAgentStrategy implements IAgentStrategy {
+    private static readonly SESSION_WAIT_TIMEOUT_MS = 180000;
+
+    private createSessionId = (prefix: string) => `${prefix}-${Date.now()}`;
+
    
     private questionGratherAgent = async (prompt: string, history: Array<ITripHistory>) => {
         console.log("Starting questionGratherAgent with prompt:", prompt);
         const copilotInstance = CopilotClientFactory.getInstance();
         const session = await copilotInstance.createSession({
             model:"gpt-5-mini",
-            sessionId:"itinerary-question-gathering-session",
+            sessionId:this.createSessionId("itinerary-question-gathering"),
             systemMessage :{
                 content: InformationGatherPrompt
             },
             tools: [],
             availableTools: [],
         });
-        const response = await session.sendAndWait({
-            prompt: JSON.stringify({
-                userPrompt: prompt
-            })
-        });
 
-        return JSON.parse(response?.data?.content || "{}");
+        try {
+            const response = await session.sendAndWait({
+                prompt: JSON.stringify({
+                    userPrompt: prompt
+                })
+            }, ItineraryAgentStrategy.SESSION_WAIT_TIMEOUT_MS);
+
+            return JSON.parse(response?.data?.content || "{}");
+        } finally {
+            await session.disconnect();
+        }
 
     }
 
     private planningItineraryAgent = async (prompt: string, history: Array<ITripHistory>) => {
         const copilotInstance = CopilotClientFactory.getInstance();
         const session = await copilotInstance.createSession({
-            model:"gpt-5.5",
-            sessionId:"itinerary-planning-session",
+            model:"gpt-5.4",
+            sessionId:this.createSessionId("itinerary-planning"),
             systemMessage :{
                 content: ItineraryPlannerAgent
             },
             tools: [],
             availableTools: [],
         });
-        const response = await session.sendAndWait({
-            prompt: JSON.stringify({
-                history: history,
-                userPrompt: prompt
-            })
-        });
-        return JSON.parse(response?.data?.content || "{}");
+
+        try {
+            const response = await session.sendAndWait({
+                prompt: JSON.stringify({
+                    history: history,
+                    userPrompt: prompt
+                })
+            }, ItineraryAgentStrategy.SESSION_WAIT_TIMEOUT_MS);
+            return JSON.parse(response?.data?.content || "{}");
+        } finally {
+            await session.disconnect();
+        }
     }
     private creatingItineraryAgent = async (prompt: string, history: Array<ITripHistory>) => {
         const copilotInstance = CopilotClientFactory.getInstance();
         const session = await copilotInstance.createSession({
             model:"gpt-5.4",
-            sessionId:"itinerary-creation-session",
+            sessionId:this.createSessionId("itinerary-creation"),
             systemMessage :{
                 content: ItineraryCreationAgent
             },
             tools: [],
             availableTools: [],
         });
-        const response = await session.sendAndWait({
-            prompt: JSON.stringify({
-                history: history,
-                userPrompt: prompt
-            })
-        });
-        return JSON.parse(response?.data?.content || "{}");
+
+        try {
+            const response = await session.sendAndWait({
+                prompt: JSON.stringify({
+                    history: history,
+                    userPrompt: prompt
+                })
+            }, ItineraryAgentStrategy.SESSION_WAIT_TIMEOUT_MS);
+            return JSON.parse(response?.data?.content || "{}");
+        } finally {
+            await session.disconnect();
+        }
     }
 
     executeAgent = async (prompt: string, history?: Array<ITripHistory>) => {
@@ -75,19 +94,26 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
         const copilotInstance = CopilotClientFactory.getInstance();
         const session = await copilotInstance.createSession({
             model:"gpt-5-mini",
-            sessionId:"itinerary-routing-session",
+            sessionId:this.createSessionId("itinerary-routing"),
             systemMessage :{
                 content: ItineraryPrompt
             },
             tools: [],
             availableTools: [],
         });
-        const response = await session.sendAndWait({
-            prompt: JSON.stringify({
-                history: history,
-                userPrompt: prompt
-            })
-        });
+
+        let response;
+
+        try {
+            response = await session.sendAndWait({
+                prompt: JSON.stringify({
+                    history: history,
+                    userPrompt: prompt
+                })
+            }, ItineraryAgentStrategy.SESSION_WAIT_TIMEOUT_MS);
+        } finally {
+            await session.disconnect();
+        }
 
         let parsedResponse : { route: "information-gather-agent" | "itinerary-planning-agent" | "itinerary-creation-agent" };
 
