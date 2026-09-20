@@ -131,19 +131,26 @@ export default class Trip implements ITripInterface {
             inviteUserBy
         });
         if(dbOptResponse.dataSuccess){
-            return { success: true, data: { "url": `http://localhost:5173/#/invite/${base62InviteURLID}` } };
+            return { success: true, data: {  "url": `http://localhost:3000/i/${base62InviteURLID}` } };
         }
         return { success: false, error : "Failed to create user invite in database", data: {url : ""}};
     }
 
     validateUserInvite = async (
-        base62: string
-    ): Promise<APIResponseInterface<{ tripID: string } | null>> => {
+        inviteURLID: string
+    ): Promise<
+        APIResponseInterface<{
+            tripID: string;
+            tripName: string;
+            inviteUserBy: string;
+        } | null>
+    > => {
     
         const dbUserInviteResponse = await this.dataBaseServiceInstance.fetchData<{
             tripID: string;
+            inviteUserBy: string;
             createdAt: Date | string;
-        }[]>("UserInvite", 1, 0, { base62 });
+        }[]>("UserInvite", 1, 0, { inviteURLID });
     
         console.log("Fetch Invite From Database : ", dbUserInviteResponse);
     
@@ -157,7 +164,6 @@ export default class Trip implements ITripInterface {
     
         const inviteData = dbUserInviteResponse.data?.[0];
     
-        // Invite does not exist
         if (!inviteData) {
             return {
                 success: false,
@@ -166,7 +172,6 @@ export default class Trip implements ITripInterface {
             };
         }
     
-        // Check invite expiry
         const createdAt = new Date(inviteData.createdAt).getTime();
         const currentTime = Date.now();
         const thirtyMinutes = 30 * 60 * 1000;
@@ -189,7 +194,6 @@ export default class Trip implements ITripInterface {
     
         const tripID = inviteData.tripID;
     
-        // Verify that the actual trip exists
         const dbTripResponse = await this.dataBaseServiceInstance.fetchData<{
             tripID: string;
         }[]>("TripID", 1, 0, { tripID });
@@ -204,10 +208,71 @@ export default class Trip implements ITripInterface {
             };
         }
     
+        const dbTripDetailsResponse =
+            await this.dataBaseServiceInstance.fetchData<{
+                tripID: string;
+                tripName: string;
+            }[]>("TripDetails", 1, 0, { tripID });
+    
+        console.log(
+            "Fetch Trip Details From Database : ",
+            dbTripDetailsResponse
+        );
+    
+        if (
+            !dbTripDetailsResponse.dataSuccess ||
+            !dbTripDetailsResponse.data?.[0]
+        ) {
+            return {
+                success: false,
+                error: "TRIP_DETAILS_NOT_FOUND",
+                data: null
+            };
+        }
+    
+        const tripDetails = dbTripDetailsResponse.data[0];
+    
         return {
             success: true,
             data: {
-                tripID
+                tripID,
+                tripName: tripDetails.tripName,
+                inviteUserBy: inviteData.inviteUserBy
+            }
+        };
+    };
+    resolveUserInviteShortUrl = async (
+        base62: string
+    ): Promise<APIResponseInterface<{ inviteURLID: string } | null>> => {
+    
+        const dbUserInviteResponse = await this.dataBaseServiceInstance.fetchData<{
+            inviteURLID: string;
+        }[]>("UserInvite", 1, 0, { base62 });
+    
+        console.log("Resolve Short URL : ", dbUserInviteResponse);
+    
+        if (!dbUserInviteResponse.dataSuccess) {
+            return {
+                success: false,
+                error: "Failed to resolve invite URL",
+                data: null
+            };
+        }
+    
+        const inviteData = dbUserInviteResponse.data?.[0];
+    
+        if (!inviteData) {
+            return {
+                success: false,
+                error: "INVITE_NOT_FOUND",
+                data: null
+            };
+        }
+    
+        return {
+            success: true,
+            data: {
+                inviteURLID: inviteData.inviteURLID
             }
         };
     };

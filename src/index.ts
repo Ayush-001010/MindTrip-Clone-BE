@@ -13,6 +13,7 @@ import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
 import copilotRoutes from "./Routes/Copilot";
 import passport from "./Config/passport";
+import inviteRoutes from "./Routes/InviteRoutes";
 
 
 const app = express();
@@ -27,6 +28,7 @@ app.use(
 
 app.use(express.json());
 app.use(passport.initialize());
+app.use("/", inviteRoutes);
 
 const server = http.createServer(app);
 

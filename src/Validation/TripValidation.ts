@@ -21,5 +21,7 @@ export const fetchFinalItineraryValidation = [
     body("tripID").notEmpty().withMessage("tripID is required")
 ];
 export const validateUserInviteValidation = [
-    body("base62").notEmpty().withMessage("base62 is required")
+    body("inviteURLID")
+        .notEmpty()
+        .withMessage("inviteURLID is required")
 ];

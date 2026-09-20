@@ -81,13 +81,12 @@ export const validateUserInvite = async (req: Request, res: Response) => {
 
         }
 
-        const { base62 } = req.body;
+        const { inviteURLID } = req.body;
 
         const tripInstance = new Trip();
-
+        
         const validateUserInviteResponse =
-            await tripInstance.validateUserInvite(base62);
-
+            await tripInstance.validateUserInvite(inviteURLID);
         return res.send(validateUserInviteResponse);
 
     } catch (error) {
