@@ -65,3 +65,19 @@ export const createUserInvite = async (req: Request, res: Response) => {
         return res.send({success:false , error: "Failed to create user invite"});
     }
 };
+
+export const fetchFinalItinerary = async (req: Request, res: Response) => {
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const {tripID} = req.body;
+        const tripInstance = new Trip();
+        const fetchFinalItineraryResponse = await tripInstance.fetchFinalItinerary(tripID);
+        return res.send(fetchFinalItineraryResponse);
+    } catch(error){
+        console.log("Error fetching final itinerary: ", error);
+        return res.send({success:false , error: "Failed to fetch final itinerary"});
+    }
+};

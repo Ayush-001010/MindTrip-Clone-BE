@@ -17,7 +17,6 @@ const authRoutes_1 = __importDefault(require("./Routes/authRoutes"));
 const hotelRoutes_1 = __importDefault(require("./Routes/hotelRoutes"));
 const placeRoutes_1 = __importDefault(require("./Routes/placeRoutes"));
 const tripRoutes_1 = __importDefault(require("./Routes/tripRoutes"));
-const Copilot_1 = __importDefault(require("./Routes/Copilot"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
 app.use((0, cors_1.default)({
@@ -38,7 +37,6 @@ app.use("/api/auth", authRoutes_1.default);
 app.use("/api/explore", hotelRoutes_1.default);
 app.use("/api/explore", placeRoutes_1.default);
 app.use("/home", Home_1.default);
-app.use("/copilot", Copilot_1.default);
 app.use("/common", Common_1.default);
 app.use("/trip", tripRoutes_1.default);
 app.get("/health", (_req, res) => {

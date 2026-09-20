@@ -10,9 +10,13 @@ export const fetchTripDetailsValidation = [
 
 export const fetchTripMemberDetailsValidation = [
     body("tripID").notEmpty().withMessage("tripID is required")
-]
+];
 
 export const createUserInviteValidation = [
     body("tripID").notEmpty().withMessage("tripID is required"),
     body("inviteUserBy").notEmpty().withMessage("inviteUserBy is required")
+];
+
+export const fetchFinalItineraryValidation = [
+    body("tripID").notEmpty().withMessage("tripID is required")
 ];

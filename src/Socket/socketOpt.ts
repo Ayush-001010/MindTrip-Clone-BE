@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import SocketService from "../Service/SocketService/SocketService";
 import { fetchTripChat, tripItineraryHandler } from "../Controller/Copilot";
+import Trip from "../Service/Trip/Trip";
 
 export const initSocket = (io: Server) => {
     io.on("connection", (socket) => {
@@ -31,6 +32,27 @@ export const initSocket = (io: Server) => {
             const { tripID , userID } = data;
             const response:any = await fetchTripChat(tripID, userID);
             io.to(tripID).emit("room:oldChatDetails", { response });
+        });
+
+        socket.on("room:setTripStartAndEnd", async (data) => {
+            const { tripID, startDate, endDate } = data;
+            const tripServiceInstance = new Trip();
+            let response : any = await tripServiceInstance.setTripStartAndEnd(tripID, startDate, endDate);
+            response.data = {
+                startDate,
+                endDate
+            }
+            io.to(tripID).emit("room:setTripStartAndEnd-response", { ...response });
+        });
+
+        socket.on("room:setTripBudget", async (data) => {
+            const { tripID, budget } = data;
+            const tripServiceInstance = new Trip();
+            let response : any = await tripServiceInstance.setTripBudget(tripID, budget);
+            response.data = {
+                budget
+            }
+            io.to(tripID).emit("room:setTripBudget-response", { ...response });
         });
     });
 };
