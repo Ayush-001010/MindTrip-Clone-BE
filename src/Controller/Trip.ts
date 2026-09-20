@@ -66,6 +66,42 @@ export const createUserInvite = async (req: Request, res: Response) => {
     }
 };
 
+export const validateUserInvite = async (req: Request, res: Response) => {
+
+    try {
+
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+
+            return res.status(400).json({
+                success: false,
+                errors: errors.array()
+            });
+
+        }
+
+        const { base62 } = req.body;
+
+        const tripInstance = new Trip();
+
+        const validateUserInviteResponse =
+            await tripInstance.validateUserInvite(base62);
+
+        return res.send(validateUserInviteResponse);
+
+    } catch (error) {
+
+        console.log("Error validating user invite: ", error);
+
+        return res.send({
+            success: false,
+            error: "Failed to validate user invite"
+        });
+
+    }
+};
+
 export const fetchFinalItinerary = async (req: Request, res: Response) => {
     try{
         const errors = validationResult(req);

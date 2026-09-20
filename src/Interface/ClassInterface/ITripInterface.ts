@@ -20,4 +20,7 @@ export default interface ITripInterface {
   fetchFinalItinerary(tripID: string): Promise<APIResponseInterface<ITripDetails & { countUserOnTrip: number }|null>>;
   setTripStartAndEnd(base62: string, startDate: string, endDate: string): Promise<APIResponseInterface<null>>;
   setTripBudget(base62: string, budget: number): Promise<APIResponseInterface<null>>;
+  validateUserInvite(
+    base62: string
+): Promise<APIResponseInterface<{ tripID: string } | null>>;
 }

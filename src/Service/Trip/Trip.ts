@@ -131,10 +131,86 @@ export default class Trip implements ITripInterface {
             inviteUserBy
         });
         if(dbOptResponse.dataSuccess){
-            return { success: true, data: { "url": `http://localhost:5173/invite/${base62InviteURLID}` } };
+            return { success: true, data: { "url": `http://localhost:5173/#/invite/${base62InviteURLID}` } };
         }
         return { success: false, error : "Failed to create user invite in database", data: {url : ""}};
     }
+
+    validateUserInvite = async (
+        base62: string
+    ): Promise<APIResponseInterface<{ tripID: string } | null>> => {
+    
+        const dbUserInviteResponse = await this.dataBaseServiceInstance.fetchData<{
+            tripID: string;
+            createdAt: Date | string;
+        }[]>("UserInvite", 1, 0, { base62 });
+    
+        console.log("Fetch Invite From Database : ", dbUserInviteResponse);
+    
+        if (!dbUserInviteResponse.dataSuccess) {
+            return {
+                success: false,
+                error: "Failed to fetch invite from database",
+                data: null
+            };
+        }
+    
+        const inviteData = dbUserInviteResponse.data?.[0];
+    
+        // Invite does not exist
+        if (!inviteData) {
+            return {
+                success: false,
+                error: "INVITE_NOT_FOUND",
+                data: null
+            };
+        }
+    
+        // Check invite expiry
+        const createdAt = new Date(inviteData.createdAt).getTime();
+        const currentTime = Date.now();
+        const thirtyMinutes = 30 * 60 * 1000;
+    
+        if (Number.isNaN(createdAt)) {
+            return {
+                success: false,
+                error: "INVITE_INVALID",
+                data: null
+            };
+        }
+    
+        if (currentTime - createdAt >= thirtyMinutes) {
+            return {
+                success: false,
+                error: "INVITE_EXPIRED",
+                data: null
+            };
+        }
+    
+        const tripID = inviteData.tripID;
+    
+        // Verify that the actual trip exists
+        const dbTripResponse = await this.dataBaseServiceInstance.fetchData<{
+            tripID: string;
+        }[]>("TripID", 1, 0, { tripID });
+    
+        console.log("Fetch Trip From Database : ", dbTripResponse);
+    
+        if (!dbTripResponse.dataSuccess || !dbTripResponse.data?.[0]) {
+            return {
+                success: false,
+                error: "TRIP_NOT_FOUND",
+                data: null
+            };
+        }
+    
+        return {
+            success: true,
+            data: {
+                tripID
+            }
+        };
+    };
 
     fetchFinalItinerary = async (base62: string): Promise<APIResponseInterface<ITripDetails & { countUserOnTrip: number } | null>> => {
         console.log("Fetching final itinerary for tripID: ", base62);
