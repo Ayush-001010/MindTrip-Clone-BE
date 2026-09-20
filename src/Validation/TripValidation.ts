@@ -25,3 +25,8 @@ export const validateUserInviteValidation = [
         .notEmpty()
         .withMessage("inviteURLID is required")
 ];
+export const joinTripValidation = [
+    body("tripID")
+        .notEmpty()
+        .withMessage("tripID is required")
+];

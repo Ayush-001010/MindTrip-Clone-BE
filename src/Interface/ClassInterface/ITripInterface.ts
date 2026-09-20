@@ -23,4 +23,8 @@ export default interface ITripInterface {
   validateUserInvite(
     base62: string
 ): Promise<APIResponseInterface<{ tripID: string } | null>>;
+joinTrip(
+  tripID: string,
+  userID: number
+): Promise<APIResponseInterface<null>>;
 }

@@ -335,4 +335,77 @@ export default class Trip implements ITripInterface {
             return { success: false, error: "Failed to set trip budget", data: null };
         }
     }
+
+    joinTrip = async (
+        tripID: string,
+        userID: number
+    ): Promise<APIResponseInterface<null>> => {
+    
+        // Find the actual TripID row
+        const dbTripResponse = await this.dataBaseServiceInstance.fetchData<{
+            id: number;
+            tripID: string;
+        }[]>("TripID", 1, 0, { tripID });
+    
+        if (
+            !dbTripResponse.dataSuccess ||
+            !dbTripResponse.data?.[0]
+        ) {
+            return {
+                success: false,
+                error: "TRIP_NOT_FOUND",
+                data: null
+            };
+        }
+    
+        const tripDetailsId = dbTripResponse.data[0].id;
+    
+        // Check whether user is already part of the trip
+        const existingMappingResponse =
+            await this.dataBaseServiceInstance.fetchData<{
+                id: number;
+            }[]>(
+                "UserTripMappingTable",
+                1,
+                0,
+                {
+                    userID,
+                    tripDetailsId
+                }
+            );
+    
+        if (
+            existingMappingResponse.dataSuccess &&
+            existingMappingResponse.data &&
+            existingMappingResponse.data.length > 0
+        ) {
+            return {
+                success: true,
+                data: null
+            };
+        }
+    
+        // Create membership
+        const createMappingResponse =
+            await this.dataBaseServiceInstance.createData(
+                "UserTripMappingTable",
+                {
+                    userID,
+                    tripDetailsId
+                }
+            );
+    
+        if (!createMappingResponse.dataSuccess) {
+            return {
+                success: false,
+                error: "FAILED_TO_JOIN_TRIP",
+                data: null
+            };
+        }
+    
+        return {
+            success: true,
+            data: null
+        };
+    };
 }

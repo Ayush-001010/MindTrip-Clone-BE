@@ -116,3 +116,44 @@ export const fetchFinalItinerary = async (req: Request, res: Response) => {
         return res.send({success:false , error: "Failed to fetch final itinerary"});
     }
 };
+
+export const joinTrip = async (req: Request, res: Response) => {
+    try {
+
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                errors: errors.array()
+            });
+        }
+
+        const { tripID } = req.body;
+
+        const userID = req.auth?.userId;
+
+        if (!userID) {
+            return res.status(401).json({
+                success: false,
+                error: "USER_NOT_AUTHENTICATED"
+            });
+        }
+
+        const tripInstance = new Trip();
+
+        const joinTripResponse =
+            await tripInstance.joinTrip(tripID, userID);
+
+        return res.send(joinTripResponse);
+
+    } catch (error) {
+
+        console.log("Error joining trip: ", error);
+
+        return res.send({
+            success: false,
+            error: "Failed to join trip"
+        });
+    }
+};

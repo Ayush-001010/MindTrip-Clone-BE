@@ -11,7 +11,7 @@ import authRoutes from "./Routes/authRoutes";
 import hotelRoutes from "./Routes/hotelRoutes";
 import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
-import copilotRoutes from "./Routes/Copilot";
+
 import passport from "./Config/passport";
 import inviteRoutes from "./Routes/InviteRoutes";
 
