@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import SocketService from "../Service/SocketService/SocketService";
 import { fetchTripChat, tripItineraryHandler } from "../Controller/Copilot";
 import Trip from "../Service/Trip/Trip";
+import SplitWiseFacade from "../Service/SplitWise/SplitWiseFacade";
 
 export const initSocket = (io: Server) => {
     io.on("connection", (socket) => {
@@ -53,6 +54,14 @@ export const initSocket = (io: Server) => {
                 budget
             }
             io.to(tripID).emit("room:setTripBudget-response", { ...response });
+        });
+
+        socket.on("room:addExpense", async (data) => {
+            const { tripID, paidBy, totalAmount, title, category, spendAt, splitMethod, splitAmong, notes } = data;
+            console.log("Add expense request:", { tripID, paidBy, totalAmount, title, category, spendAt, splitMethod, splitAmong, notes });
+            const splitWiseFacadeInstance = new SplitWiseFacade(tripID);
+            const response = await splitWiseFacadeInstance.addExpense(paidBy, totalAmount, title, category, spendAt, splitMethod, splitAmong, notes);
+            io.to(tripID).emit("room:addExpense-response", { success: response.splitOptSuccess, data:`Expense of ₹${totalAmount} logged by ${paidBy.userName}` });
         });
     });
 };
