@@ -20,3 +20,13 @@ export const createUserInviteValidation = [
 export const fetchFinalItineraryValidation = [
     body("tripID").notEmpty().withMessage("tripID is required")
 ];
+export const validateUserInviteValidation = [
+    body("inviteURLID")
+        .notEmpty()
+        .withMessage("inviteURLID is required")
+];
+export const joinTripValidation = [
+    body("tripID")
+        .notEmpty()
+        .withMessage("tripID is required")
+];

@@ -12,6 +12,9 @@ import hotelRoutes from "./Routes/hotelRoutes";
 import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
 
+import passport from "./Config/passport";
+import inviteRoutes from "./Routes/InviteRoutes";
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -24,7 +27,8 @@ app.use(
 );
 
 app.use(express.json());
-// app.use(passport.initialize());
+app.use(passport.initialize());
+app.use("/", inviteRoutes);
 
 const server = http.createServer(app);
 

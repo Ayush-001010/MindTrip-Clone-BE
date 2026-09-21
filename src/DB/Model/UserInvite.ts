@@ -22,6 +22,11 @@ const UserInvite = sequelize.define("UserInvite", {
     inviteUserBy:{
         type:DataTypes.STRING,
         allowNull: false
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
     }
 });
 
