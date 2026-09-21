@@ -1,6 +1,7 @@
 import { Request , Response } from "express";
 import { validationResult } from "express-validator";
 import Trip from "../Service/Trip/Trip";
+import SplitWiseFacade from "../Service/SplitWise/SplitWiseFacade";
 
 export const createNewTrip = async (req: Request, res: Response) => {
     try {
@@ -65,3 +66,48 @@ export const createUserInvite = async (req: Request, res: Response) => {
         return res.send({success:false , error: "Failed to create user invite"});
     }
 };
+
+export const fetchFinalItinerary = async (req: Request, res: Response) => {
+    try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const {tripID} = req.body;
+        const tripInstance = new Trip();
+        const fetchFinalItineraryResponse = await tripInstance.fetchFinalItinerary(tripID);
+        return res.send(fetchFinalItineraryResponse);
+    } catch(error){
+        console.log("Error fetching final itinerary: ", error);
+        return res.send({success:false , error: "Failed to fetch final itinerary"});
+    }
+};
+
+export const fetchTripAnalytics = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const {tripID, userID} = req.body;
+        const splitWiseFacadeInstance = new SplitWiseFacade(tripID);
+        const fetchTripAnalyticsResponse = await splitWiseFacadeInstance.analitics(userID);
+        return res.send({success: fetchTripAnalyticsResponse.splitOptSuccess, data: fetchTripAnalyticsResponse.data});
+    } catch(error){
+        console.log("Error fetching trip analytics: ", error);
+        return res.send({success:false , error: "Failed to fetch trip analytics"});
+    }
+};
+
+export const fetchTripExpenses = async (req: Request, res: Response) => {
+    try {
+        const {tripID} = req.body;
+        const splitWiseFacadeInstance = new SplitWiseFacade(tripID);
+        const fetchTripExpensesResponse = await splitWiseFacadeInstance.fetchExpenses();
+        return res.send({success: fetchTripExpensesResponse.splitOptSuccess, data: fetchTripExpensesResponse.data});
+    } catch(error){
+        console.log("Error fetching trip expenses: ", error);
+        return res.send({success:false , error: "Failed to fetch trip expenses"});
+    }
+};
+    

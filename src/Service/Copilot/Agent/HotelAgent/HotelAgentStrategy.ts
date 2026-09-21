@@ -34,18 +34,16 @@ export default class HotelAgentStrategy implements IAgentStrategy {
       }
 
       const hotelServiceInstance = new HotelService();
-      const checkInDate = new Date();
-      const checkOutDate = new Date();
-      checkOutDate.setDate(checkInDate.getDate() + 2);
 
       let hotels: IHotel[] = [];
       try {
-        hotels = await hotelServiceInstance.getHotels(
+        const { data } = await hotelServiceInstance.getHotels(
           location,
-          checkInDate.toISOString().split("T")[0],
-          checkOutDate.toISOString().split("T")[0],
+          1,
+          4,
           2,
         );
+        hotels = data;
       } catch (err) {
         console.error("searchHotel tool error:", err);
         try {

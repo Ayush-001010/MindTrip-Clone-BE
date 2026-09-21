@@ -1,36 +1,26 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import CopilotManager from "../Manager/CopilotManager";
+import APIResponseInterface from "../Interface/ResponseInterface/APIResponseInterface";
 
-export const TripItinerary = async (req:Request , res:Response) => {
+export const tripItineraryHandler = async (userMessage : string, tripID : string) : Promise<APIResponseInterface<any> | undefined> => {
   try{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { userMessage , tripID } = req.body;
     const copilotInstance = new CopilotManager();
     const response = await copilotInstance.tripItinerary(userMessage , tripID);
-    return res.send(response);
+    return response;
   } catch(error){
     console.log("Error  ", error);
-    return res.send({success : false})
+    return {success : false}
   }
 };
 
-export const fetchTripChat = async (req:Request , res:Response) => {
+export const fetchTripChat = async (tripID : string, userID : string) => {
   try{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    const { tripID , userID } = req.body;
     const copilotInstance = new CopilotManager();
     const response = await copilotInstance.fetchTripChat(tripID , userID);
-    return res.send(response);
+    return response;
   } catch(error){
     console.log("Error  ", error);
-    return res.send({success : false})
+    return {success : false}
   }
 };

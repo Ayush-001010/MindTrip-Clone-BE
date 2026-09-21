@@ -1,11 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const getJwtSecret = () => {
+    const jwtSecret = process.env.JWT_SECRET;
 
-if (!JWT_SECRET) {
-    throw new Error("JWT_SECRET is not defined");
-}
+    if (!jwtSecret) {
+        throw new Error("JWT_SECRET is not defined");
+    }
+
+    return jwtSecret;
+};
 
 export const authenticateToken = (
     req: Request,
@@ -13,6 +17,7 @@ export const authenticateToken = (
     next: NextFunction
 ) => {
     try {
+        const jwtSecret = getJwtSecret();
         const authHeader = req.headers.authorization;
 
         if (!authHeader) {
@@ -29,7 +34,7 @@ export const authenticateToken = (
             });
         }
 
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, jwtSecret);
 
         if (typeof decoded === "string") {
             return res.status(401).json({
@@ -44,6 +49,12 @@ export const authenticateToken = (
         next();
 
     } catch (error) {
+        if (error instanceof Error && error.message === "JWT_SECRET is not defined") {
+            return res.status(500).json({
+                message: "Server configuration error",
+            });
+        }
+
         return res.status(401).json({
             message: "Invalid or expired token",
         });

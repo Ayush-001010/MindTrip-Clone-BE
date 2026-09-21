@@ -41,6 +41,7 @@ const ItineraryCreationAgent = `
     Output Format:
         {
             "itineraryTitle":"string",
+            "type":"final-itinerary",
             "days":[
                 {
                     "day": number,
@@ -62,6 +63,7 @@ const ItineraryCreationAgent = `
                     ]
                 }
             ]
+            "travelTips" : string[]
         }
 
     
@@ -79,6 +81,12 @@ const ItineraryCreationAgent = `
         - Output:
             {
                 "itineraryTitle":"Himachal Pradesh Adventure Trip",
+                "type":"final-itinerary",
+                "travelTips": [
+                    "Carry warm clothing as temperatures can drop in the evenings.",
+                    "Try local Himachali cuisine at recommended eateries.",
+                    "Book accommodations in advance during peak tourist season."
+                ],
                 "days": [
                      {
                         "day": 1,

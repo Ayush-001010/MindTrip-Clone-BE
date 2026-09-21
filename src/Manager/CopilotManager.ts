@@ -1,5 +1,6 @@
 import APIResponseInterface from "../Interface/ResponseInterface/APIResponseInterface";
 import CopilotService from "../Service/Copilot/CopilotService";
+import CommonService from "../Service/Common/CommonService";
 import DataBaseService from "../Service/Database/Database";
 
 export default class CopilotManager {
@@ -53,10 +54,16 @@ export default class CopilotManager {
         const copilotResponse = await copilotInstance.coordinatorAgent(userMessage , records.data);
 
         if (copilotResponse.success) {
-
           const updateResponse = await this.updateTripHistoryItem(copilotResponse, dbResponse.data.dataValues.id);
+          const fetchLastTripData = await this.databaseInstance.fetchData<any>(
+            "TripChat",
+            1,
+            undefined,
+            { tripID: tripID, userID: "123" },
+            [["messageDate", "ASC"]],
+          );
           if (updateResponse.dataSuccess) {
-            return copilotResponse;
+            return { success: true , data : fetchLastTripData.data[0] };
           } else {
             throw new Error("Failed to update the response in the database.");
           }

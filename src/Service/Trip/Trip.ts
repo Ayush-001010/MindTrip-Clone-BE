@@ -19,7 +19,6 @@ export default class Trip implements ITripInterface {
 
     exploreTrip = async (pageNo : number) : Promise<APIResponseInterface<IExploreTrip[] | null>> => {
         const dbFetchExploreTripResponse = await this.dataBaseServiceInstance.fetchData<IExploreTrip[]>("ExploreTrip", 4, (pageNo - 1) * 4);
-        console.log("Fetch Data From Database : ", dbFetchExploreTripResponse);
 
         if(dbFetchExploreTripResponse.dataSuccess){
             const { data : exploreTripData} = dbFetchExploreTripResponse;
@@ -134,5 +133,64 @@ export default class Trip implements ITripInterface {
             return { success: true, data: { "url": `http://localhost:5173/invite/${base62InviteURLID}` } };
         }
         return { success: false, error : "Failed to create user invite in database", data: {url : ""}};
+    }
+
+    fetchFinalItinerary = async (base62: string): Promise<APIResponseInterface<ITripDetails & { countUserOnTrip: number } | null>> => {
+        console.log("Fetching final itinerary for tripID: ", base62);
+
+        const dbTripDFetchResponse = await this.dataBaseServiceInstance.fetchData<{id:number , tripID:string}[]>("TripID", 1, 0, { base62 });
+
+        if(!dbTripDFetchResponse.dataSuccess){
+            return { success: false, error : "Failed to fetch final itinerary from database", data: null };
+        }
+        const tripID = dbTripDFetchResponse.data?.[0].tripID || null;
+        const _id = dbTripDFetchResponse.data?.[0].id || null;
+
+        const dpTripDetailsResponse = await this.dataBaseServiceInstance.fetchData<any>("TripDetails", 1, 0, { tripID });
+        const countUserOnTrip = await this.dataBaseServiceInstance.countData("UserTripMappingTable",{
+            tripDetailsId: _id
+        });
+
+        if(!dpTripDetailsResponse.dataSuccess || !countUserOnTrip.dataSuccess){
+            return { success: false, error : "Failed to fetch final itinerary details from database", data: null };
+        }
+        const tripDetailsData = dpTripDetailsResponse.data?.[0] || null;
+
+        return {
+            success: true,
+            data: tripDetailsData
+                ? { ...tripDetailsData.dataValues, countUserOnTrip: countUserOnTrip.data || 0 }
+                : null
+        };
+
+    }
+
+    setTripStartAndEnd = async (base62: string, startDate: string, endDate: string): Promise<APIResponseInterface<null>> => {
+        try {
+            const dbTripDFetchResponse = await this.dataBaseServiceInstance.fetchData<{id:number , tripID:string}[]>("TripID", 1, 0, { base62 });
+            const tripID = dbTripDFetchResponse.data?.[0].tripID || null;
+            const dbOptResponse = await this.dataBaseServiceInstance.updateData("TripDetails", { startDate, endDate }, { tripID });
+            if(!dbOptResponse.dataSuccess){
+                return { success: false, error: "Failed to set trip start and end dates", data: null };
+            }
+            return { success: true, error: "", data: null };
+        } catch (error) {
+            console.log("Error  ",error);
+            return { success: false, error: "Failed to set trip start and end dates", data: null };
+        }
+    }
+    setTripBudget = async (base62: string, budget: number): Promise<APIResponseInterface<null>> => {
+        try {
+            const dbTripDFetchResponse = await this.dataBaseServiceInstance.fetchData<{id:number , tripID:string}[]>("TripID", 1, 0, { base62 });
+            const tripID = dbTripDFetchResponse.data?.[0].tripID || null;
+            const dbOptResponse = await this.dataBaseServiceInstance.updateData("TripDetails", { budget }, { tripID });
+            if(!dbOptResponse.dataSuccess){
+                return { success: false, error: "Failed to set trip budget", data: null };
+            }
+            return { success: true, error: "", data: null };
+        } catch (error) {
+            console.log("Error  ",error);
+            return { success: false, error: "Failed to set trip budget", data: null };
+        }
     }
 }

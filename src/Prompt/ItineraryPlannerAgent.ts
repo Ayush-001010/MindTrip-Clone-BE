@@ -44,7 +44,8 @@ const ItineraryPlannerAgent = `
                 "activities": [
                     {
                     "time": "Morning" | "Afternoon" | "Evening" | "Whole Day",
-                    "placeName": "string",
+                    "cityName": "string",
+                    "cityType":"village" | "town",
                     "description": "string",
                     "coordinates": {
                         "latitude": number,
@@ -54,7 +55,8 @@ const ItineraryPlannerAgent = `
                         "level" : "Low" | "Medium" | "High",
                         "description" : "string"
                         }
-                    }
+                    },
+                    "activityName": "string"
                 ]
                 }
             ]
@@ -72,7 +74,6 @@ const ItineraryPlannerAgent = `
         ],
         "travelTips": ["string"]
         }
-    
 
     Plan Instructions:
         - Each plan should include a variety of activities and places to visit.
@@ -88,6 +89,7 @@ const ItineraryPlannerAgent = `
         - If the trip is 1 or 2 days, or user has told to choose one destination then focus on that single destination and allocate the available days accordingly.
         - Allocate time for each activity based on its average duration. Also consider rest and acclimatization time if necessary.
             - Example : [{day:2 , activity: "trekking" ,placeName: "Triund" , time: "Whole Day"}]
+        - If activity time type is specified as "Whole Day", allocate the entire day for that activity. Do not schedule other activities on the same day.
 
     
     Destination selection rule:

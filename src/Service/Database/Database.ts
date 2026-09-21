@@ -24,10 +24,20 @@ export default class DataBaseService implements IDataBaseService {
   updateData = async<T>(tableName: keyof Models, data: Partial<T>, condition: object): Promise<IDatabaseResponse<T>> => {
     try {
       console.log(`Updating data in table: ${tableName} with condition: ${JSON.stringify(condition)}`);
-      await models[tableName].update(data as any, { where: condition as any, returning: true });
-      return { dataSuccess: true, data: null };
+      const response = await models[tableName].update(data as any, { where: condition as any, returning: true });
+      return { dataSuccess: true, data: response as T };
     } catch (error) {
         console.log(`Error updating data in table: ${tableName}`, error);
+        return { dataSuccess: false, data: null };
+    }
+  };
+  countData = async<T>(tableName: keyof Models, condition?: Partial<T>): Promise<IDatabaseResponse<number>> => {
+    try {
+      console.log(`Counting data in table: ${tableName} with condition: ${JSON.stringify(condition)}`);
+      const response = await models[tableName].count({ where: condition as any });
+      return { dataSuccess: true, data: response };
+    } catch (error) {
+        console.log(`Error counting data in table: ${tableName}`, error);
         return { dataSuccess: false, data: null };
     }
   };

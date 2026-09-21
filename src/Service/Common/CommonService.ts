@@ -2,6 +2,7 @@ import models from "../../DB/model";
 import ICommonService from "../../Interface/ClassInterface/ICommonService";
 import IActivites from "../../Interface/DataInterface/IActivites";
 import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
+import axios from "axios";
 
 export default class CommonService implements ICommonService {
     private static instance : CommonService;
@@ -98,5 +99,25 @@ export default class CommonService implements ICommonService {
     convertBase62 = (id : string, options?: { isUUID?: boolean }) : string => {
         if (options?.isUUID) return this.uuidToBase62(id);
         return this.stringToBase62(id);
+    }
+
+    getPlaceImage = async (placeName: string) : Promise<string> => {
+        try {
+            const baseURL = `https://serpapi.com/search?engine=google_maps&q=${placeName}&type=search&api_key=${process.env.SERPAPI_API_KEY}`;
+            const response = await axios.get(baseURL);
+            console.log("Response from SerpApi: ", response.data);
+            if (response.status === 200 && response.data && response.data) {
+                const place = response.data.place_results;
+                const image = place?.thumbnail;           // Google-hosted image
+                const proxiedImage = place?.serpapi_thumbnail; // SerpApi-hosted/proxied image
+                console.log(image, proxiedImage);
+                return proxiedImage || image || '';
+            } else {
+                throw new Error('Image not found');
+            }
+        } catch (error) {
+            console.log("Error fetching place image: ", error);
+            return '';
+        }
     }
 }
