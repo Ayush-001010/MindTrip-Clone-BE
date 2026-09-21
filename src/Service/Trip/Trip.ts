@@ -130,10 +130,151 @@ export default class Trip implements ITripInterface {
             inviteUserBy
         });
         if(dbOptResponse.dataSuccess){
-            return { success: true, data: { "url": `http://localhost:5173/invite/${base62InviteURLID}` } };
+            return { success: true, data: {  "url": `http://localhost:3000/i/${base62InviteURLID}` } };
         }
         return { success: false, error : "Failed to create user invite in database", data: {url : ""}};
     }
+
+    validateUserInvite = async (
+        inviteURLID: string
+    ): Promise<
+        APIResponseInterface<{
+            tripID: string;
+            tripName: string;
+            inviteUserBy: string;
+        } | null>
+    > => {
+    
+        const dbUserInviteResponse = await this.dataBaseServiceInstance.fetchData<{
+            tripID: string;
+            inviteUserBy: string;
+            createdAt: Date | string;
+        }[]>("UserInvite", 1, 0, { inviteURLID });
+    
+        console.log("Fetch Invite From Database : ", dbUserInviteResponse);
+    
+        if (!dbUserInviteResponse.dataSuccess) {
+            return {
+                success: false,
+                error: "Failed to fetch invite from database",
+                data: null
+            };
+        }
+    
+        const inviteData = dbUserInviteResponse.data?.[0];
+    
+        if (!inviteData) {
+            return {
+                success: false,
+                error: "INVITE_NOT_FOUND",
+                data: null
+            };
+        }
+    
+        const createdAt = new Date(inviteData.createdAt).getTime();
+        const currentTime = Date.now();
+        const thirtyMinutes = 30 * 60 * 1000;
+    
+        if (Number.isNaN(createdAt)) {
+            return {
+                success: false,
+                error: "INVITE_INVALID",
+                data: null
+            };
+        }
+    
+        if (currentTime - createdAt >= thirtyMinutes) {
+            return {
+                success: false,
+                error: "INVITE_EXPIRED",
+                data: null
+            };
+        }
+    
+        const tripID = inviteData.tripID;
+    
+        const dbTripResponse = await this.dataBaseServiceInstance.fetchData<{
+            tripID: string;
+        }[]>("TripID", 1, 0, { tripID });
+    
+        console.log("Fetch Trip From Database : ", dbTripResponse);
+    
+        if (!dbTripResponse.dataSuccess || !dbTripResponse.data?.[0]) {
+            return {
+                success: false,
+                error: "TRIP_NOT_FOUND",
+                data: null
+            };
+        }
+    
+        const dbTripDetailsResponse =
+            await this.dataBaseServiceInstance.fetchData<{
+                tripID: string;
+                tripName: string;
+            }[]>("TripDetails", 1, 0, { tripID });
+    
+        console.log(
+            "Fetch Trip Details From Database : ",
+            dbTripDetailsResponse
+        );
+    
+        if (
+            !dbTripDetailsResponse.dataSuccess ||
+            !dbTripDetailsResponse.data?.[0]
+        ) {
+            return {
+                success: false,
+                error: "TRIP_DETAILS_NOT_FOUND",
+                data: null
+            };
+        }
+    
+        const tripDetails = dbTripDetailsResponse.data[0];
+    
+        return {
+            success: true,
+            data: {
+                tripID,
+                tripName: tripDetails.tripName,
+                inviteUserBy: inviteData.inviteUserBy
+            }
+        };
+    };
+    resolveUserInviteShortUrl = async (
+        base62: string
+    ): Promise<APIResponseInterface<{ inviteURLID: string } | null>> => {
+    
+        const dbUserInviteResponse = await this.dataBaseServiceInstance.fetchData<{
+            inviteURLID: string;
+        }[]>("UserInvite", 1, 0, { base62 });
+    
+        console.log("Resolve Short URL : ", dbUserInviteResponse);
+    
+        if (!dbUserInviteResponse.dataSuccess) {
+            return {
+                success: false,
+                error: "Failed to resolve invite URL",
+                data: null
+            };
+        }
+    
+        const inviteData = dbUserInviteResponse.data?.[0];
+    
+        if (!inviteData) {
+            return {
+                success: false,
+                error: "INVITE_NOT_FOUND",
+                data: null
+            };
+        }
+    
+        return {
+            success: true,
+            data: {
+                inviteURLID: inviteData.inviteURLID
+            }
+        };
+    };
 
     fetchFinalItinerary = async (base62: string): Promise<APIResponseInterface<ITripDetails & { countUserOnTrip: number } | null>> => {
         console.log("Fetching final itinerary for tripID: ", base62);
@@ -193,4 +334,77 @@ export default class Trip implements ITripInterface {
             return { success: false, error: "Failed to set trip budget", data: null };
         }
     }
+
+    joinTrip = async (
+        tripID: string,
+        userID: number
+    ): Promise<APIResponseInterface<null>> => {
+    
+        // Find the actual TripID row
+        const dbTripResponse = await this.dataBaseServiceInstance.fetchData<{
+            id: number;
+            tripID: string;
+        }[]>("TripID", 1, 0, { tripID });
+    
+        if (
+            !dbTripResponse.dataSuccess ||
+            !dbTripResponse.data?.[0]
+        ) {
+            return {
+                success: false,
+                error: "TRIP_NOT_FOUND",
+                data: null
+            };
+        }
+    
+        const tripDetailsId = dbTripResponse.data[0].id;
+    
+        // Check whether user is already part of the trip
+        const existingMappingResponse =
+            await this.dataBaseServiceInstance.fetchData<{
+                id: number;
+            }[]>(
+                "UserTripMappingTable",
+                1,
+                0,
+                {
+                    userId: userID,
+                    tripDetailsId
+                }
+            );
+    
+        if (
+            existingMappingResponse.dataSuccess &&
+            existingMappingResponse.data &&
+            existingMappingResponse.data.length > 0
+        ) {
+            return {
+                success: true,
+                data: null
+            };
+        }
+    
+        // Create membership
+        const createMappingResponse =
+            await this.dataBaseServiceInstance.createData(
+                "UserTripMappingTable",
+                {
+                    userId: userID,
+                    tripDetailsId
+                }
+            );
+    
+        if (!createMappingResponse.dataSuccess) {
+            return {
+                success: false,
+                error: "FAILED_TO_JOIN_TRIP",
+                data: null
+            };
+        }
+    
+        return {
+            success: true,
+            data: null
+        };
+    };
 }

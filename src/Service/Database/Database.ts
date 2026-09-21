@@ -9,6 +9,7 @@ export default class DataBaseService implements IDataBaseService {
       const response = await models[tableName].findAll({ limit, offset: skip, where, order });
       return { dataSuccess: true , data: response as T}
     } catch (error) {
+      console.error(`Error fetching data from table: ${tableName}`, error);
         return { dataSuccess: false, data: null };
     }
   };

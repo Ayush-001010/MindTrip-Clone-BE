@@ -6,7 +6,7 @@ import {
   loginUser,
   registerUser,
   googleCallback,
-} from "../controllers/authController";
+} from "../Controller/AuthController";
 
 import { authenticateToken } from "../Middleware/authMiddleware";
 import rateLimiterMiddleware from "../Middleware/RateLimitter";

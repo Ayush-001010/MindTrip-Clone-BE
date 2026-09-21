@@ -67,6 +67,41 @@ export const createUserInvite = async (req: Request, res: Response) => {
     }
 };
 
+export const validateUserInvite = async (req: Request, res: Response) => {
+
+    try {
+
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+
+            return res.status(400).json({
+                success: false,
+                errors: errors.array()
+            });
+
+        }
+
+        const { inviteURLID } = req.body;
+
+        const tripInstance = new Trip();
+        
+        const validateUserInviteResponse =
+            await tripInstance.validateUserInvite(inviteURLID);
+        return res.send(validateUserInviteResponse);
+
+    } catch (error) {
+
+        console.log("Error validating user invite: ", error);
+
+        return res.send({
+            success: false,
+            error: "Failed to validate user invite"
+        });
+
+    }
+};
+
 export const fetchFinalItinerary = async (req: Request, res: Response) => {
     try{
         const errors = validationResult(req);
@@ -83,6 +118,46 @@ export const fetchFinalItinerary = async (req: Request, res: Response) => {
     }
 };
 
+export const joinTrip = async (req: Request, res: Response) => {
+    try {
+
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                errors: errors.array()
+            });
+        }
+
+        const { tripID } = req.body;
+
+        const userID = req.auth?.userId;
+
+        if (!userID) {
+            return res.status(401).json({
+                success: false,
+                error: "USER_NOT_AUTHENTICATED"
+            });
+        }
+
+        const tripInstance = new Trip();
+
+        const joinTripResponse =
+            await tripInstance.joinTrip(tripID, userID);
+
+        return res.send(joinTripResponse);
+
+    } catch (error) {
+
+        console.log("Error joining trip: ", error);
+
+        return res.send({
+            success: false,
+            error: "Failed to join trip"
+        });
+    }
+};
 export const fetchTripAnalytics = async (req: Request, res: Response) => {
     try {
         const errors = validationResult(req);

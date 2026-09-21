@@ -8,9 +8,9 @@ export default class RedisService  implements IRedisService{
     constructor() {
         if (!RedisService.redisClientInstance) {
             RedisService.redisClientInstance = new Redis({
-                host: process.env.SOCKET_REDIS_HOST || "127.0.0.1",
-                port: Number(process.env.SOCKET_REDIS_PORT || 6381),
-                maxRetriesPerRequest: 1,
+                // host: process.env.SOCKET_REDIS_HOST || "127.0.0.1",
+                // port: Number(process.env.SOCKET_REDIS_PORT || 6381),
+                // maxRetriesPerRequest: 1,
             });
 
             RedisService.redisClientInstance.on("error", (error) => {
