@@ -369,7 +369,7 @@ export default class Trip implements ITripInterface {
                 1,
                 0,
                 {
-                    userID,
+                    userId: userID,
                     tripDetailsId
                 }
             );
@@ -390,7 +390,7 @@ export default class Trip implements ITripInterface {
             await this.dataBaseServiceInstance.createData(
                 "UserTripMappingTable",
                 {
-                    userID,
+                    userId: userID,
                     tripDetailsId
                 }
             );
