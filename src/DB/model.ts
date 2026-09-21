@@ -1,5 +1,8 @@
 import Activities from "./Model/Activites";
 import UserInvite from "./Model/UserInvite";
+import TripExpense from "./Model/TripExpense";
+import TripExpenseShare from "./Model/TripExpenseShare";
+import TripSettlement from "./Model/TripSettlement";
 import TripDetails from "./Model/TripDetails";
 import ExploreTrip from "./Model/ExploreTrip";
 import TripChat from "./Model/TripChat";
@@ -16,6 +19,9 @@ export interface Models {
   User : typeof User;
   UserTripMappingTable: typeof UserTripMappingTable;
   UserInvite: typeof UserInvite;
+  TripExpense: typeof TripExpense;
+  TripExpenseShare: typeof TripExpenseShare;
+  TripSettlement: typeof TripSettlement;
 }
 
 const models: Models = {
@@ -27,7 +33,10 @@ const models: Models = {
   User,
   UserTripMappingTable,
   UserInvite,
-};
+  TripExpense,
+  TripExpenseShare,
+  TripSettlement,
+}; 
 
 User.hasMany(UserTripMappingTable, {
   foreignKey: "userId",

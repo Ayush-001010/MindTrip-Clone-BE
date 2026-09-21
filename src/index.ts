@@ -54,6 +54,7 @@ app.get("/health", (_req, res) => {
 });
 
 
+
 sequelize.sync().then(() => {
   server.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

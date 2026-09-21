@@ -19,7 +19,6 @@ export default class Trip implements ITripInterface {
 
     exploreTrip = async (pageNo : number) : Promise<APIResponseInterface<IExploreTrip[] | null>> => {
         const dbFetchExploreTripResponse = await this.dataBaseServiceInstance.fetchData<IExploreTrip[]>("ExploreTrip", 4, (pageNo - 1) * 4);
-        console.log("Fetch Data From Database : ", dbFetchExploreTripResponse);
 
         if(dbFetchExploreTripResponse.dataSuccess){
             const { data : exploreTripData} = dbFetchExploreTripResponse;
