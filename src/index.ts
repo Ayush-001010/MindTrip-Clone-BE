@@ -12,8 +12,9 @@ import hotelRoutes from "./Routes/hotelRoutes";
 import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
 
-import passport from "./config/passport";
 import inviteRoutes from "./Routes/InviteRoutes";
+import passport from "./Config/passport";
+
 
 
 const app = express();
