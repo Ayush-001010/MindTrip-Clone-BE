@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import CommonService from "../Service/Common/CommonService";
 import CloudFactory from "../Service/Cloud/CloudFactory";
+import BlogService from "../Service/BlogService/BlogService";
 
 export const activites = async (req: Request, res: Response) => {
     try {
@@ -64,5 +65,36 @@ export const getPlaceImage = async (req:Request , res : Response) => {
     } catch(error) {
         console.log("Error  ", error);
         res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const getMetaDataForBlog = async (req: Request, res: Response) => {
+    try {
+        const blogServiceInstance = new BlogService();
+        const result = await blogServiceInstance.getMetaDataForBlog();
+        if (result.success) {
+            return res.send(result);
+        } else {
+            return res.send({ success: false, data: [] });
+        }
+    } catch(error) {
+        console.log("Error  ", error);
+        res.send({ success: false, data: [] });
+    }
+};
+
+export const getUploadedFileURL = async (req: Request, res: Response) => {
+    try {
+        const {contentType, key} = req.body;
+        const cloudInstance = CloudFactory.getCloudServiceInstance();
+        const url = await cloudInstance.getUploadedFileURL(contentType, key);
+        if (url) {
+            return res.send({success: true, data: url});
+        } else {
+            return res.send({success: false, data: ""});
+        }
+    } catch(error) {
+        console.log("Error  ", error);
+        res.send({success: false, data: ""});
     }
 };

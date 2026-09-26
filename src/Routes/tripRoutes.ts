@@ -44,7 +44,7 @@ router.post(
 
 router.post(
     "/joinTrip",
-    authenticateToken,
+    // authenticateToken,
     joinTripValidation,
     joinTrip
 );

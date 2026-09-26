@@ -16,7 +16,7 @@ export const getHotels = async (req: Request, res: Response) => {
 
     const page = Math.max(1, Number(req.query.page) || 1);
 
-    const limit = Math.min(4, Math.max(1, Number(req.query.limit) || 4));
+    const limit = Math.min(10, Math.max(1, Number(req.query.limit) || 4));
     const minRating =
       req.query.minRating !== undefined
         ? Number(req.query.minRating)

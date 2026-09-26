@@ -11,6 +11,7 @@ import authRoutes from "./Routes/authRoutes";
 import hotelRoutes from "./Routes/hotelRoutes";
 import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
+import blogRoutes from "./Routes/blogRoutes";
 
 import passport from "./config/passport";
 import inviteRoutes from "./Routes/InviteRoutes";
@@ -47,6 +48,7 @@ app.use("/api/explore", placeRoutes);
 app.use("/home", homeRoutes);
 app.use("/common", commonRoutes);
 app.use("/trip", tripRoutes);
+app.use("/blog", blogRoutes);
 
 
 app.get("/health", (_req, res) => {

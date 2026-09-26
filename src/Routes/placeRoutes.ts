@@ -8,7 +8,7 @@ const router = Router();
 
 router.get(
   "/places",
-  authenticateToken,
+  // authenticateToken,
   rateLimiterMiddleware,
   getPlaces
 );

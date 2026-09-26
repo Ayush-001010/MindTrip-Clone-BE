@@ -8,7 +8,7 @@ const route = Router();
 
 route.get(
     "/exploreTrip",
-    authenticateToken,
+    // authenticateToken,
     rateLimiterMiddleware,
     exploreTripValidation,
     exploreTrip
