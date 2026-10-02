@@ -29,13 +29,17 @@ export default class BlogService implements IBlogService {
             const dbInstance = new DataBaseService();
             // Adding Blog
             const dbResponseBlog = await dbInstance.createData<any>("Blog",{
-                tripTitle : blogData.tripTitle,
-                tripOverview : blogData.tripOverview,
-                totalSpent : blogData.totalSpent,
-                tripDuration : blogData.tripDuration,
-                noOfPlaces : blogData.noOfPlaces,
-                noOfActivities : blogData.noOfActivities,
-                bookingURL : blogData.bookingURL
+                tripTitle : blogData?.tripTitle,
+                tripOverview : blogData?.tripOverview,
+                totalSpent : blogData?.totalSpent,
+                tripDuration : blogData?.tripDuration,
+                noOfPlaces : blogData?.noOfPlaces,
+                noOfActivities : blogData?.noOfActivities,
+                bookingURL : blogData?.bookingURL,
+                metaData: blogData?.metaData?.join(","),
+                profileImages: blogData?.profileImages.join(","),
+                profileTitle: blogData?.profileTitle,
+                profileIcon: blogData?.profileIcon,
             });
 
             if(!dbResponseBlog.dataSuccess){
@@ -47,8 +51,9 @@ export default class BlogService implements IBlogService {
             console.log("Blog ID: ", blogId);
 
             // Adding Activity for Blog
-            await Promise.all(blogData.activities.map((activity) => {
-                return dbInstance.createData<any>("BlogActivity",{
+            await Promise.all(blogData.activities.map(async (activity) => {
+                console.log("Adding activity: ", activity);
+                const dbResponseActivity = await dbInstance.createData<any>("BlogActivity",{
                     day: activity.day,
                     placeName: activity.placeName,
                     activityType: activity.activityType,
@@ -56,15 +61,17 @@ export default class BlogService implements IBlogService {
                     time: activity.time,
                     description: activity.description,
                     tips: activity.tips?.join(","),
-                    coordinates: activity.coordinates,
+                    coordinates: JSON.stringify(activity.coordinates),
                     images: activity.images?.join(","),
-                    sideActivities: activity.sideActivities,
+                    sideActivities: JSON.stringify(activity.sideActivities),
                     amountSpent: activity.amountSpent,
                 });
+                console.log("DB Response Activity: ", dbResponseActivity);
+                return dbResponseActivity;
             }));
 
-            await Promise.all(blogData.hotel.map((hotel) => {
-                return dbInstance.createData<any>("BlogHotel",{
+            await Promise.all(blogData?.hotel.map(async (hotel) => {
+                return await dbInstance.createData<any>("BlogHotel",{
                     name: hotel.name,
                     address: hotel.address,
                     checkInDate: hotel.checkInDate,
@@ -74,8 +81,8 @@ export default class BlogService implements IBlogService {
                 });
             }));
 
-            await Promise.all(blogData.travel.map((travel) => {
-                return dbInstance.createData<any>("BlogTravel",{
+            await Promise.all(blogData?.travel.map(async (travel) => {
+                return await dbInstance.createData<any>("BlogTravel",{
                     time: travel.time,
                     activityNumber: travel.activityNumber,
                     description: travel.description,

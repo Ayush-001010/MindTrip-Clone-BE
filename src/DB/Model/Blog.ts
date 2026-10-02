@@ -34,6 +34,22 @@ const Blog = sequelize.define("Blog", {
     bookingURL: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    profileImages: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    profileTitle: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    profileIcon: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    metaData: {
+        type: DataTypes.STRING,
+        allowNull: false
     }
 });
 

@@ -20,7 +20,7 @@ export default class AWS implements ICloudService {
       });
 
       const command = new PutObjectCommand({
-        Bucket: "project-shop-management",
+        Bucket: "mindtrip-clone",
         Key: key,
         ContentType: contentType,
       });

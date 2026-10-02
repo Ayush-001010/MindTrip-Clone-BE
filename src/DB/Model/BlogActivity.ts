@@ -28,11 +28,11 @@ const BlogActivity = sequelize.define("BlogActivity", {
         allowNull: false
     },
     tips: {
-        type: DataTypes.JSON,
+        type: DataTypes.TEXT,
         allowNull: false
     },
     coordinates: {
-        type: DataTypes.JSON,
+        type: DataTypes.STRING,
         allowNull: false
     },
     images: {
@@ -40,7 +40,7 @@ const BlogActivity = sequelize.define("BlogActivity", {
         allowNull: false
     },
     sideActivities: {
-        type: DataTypes.JSON,
+        type: DataTypes.TEXT,
         allowNull: false
     },
     amountSpent: {

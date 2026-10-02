@@ -9,6 +9,10 @@ export default interface IBlogData {
     hotel: IBlogHotel[]; 
     bookingURL: string;
     travel: IBlogTravel[];
+    metaData: string[];
+    profileImages: string[];
+    profileTitle: string;
+    profileIcon: string;
 }
 
 export interface IBlogActivite {
