@@ -19,6 +19,7 @@ export default class DataBaseService implements IDataBaseService {
       const response = await models[tableName].create(data as any);
       return { dataSuccess: true, data: response as T };
     } catch (error) {
+        console.error(`Error creating data in table: ${tableName}`, error);
         return { dataSuccess: false, data: null };
     }
   };

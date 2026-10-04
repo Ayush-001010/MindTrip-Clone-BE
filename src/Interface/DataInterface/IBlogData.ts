@@ -10,9 +10,10 @@ export default interface IBlogData {
     bookingURL: string;
     travel: IBlogTravel[];
     metaData: string[];
-    profileImages: string[];
+    profileImages: string[] | string;
     profileTitle: string;
     profileIcon: string;
+    numberOfLikes: number;
 }
 
 export interface IBlogActivite {

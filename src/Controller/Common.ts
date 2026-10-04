@@ -37,6 +37,13 @@ export const someRandomImages = async (req: Request, res: Response) => {
                     data : cloudServiceInstance.getImages("Common/—Pngtree—cool travelling van tropical_8164641.png").data  
                 })
             }
+            default: {
+                const cloudServiceInstance = CloudFactory.getCloudServiceInstance();
+                return res.send({
+                    success : true,
+                    data : cloudServiceInstance.getImages(type as string).data  
+                });
+            }
         }
     }
     catch(error) {

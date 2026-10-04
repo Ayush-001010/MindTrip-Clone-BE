@@ -50,6 +50,11 @@ const Blog = sequelize.define("Blog", {
     metaData: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    numberOfLikes: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
     }
 });
 
