@@ -14,14 +14,18 @@ import Blog from "./Model/Blog";
 import BlogActivity from "./Model/BlogActivity";
 import BlogTravel from "./Model/BlogTravel";
 import BlogHotel from "./Model/BlogHotel";
+import Collections from "./Model/Collections";
+import FavouritesActivity from "./Model/FavouritesActivity";
+import FavouritesHotel from "./Model/FavouritesHotel";
+import FavouritesBlog from "./Model/FavouritesBlog";
 
 export interface Models {
   ExploreTrip: typeof ExploreTrip;
   TripChat: typeof TripChat;
   Activities: typeof Activities;
   TripID: typeof TripID;
-  TripDetails : typeof TripDetails;
-  User : typeof User;
+  TripDetails: typeof TripDetails;
+  User: typeof User;
   UserTripMappingTable: typeof UserTripMappingTable;
   UserInvite: typeof UserInvite;
   TripExpense: typeof TripExpense;
@@ -32,6 +36,10 @@ export interface Models {
   BlogActivity: typeof BlogActivity;
   BlogTravel: typeof BlogTravel;
   BlogHotel: typeof BlogHotel;
+  Collections: typeof Collections;
+  FavouritesActivity: typeof FavouritesActivity;
+  FavouritesHotel: typeof FavouritesHotel;
+  FavouritesBlog: typeof FavouritesBlog;
 }
 
 const models: Models = {
@@ -51,7 +59,11 @@ const models: Models = {
   BlogTravel,
   BlogHotel,
   TripSettlement,
-}; 
+  Collections,
+  FavouritesActivity,
+  FavouritesHotel,
+  FavouritesBlog,
+};
 
 User.hasMany(UserTripMappingTable, {
   foreignKey: "userId",
@@ -91,6 +103,30 @@ Blog.hasMany(BlogHotel, {
 
 BlogHotel.belongsTo(Blog, {
   foreignKey: "blogId",
+});
+
+Collections.hasMany(FavouritesActivity, {
+  foreignKey: "collectionId",
+});
+
+FavouritesActivity.belongsTo(Collections, {
+  foreignKey: "collectionId",
+});
+
+Collections.hasMany(FavouritesHotel, {
+  foreignKey: "collectionId",
+});
+
+FavouritesHotel.belongsTo(Collections, {
+  foreignKey: "collectionId",
+});
+
+Collections.hasMany(FavouritesBlog, {
+  foreignKey: "collectionId",
+});
+
+FavouritesBlog.belongsTo(Collections, {
+  foreignKey: "collectionId",
 });
 
 export default models;
