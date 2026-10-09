@@ -8,6 +8,10 @@ export default interface ITripInterface {
   createNewTrip : (userID : string) => Promise<APIResponseInterface<{
         "url" : string;
   }>>;
+  fetchTripIDs : (userID : string) => Promise<APIResponseInterface<Array<{
+        "tripID": string;
+        "name": string;
+  }> | null>>;
   fetchTripDetails(tripID: string): Promise<APIResponseInterface<ITripDetails|null>>;
   fetchTripMemberDetails(tripID: string): Promise<APIResponseInterface<Array<{
     "userId": string;

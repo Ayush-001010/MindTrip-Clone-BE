@@ -17,7 +17,8 @@ import {
     fetchTripAnalytics,
     fetchTripExpenses,
     joinTrip,
-    validateUserInvite
+    validateUserInvite,
+    fetchTripIDs
 } from "../Controller/Trip";
 
 import { authenticateToken } from "../Middleware/authMiddleware";
@@ -69,5 +70,7 @@ router.post(
     "/fetchTripExpenses",
     fetchTripExpenses
 );
+
+router.get("/fetchTripIDs",fetchTripIDs)
 
 export default router;

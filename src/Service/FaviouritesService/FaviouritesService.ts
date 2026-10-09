@@ -3,11 +3,15 @@ import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseI
 import DataBaseService from "../Database/Database";
 
 export default class FaviouritesService implements IFaviouritesService {
+    private dbInstance: DataBaseService = new DataBaseService();
+
+    constructor() {
+        this.dbInstance = new DataBaseService();
+    }
     
     async getCollections(createdBy : string): Promise<APIResponseInterface<IFaviouritesCollection[]>> {
         try {
-            const dbInstance = new DataBaseService();
-            const dbOpt = await dbInstance.fetchData<IFaviouritesCollection[]>("Collections",undefined,undefined, { createdBy });
+            const dbOpt = await this.dbInstance.fetchData<IFaviouritesCollection[]>("Collections",undefined,undefined, { createdBy });
             if(dbOpt.dataSuccess && dbOpt.data) {
                 console.log("Fetched collections successfully:", dbOpt.data);
                 return { success: true, data: dbOpt.data };
@@ -22,8 +26,7 @@ export default class FaviouritesService implements IFaviouritesService {
 
     async createCollection(name: string, createdBy: string): Promise<APIResponseInterface<IFaviouritesCollection | null>> {
         try {
-            const dbInstance = new DataBaseService();
-            const dbOpt = await dbInstance.createData<IFaviouritesCollection>("Collections", { 
+            const dbOpt = await this.dbInstance.createData<IFaviouritesCollection>("Collections", { 
                 name, createdBy 
             });
             if(dbOpt.dataSuccess && dbOpt.data) {
@@ -40,11 +43,11 @@ export default class FaviouritesService implements IFaviouritesService {
 
     async addFavourites(collectionId: number, type : "activity"| "hotel" | "blog" , data : IFaviouritesActivity | IFaviouritesHotel | IFaviouritesBlog): Promise<APIResponseInterface<boolean>>  {
         try {
-            const dbInstance = new DataBaseService();
+            // const dbInstance = new DataBaseService();
             switch(type) {
                 case "activity":
                     const activityData = data as IFaviouritesActivity;
-                    const dbOpt = await dbInstance.createData<IFaviouritesActivity>("FavouritesActivity", {
+                    const dbOpt = await this.dbInstance.createData<IFaviouritesActivity>("FavouritesActivity", {
                         collectionId,
                         placeName: activityData.placeName,
                         activityImage: activityData.activityImage,
@@ -65,7 +68,7 @@ export default class FaviouritesService implements IFaviouritesService {
                     }
                 case "hotel": {
                     const hotelData = data as IFaviouritesHotel;
-                    const dbOptHotel = await dbInstance.createData<IFaviouritesHotel>("FavouritesHotel", {
+                    const dbOptHotel = await this.dbInstance.createData<IFaviouritesHotel>("FavouritesHotel", {
                         collectionId,
                         placeName: hotelData.placeName,
                         hotelName: hotelData.hotelName,
@@ -87,7 +90,7 @@ export default class FaviouritesService implements IFaviouritesService {
                 }
                 case "blog": {
                     const blogData = data as IFaviouritesBlog;
-                    const dbOptBlog = await dbInstance.createData<IFaviouritesBlog>("FavouritesBlog", {
+                    const dbOptBlog = await this.dbInstance.createData<IFaviouritesBlog>("FavouritesBlog", {
                         collectionId,
                         blogID: blogData.blogID,
                         blogTitle: blogData.blogTitle,
@@ -109,6 +112,40 @@ export default class FaviouritesService implements IFaviouritesService {
         } catch(error){
             console.log("Error adding favourite:", error);
             return { success: false, data: false };
+        }
+    }
+
+    async getCollectionDetails (collectionId:number , type : "Activity"| "Hotel" | "Blog" ): Promise<APIResponseInterface<IFaviouritesActivity[] | IFaviouritesHotel[] | IFaviouritesBlog[]>> {
+        try{
+            switch(type) {
+                case "Activity" : {
+                    const dbOpt = await this.dbInstance.fetchData<IFaviouritesActivity[]>("FavouritesActivity", undefined,undefined, { collectionId });
+                    if(dbOpt.dataSuccess && dbOpt.data) {
+                        return { success: true, data: dbOpt.data as IFaviouritesActivity[] };
+                    } else {
+                        return { success: false, data: [] };
+                    }
+                }
+                case "Hotel": {
+                    const dbOpt = await this.dbInstance.fetchData<IFaviouritesHotel[]>("FavouritesHotel", undefined, undefined, { collectionId });
+                    if(dbOpt.dataSuccess && dbOpt.data) {
+                        return { success: true, data: dbOpt.data as IFaviouritesHotel[] };
+                    } else {
+                        return { success: false, data: [] };
+                    }
+                }
+                case "Blog": {
+                    const dbOpt = await this.dbInstance.fetchData<IFaviouritesBlog[]>("FavouritesBlog", undefined, undefined, { collectionId });
+                    if(dbOpt.dataSuccess && dbOpt.data) {
+                        return { success: true, data: dbOpt.data as IFaviouritesBlog[] };
+                    } else {
+                        return { success: false, data: [] };
+                    }
+                }
+            }
+        } catch(error){
+            console.log("Error getting collection details:", error);
+            return { success: false, data: [] };
         }
     }
 }

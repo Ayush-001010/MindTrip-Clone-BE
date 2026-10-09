@@ -158,6 +158,7 @@ export const joinTrip = async (req: Request, res: Response) => {
         });
     }
 };
+
 export const fetchTripAnalytics = async (req: Request, res: Response) => {
     try {
         const errors = validationResult(req);
@@ -186,3 +187,9 @@ export const fetchTripExpenses = async (req: Request, res: Response) => {
     }
 };
     
+export const fetchTripIDs = async (req: Request, res: Response) => {
+    const { userId } = req.query as { userId: string };
+    const tripInstance = new Trip();
+    const fetchTripIDsResponse = await tripInstance.fetchTripIDs(userId);
+    return res.send(fetchTripIDsResponse);
+};

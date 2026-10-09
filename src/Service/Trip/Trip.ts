@@ -35,17 +35,27 @@ export default class Trip implements ITripInterface {
     }
 
     createNewTrip = async (userID : string) : Promise<APIResponseInterface<{ "url" : string }>> => {
-        try {
+        try { 
             const commonServiceInstance = CommonService.getInstance();
             const tripID = uuidv4();
             // Use UUID path so we encode 16 raw bytes (short ~22 chars)
             const base62 = commonServiceInstance.convertBase62(tripID, { isUUID: true });
-            const dbResponse = await this.dataBaseServiceInstance.createData("TripID", {
+            const dbResponse = await this.dataBaseServiceInstance.createData<any>("TripID", {
                 userID: userID,
                 tripID: tripID,
-                base62: base62
+                base62: base62,
+                tripName:tripID
             });
             if(dbResponse.dataSuccess){
+                console.log("Database response for creating new trip: ", dbResponse.data);
+                const userMappingDbResponse = await this.dataBaseServiceInstance.createData("UserTripMappingTable", {
+                    userID: userID,
+                    tripDetailsId:dbResponse.data?.dataValues.id
+                });
+                if(!userMappingDbResponse.dataSuccess){
+                    return { success: false, error: "Failed to create user-trip mapping" };
+                }
+
                 return { success: true, data: { "url": base62 } };
             } else {
                 return { success: false, error: "Failed to create new trip" };
@@ -407,4 +417,34 @@ export default class Trip implements ITripInterface {
             data: null
         };
     };
+
+    fetchTripIDs =  async (userId: string) : Promise<APIResponseInterface<Array<{ "tripID": string; "name": string; }> | null>> => {
+        const dbResponse = await this.dataBaseServiceInstance.fetchData<any>("UserTripMappingTable", undefined , undefined,{
+            userId
+        });
+        console.log(" DB Response : " ,dbResponse);
+        if(dbResponse.dataSuccess && dbResponse.data) {
+            const tripIDs = dbResponse.data.map( async (row:any) => {
+                const data = row.dataValues;
+                const tripID = data.tripDetailsId;
+                const dbTripResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", undefined, undefined, {
+                    id: tripID
+                });
+                const tripName = dbTripResponse.data?.[0]?.tripName;
+                console.log("DB Trip Response: ", dbTripResponse);
+                return {
+                    id : dbTripResponse.data?.[0]?.base62,
+                    name: tripName
+                };
+            });
+            console.log("Mapped Trip IDs: ", tripIDs);
+            return { success: true, data: await Promise.all(tripIDs)};
+        } else {
+            return {
+                success: false,
+                error: "FAILED_TO_FETCH_TRIP_IDS",
+                data: null
+            };
+        }
+    }
 }

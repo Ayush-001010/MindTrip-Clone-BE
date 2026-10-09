@@ -16,6 +16,10 @@ const TripID = sequelize.define("TripID", {
         type: DataTypes.STRING,
         allowNull: false
     },
+    tripName:{
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     base62:{
         type: DataTypes.STRING,
         allowNull: false

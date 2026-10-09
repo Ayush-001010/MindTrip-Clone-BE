@@ -30,3 +30,13 @@ export const addFavourites = async (req: Request, res: Response) => {
     const addResponse = await faviouritesService.addFavourites(collectionId, type, data);
     return res.send(addResponse);
 }
+
+export const getCollectionDetails = async (req: Request, res: Response) => {
+    const {collectionId , type } = req.body;
+    if(!collectionId || !type) {
+        return res.status(400).json({ success: false, message: "Collection ID and type are required" });
+    }
+    const faviouritesService = new FaviouritesService();
+    const detailsResponse = await faviouritesService.getCollectionDetails(Number(collectionId), type as "Activity" | "Hotel" | "Blog");
+    return res.send(detailsResponse);
+}

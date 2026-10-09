@@ -51,4 +51,5 @@ export default interface IFaviouritesService{
     getCollections(createdBy : string): Promise<APIResponseInterface<IFaviouritesCollection[]>>;
     createCollection(name: string, createdBy: string): Promise<APIResponseInterface<IFaviouritesCollection | null>>;
     addFavourites(collectionId: number, type : "activity"| "hotel" | "blog" , data : IFaviouritesActivity | IFaviouritesHotel | IFaviouritesBlog): Promise<APIResponseInterface<boolean>>;
+    getCollectionDetails(collectionId:number , type : "Activity"| "Hotel" | "Blog" ): Promise<APIResponseInterface<IFaviouritesActivity[] | IFaviouritesHotel[] | IFaviouritesBlog[]>>;
 }
