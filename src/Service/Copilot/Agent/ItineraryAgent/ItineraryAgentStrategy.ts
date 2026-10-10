@@ -5,6 +5,7 @@ import ItineraryPrompt from "../../../../Prompt/ItineraryPrompt";
 import ItineraryPlannerAgent from "../../../../Prompt/ItineraryPlannerAgent";
 import InformationGatherPrompt from "../../../../Prompt/InformationGatherPrompt";
 import ItineraryCreationAgent from "../../../../Prompt/ItineraryCreationAgent";
+import Trip from "../../../Trip/Trip";
 
 export default class ItineraryAgentStrategy implements IAgentStrategy {
     private static readonly SESSION_WAIT_TIMEOUT_MS = 180000;
@@ -63,6 +64,7 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
             await session.disconnect();
         }
     }
+
     private creatingItineraryAgent = async (prompt: string, history: Array<ITripHistory>) => {
         const copilotInstance = CopilotClientFactory.getInstance();
         const session = await copilotInstance.createSession({
@@ -82,7 +84,13 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
                     userPrompt: prompt
                 })
             }, ItineraryAgentStrategy.SESSION_WAIT_TIMEOUT_MS);
-            return JSON.parse(response?.data?.content || "{}");
+            const obj = JSON.parse(response?.data?.content || "{}");
+            if(obj.type === "final-itinerary"){
+                const tripInstance = new Trip();
+                await tripInstance.createFinalItinerary("", obj.itineraryTitle, obj);
+            }
+
+            return obj;
         } finally {
             await session.disconnect();
         }

@@ -13,7 +13,7 @@ export default class CopilotManager {
 
   private createTripHistoryItem = async (userID: string, tripID: string, userMessage: string) => {
     const dbResponse = await this.databaseInstance.createData<any>("TripChat", {
-        userID: "123",
+        userID: userID,
         tripID: tripID,
         message: userMessage,
         response: "",
@@ -42,11 +42,11 @@ export default class CopilotManager {
     return dbResponse;
   }
 
-  tripItinerary = async (userMessage: string, tripID: string) => {
+  tripItinerary = async (userMessage: string, tripID: string, userID: string) => {
     try {
-      const records = await this.fetchTripHistory(tripID, "123");
+      const records = await this.fetchTripHistory(tripID, userID);
 
-      const dbResponse = await this.createTripHistoryItem("123", tripID, userMessage);
+      const dbResponse = await this.createTripHistoryItem(userID, tripID, userMessage);
       
       if (dbResponse.dataSuccess) {
 
@@ -59,7 +59,7 @@ export default class CopilotManager {
             "TripChat",
             1,
             undefined,
-            { tripID: tripID, userID: "123" },
+            { tripID: tripID, userID: userID },
             [["messageDate", "ASC"]],
           );
           if (updateResponse.dataSuccess) {
@@ -91,7 +91,6 @@ export default class CopilotManager {
         [["messageDate", "ASC"]],
       );
       if (dbResponse.dataSuccess) {
-        console.log("Data fetched successfully");
         return {
           success: true,
           data: dbResponse.data,

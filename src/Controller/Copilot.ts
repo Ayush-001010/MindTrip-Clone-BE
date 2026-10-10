@@ -3,10 +3,10 @@ import { validationResult } from "express-validator";
 import CopilotManager from "../Manager/CopilotManager";
 import APIResponseInterface from "../Interface/ResponseInterface/APIResponseInterface";
 
-export const tripItineraryHandler = async (userMessage : string, tripID : string) : Promise<APIResponseInterface<any> | undefined> => {
+export const tripItineraryHandler = async (userMessage : string, tripID : string, userID : string) : Promise<APIResponseInterface<any> | undefined> => {
   try{
     const copilotInstance = new CopilotManager();
-    const response = await copilotInstance.tripItinerary(userMessage , tripID);
+    const response = await copilotInstance.tripItinerary(userMessage , tripID, userID);
     return response;
   } catch(error){
     console.log("Error  ", error);

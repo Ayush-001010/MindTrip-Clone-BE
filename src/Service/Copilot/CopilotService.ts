@@ -84,8 +84,8 @@ export default class CopilotService implements ICopilotService {
         return {success : true , data : await itinerayStrategyInstance.executeAgent(prompt, this.genrateTripHistory(history))};
       default:
         return { success: true, data: {
-            message:
-              "I can help with travel and destination suggestions. Tell me the kind of place you'd like to visit, such as mountains, beaches, adventure, or a romantic getaway.",
+            message:"I can help with travel and destination suggestions. Tell me the kind of place you'd like to visit, such as mountains, beaches, adventure, or a romantic getaway.",
+            type: "fallback"
           },
         };
     }

@@ -47,7 +47,6 @@ export default class Trip implements ITripInterface {
                 tripName:tripID
             });
             if(dbResponse.dataSuccess){
-                console.log("Database response for creating new trip: ", dbResponse.data);
                 const userMappingDbResponse = await this.dataBaseServiceInstance.createData("UserTripMappingTable", {
                     userID: userID,
                     tripDetailsId:dbResponse.data?.dataValues.id
@@ -83,14 +82,11 @@ export default class Trip implements ITripInterface {
         "userName": string;
         "userEmail": string;
     }>|null>> => {
-        const dbTripIDFetchResponse = await this.dataBaseServiceInstance.fetchData<{
-            "id": string;
-        }[]>("TripID", 1, 0, { base62: tripID });
-        console.log("Fetch Trip ID From Database : ", dbTripIDFetchResponse);
+        const dbTripIDFetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", 1, 0, { base62: tripID });
         if(!dbTripIDFetchResponse.dataSuccess){
             return { success: false, error : "Failed to fetch trip ID from database", data: null };
         }
-        const tripIDFromDB = dbTripIDFetchResponse.data?.[0]?.id || "";
+        const tripIDFromDB = dbTripIDFetchResponse.data?.[0]?.dataValues.id || "";
 
         const dbFetchTripMemberDetailsResponse = await this.dataBaseServiceInstance.fetchData<{
             "userId": string;
@@ -120,7 +116,6 @@ export default class Trip implements ITripInterface {
             }
             return { success: true, data: result };
         }
-        console.log("Fetch Trip Member Details From Database : ", dbFetchTripMemberDetailsResponse);
         
         return { success: false, error : "Failed to fetch trip member details from database", data: null };
     }
@@ -161,7 +156,6 @@ export default class Trip implements ITripInterface {
             createdAt: Date | string;
         }[]>("UserInvite", 1, 0, { inviteURLID });
     
-        console.log("Fetch Invite From Database : ", dbUserInviteResponse);
     
         if (!dbUserInviteResponse.dataSuccess) {
             return {
@@ -170,7 +164,7 @@ export default class Trip implements ITripInterface {
                 data: null
             };
         }
-    
+
         const inviteData = dbUserInviteResponse.data?.[0];
     
         if (!inviteData) {
@@ -201,14 +195,11 @@ export default class Trip implements ITripInterface {
             };
         }
     
-        const tripID = inviteData.tripID;
+        const base62 = inviteData.tripID;
     
-        const dbTripResponse = await this.dataBaseServiceInstance.fetchData<{
-            tripID: string;
-        }[]>("TripID", 1, 0, { tripID });
+        const dbTripResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", 1, 0, { "base62" :base62 });
     
-        console.log("Fetch Trip From Database : ", dbTripResponse);
-    
+        
         if (!dbTripResponse.dataSuccess || !dbTripResponse.data?.[0]) {
             return {
                 success: false,
@@ -216,17 +207,13 @@ export default class Trip implements ITripInterface {
                 data: null
             };
         }
+        const tripID = dbTripResponse.data?.[0]?.dataValues.tripID;
     
         const dbTripDetailsResponse =
             await this.dataBaseServiceInstance.fetchData<{
                 tripID: string;
                 tripName: string;
-            }[]>("TripDetails", 1, 0, { tripID });
-    
-        console.log(
-            "Fetch Trip Details From Database : ",
-            dbTripDetailsResponse
-        );
+            }[]>("TripID", 1, 0, { tripID });
     
         if (
             !dbTripDetailsResponse.dataSuccess ||
@@ -234,7 +221,7 @@ export default class Trip implements ITripInterface {
         ) {
             return {
                 success: false,
-                error: "TRIP_DETAILS_NOT_FOUND",
+                error: "TRIP_ID_NOT_FOUND",
                 data: null
             };
         }
@@ -258,7 +245,6 @@ export default class Trip implements ITripInterface {
             inviteURLID: string;
         }[]>("UserInvite", 1, 0, { base62 });
     
-        console.log("Resolve Short URL : ", dbUserInviteResponse);
     
         if (!dbUserInviteResponse.dataSuccess) {
             return {
@@ -289,13 +275,13 @@ export default class Trip implements ITripInterface {
     fetchFinalItinerary = async (base62: string): Promise<APIResponseInterface<ITripDetails & { countUserOnTrip: number } | null>> => {
         console.log("Fetching final itinerary for tripID: ", base62);
 
-        const dbTripDFetchResponse = await this.dataBaseServiceInstance.fetchData<{id:number , tripID:string}[]>("TripID", 1, 0, { base62 });
+        const dbTripDFetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", 1, 0, { base62 });
 
         if(!dbTripDFetchResponse.dataSuccess){
             return { success: false, error : "Failed to fetch final itinerary from database", data: null };
         }
-        const tripID = dbTripDFetchResponse.data?.[0].tripID || null;
-        const _id = dbTripDFetchResponse.data?.[0].id || null;
+        const tripID = dbTripDFetchResponse.data?.[0].dataValues.tripID || null;
+        const _id = dbTripDFetchResponse.data?.[0].dataValues.id || null;
 
         const dpTripDetailsResponse = await this.dataBaseServiceInstance.fetchData<any>("TripDetails", 1, 0, { tripID });
         const countUserOnTrip = await this.dataBaseServiceInstance.countData("UserTripMappingTable",{
@@ -306,6 +292,7 @@ export default class Trip implements ITripInterface {
             return { success: false, error : "Failed to fetch final itinerary details from database", data: null };
         }
         const tripDetailsData = dpTripDetailsResponse.data?.[0] || null;
+        console.log("Trip details data: ", tripDetailsData);
 
         return {
             success: true,
@@ -431,13 +418,11 @@ export default class Trip implements ITripInterface {
                     id: tripID
                 });
                 const tripName = dbTripResponse.data?.[0]?.tripName;
-                console.log("DB Trip Response: ", dbTripResponse);
                 return {
                     id : dbTripResponse.data?.[0]?.base62,
                     name: tripName
                 };
             });
-            console.log("Mapped Trip IDs: ", tripIDs);
             return { success: true, data: await Promise.all(tripIDs)};
         } else {
             return {
@@ -446,5 +431,23 @@ export default class Trip implements ITripInterface {
                 data: null
             };
         }
-    }
+    };
+
+    createFinalItinerary = async (tripID: string, tripName: string, tripItinerary: any): Promise<null> => {
+        const createItineraryResponse = await this.dataBaseServiceInstance.createData(
+            "TripDetails",
+            {
+                tripID,
+                tripName,
+                tripItinerary : JSON.stringify(tripItinerary)
+            }
+        );
+        console.log("Create Itinerary Response: ", createItineraryResponse);
+
+        if (!createItineraryResponse.dataSuccess) {
+            return null;
+        }
+
+        return null;
+    };
 }

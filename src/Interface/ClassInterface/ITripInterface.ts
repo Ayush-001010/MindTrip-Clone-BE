@@ -4,31 +4,55 @@ import ITripDetails from "../DataInterface/ITripDetails";
 import IFinalItinerary from "../DataInterface/IFinalItinerary";
 
 export default interface ITripInterface {
-  exploreTrip(pageNo: number): Promise<APIResponseInterface<IExploreTrip[] | null>>;
-  createNewTrip : (userID : string) => Promise<APIResponseInterface<{
-        "url" : string;
-  }>>;
-  fetchTripIDs : (userID : string) => Promise<APIResponseInterface<Array<{
-        "tripID": string;
-        "name": string;
-  }> | null>>;
-  fetchTripDetails(tripID: string): Promise<APIResponseInterface<ITripDetails|null>>;
-  fetchTripMemberDetails(tripID: string): Promise<APIResponseInterface<Array<{
-    "userId": string;
-    "userName": string;
-    "userEmail": string;
-  }>|null>>;
-  createUserInvite(tripID: string, inviteUserBy: string): Promise<APIResponseInterface<{
-    "url" : string;
-  }>>;
-  fetchFinalItinerary(tripID: string): Promise<APIResponseInterface<ITripDetails & { countUserOnTrip: number }|null>>;
-  setTripStartAndEnd(base62: string, startDate: string, endDate: string): Promise<APIResponseInterface<null>>;
-  setTripBudget(base62: string, budget: number): Promise<APIResponseInterface<null>>;
+  exploreTrip(
+    pageNo: number,
+  ): Promise<APIResponseInterface<IExploreTrip[] | null>>;
+  createNewTrip: (userID: string) => Promise<
+    APIResponseInterface<{
+      url: string;
+    }>
+  >;
+  fetchTripIDs: (userID: string) => Promise<
+    APIResponseInterface<Array<{
+      tripID: string;
+      name: string;
+    }> | null>
+  >;
+  fetchTripDetails(
+    tripID: string,
+  ): Promise<APIResponseInterface<ITripDetails | null>>;
+  fetchTripMemberDetails(tripID: string): Promise<
+    APIResponseInterface<Array<{
+      userId: string;
+      userName: string;
+      userEmail: string;
+    }> | null>
+  >;
+  createUserInvite(
+    tripID: string,
+    inviteUserBy: string,
+  ): Promise<
+    APIResponseInterface<{
+      url: string;
+    }>
+  >;
+  fetchFinalItinerary(
+    tripID: string,
+  ): Promise<
+    APIResponseInterface<(ITripDetails & { countUserOnTrip: number }) | null>
+  >;
+  setTripStartAndEnd(
+    base62: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<APIResponseInterface<null>>;
+  setTripBudget(
+    base62: string,
+    budget: number,
+  ): Promise<APIResponseInterface<null>>;
   validateUserInvite(
-    base62: string
-): Promise<APIResponseInterface<{ tripID: string } | null>>;
-joinTrip(
-  tripID: string,
-  userID: number
-): Promise<APIResponseInterface<null>>;
+    base62: string,
+  ): Promise<APIResponseInterface<{ tripID: string } | null>>;
+  joinTrip(tripID: string, userID: number): Promise<APIResponseInterface<null>>;
+  createFinalItinerary : (tripID:string , tripName:string , itinerary:any) => Promise<null>;
 }

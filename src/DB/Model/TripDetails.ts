@@ -10,23 +10,23 @@ const TripDetails = sequelize.define("TripDetails", {
     },
     tripID:{
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     tripName:{
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     tripItinerary:{
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true
     },
     startDate:{
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: true
     },
     endDate:{
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: true
     },
     budget:{
         type: DataTypes.FLOAT,

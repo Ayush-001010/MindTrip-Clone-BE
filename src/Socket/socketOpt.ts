@@ -24,14 +24,16 @@ export const initSocket = (io: Server) => {
         });
 
         socket.on("room:chat", async (data) => {
-            const { tripID , userPrompt } = data;
-            const response = await tripItineraryHandler(userPrompt, tripID);
+            const { tripID , userPrompt , userID } = data;
+            console.log("Room chat request:", { tripID, userPrompt, userID });
+            const response = await tripItineraryHandler(userPrompt, tripID , userID);
             io.to(tripID).emit("room:chat-response", { ...response });
         });
 
         socket.on("room:fetchOldChat", async (data) => {
             const { tripID , userID } = data;
             const response:any = await fetchTripChat(tripID, userID);
+            console.log("Fetch old chat response:", { tripID, userID, response });
             io.to(tripID).emit("room:oldChatDetails", { response });
         });
 
