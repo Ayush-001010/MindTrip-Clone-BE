@@ -3,10 +3,11 @@ import SocketService from "../Service/SocketService/SocketService";
 import { fetchTripChat, tripItineraryHandler } from "../Controller/Copilot";
 import Trip from "../Service/Trip/Trip";
 import SplitWiseFacade from "../Service/SplitWise/SplitWiseFacade";
+import CopilotManager from "../Manager/CopilotManager";
 
 export const initSocket = (io: Server) => {
     io.on("connection", (socket) => {
-        console.log("A user connected via socket:", socket.id);
+        // console.log("A user connected via socket:", socket.id);
         const socketInstance = new SocketService();
 
         socket.on("room:join", (data) => {
@@ -64,6 +65,14 @@ export const initSocket = (io: Server) => {
             const splitWiseFacadeInstance = new SplitWiseFacade(tripID);
             const response = await splitWiseFacadeInstance.addExpense(paidBy, totalAmount, title, category, spendAt, splitMethod, splitAmong, notes);
             io.to(tripID).emit("room:addExpense-response", { success: response.splitOptSuccess, data:`Expense of ₹${totalAmount} logged by ${paidBy.userName}` });
+        });
+
+        socket.on("room:hotelRequest", async (data) => {
+            const { tripID, userPrompt, userID } = data;
+            console.log("Hotel request:", { tripID, userPrompt, userID });
+            const copilotClientInstance = new CopilotManager()
+            const response = await copilotClientInstance.tripItinerary(userPrompt, tripID , "3");
+            io.to(tripID).emit("room:hotelRequest-response", { ...response });
         });
     });
 };

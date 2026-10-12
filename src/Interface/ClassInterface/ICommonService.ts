@@ -6,4 +6,5 @@ export default interface ICommonService {
     convertBase62 : (tripID : string, options?: { isUUID?: boolean }) => string;
     uuidToBase62 : (uuid: string) => string;
     getPlaceImage:(placeName: string) => Promise<string>;
+    checkIsFinalItineraryIsCreatedOrNot : (tripID: string) => Promise<boolean>;
 }

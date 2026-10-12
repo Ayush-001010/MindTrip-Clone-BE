@@ -51,19 +51,16 @@ export default class CopilotManager {
       if (dbResponse.dataSuccess) {
 
         const copilotInstance = new CopilotService();
-        const copilotResponse = await copilotInstance.coordinatorAgent(userMessage , records.data);
+        const copilotResponse = await copilotInstance.coordinatorAgent(userMessage , records.data, tripID);
 
         if (copilotResponse.success) {
           const updateResponse = await this.updateTripHistoryItem(copilotResponse, dbResponse.data.dataValues.id);
-          const fetchLastTripData = await this.databaseInstance.fetchData<any>(
-            "TripChat",
-            1,
-            undefined,
-            { tripID: tripID, userID: userID },
-            [["messageDate", "ASC"]],
-          );
+          
+          const fetchLastTripData = await this.fetchLastTripChat(tripID, userID);
+          console.log("Fetched last trip chat:", fetchLastTripData);
+          
           if (updateResponse.dataSuccess) {
-            return { success: true , data : fetchLastTripData.data[0] };
+            return { success: true , data : fetchLastTripData.data };
           } else {
             throw new Error("Failed to update the response in the database.");
           }
@@ -104,6 +101,35 @@ export default class CopilotManager {
         success: false,
         data: {
           message: "An error occurred while fetching the trip chat.",
+        },
+      };
+    }
+  };
+
+  fetchLastTripChat = async (tripID: string, userID: string) => {
+    try {
+      const databaseInstance = new DataBaseService();
+      const dbResponse = await databaseInstance.fetchData<any>(
+        "TripChat",
+        1,
+        undefined,
+        { tripID: tripID, userID: userID },
+        [["messageDate", "DESC"]],
+      );
+      if (dbResponse.dataSuccess) {
+        return {
+          success: true,
+          data: dbResponse.data[0],
+        };
+      } else {
+        throw new Error("Failed to fetch the last trip chat from the database.");
+      }
+    } catch (error) {
+      console.log("Error in fetchLastTripChat:", error);
+      return {
+        success: false,
+        data: {
+          message: "An error occurred while fetching the last trip chat.",
         },
       };
     }

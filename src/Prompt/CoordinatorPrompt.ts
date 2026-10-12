@@ -48,14 +48,14 @@ Output: { "route": "fallback", "reason": "Not related to travel" }
 User: "I am looking for a hotel in Paris"
 Output: { "route": "hotel-agent", "reason": "Request specifically about hotels" }
 
-User: "Please suggest 4 star hotels in Manali" 
-Output: { "route": "hotel-agent", "reason": "Request specifically about hotels" }
-
 User: "I want a travel itinerary for my trip to Italy"
 Output: { "route": "itinerary-agent", "reason": "Request specifically about travel itineraries" }
 
 User : "Can you create a plan for my trip to Japan"
 Output: { "route": "itinerary-agent", "reason": "Request specifically about travel itineraries" }
+
+User : "Can you suggest hotels according to my travel itinerary"
+Output: { "route": "hotel-agent", "reason": "Request specifically about hotels" }
 
 User : "{"userMessage": "
         Q) What is your destination?

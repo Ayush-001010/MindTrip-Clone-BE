@@ -10,7 +10,7 @@ Input:
 - You receive a JSON object with this shape:
   {
     "userPrompt": "string"
-    }
+  }
 
 Input Explanation:
     - "userPrompt" is the user's current message.

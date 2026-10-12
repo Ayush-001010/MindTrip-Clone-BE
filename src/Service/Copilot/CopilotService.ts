@@ -41,13 +41,16 @@ export default class CopilotService implements ICopilotService {
     }
   }
 
-  coordinatorAgent = async (prompt: string,history: Array<ITripChat>): Promise<APIResponseInterface<any>> => {
+  coordinatorAgent = async (prompt: string,history: Array<ITripChat> , tripID: string): Promise<APIResponseInterface<any>> => {
     const coordinatorResponse = await this.getRoute(prompt);
     const { route } = coordinatorResponse;
     console.log("Route determined by coordinator agent:", route);
     switch (route) {
       case "destination-agent":
-        const destinationStrategyInstance =  AgentFactory.createAgent("destination");
+        const destinationStrategyInstance =  await AgentFactory.createAgent("destination");
+        if (!destinationStrategyInstance) {
+          return { success: false, data: { message: "Failed to create destination agent instance." } };
+        }
         const destinationData = await destinationStrategyInstance.executeAgent(prompt);
         if (!destinationData) {
           return {
@@ -62,25 +65,21 @@ export default class CopilotService implements ICopilotService {
           data: destinationData,
         };
       case "hotel-agent":
-        const hotelStrategyInstance = AgentFactory.createAgent("hotel");
-        const hotelData = await hotelStrategyInstance.executeAgent(prompt);
-        if (!hotelData ||!Array.isArray(hotelData.hotels) ||hotelData.hotels.length === 0) {
-          return {
-            success: true,
-            data: {
-              description:
-                "Unable to fetch hotels for the requested location because the hotel search failed.",
-              hotels: [],
-            },
-          };
+        const hotelStrategyInstance = await AgentFactory.createAgent("hotel" , tripID);
+        if (!hotelStrategyInstance) {
+          return { success: true, data: { message: "Please create your itinerary first." } };
         }
+        const hotelData = await hotelStrategyInstance.executeAgent(prompt, this.genrateTripHistory(history));
 
         return {
           success: true,
           data: hotelData,
         };
       case "itinerary-agent":
-        const itinerayStrategyInstance = AgentFactory.createAgent("itinerary");
+        const itinerayStrategyInstance = await AgentFactory.createAgent("itinerary");
+        if (!itinerayStrategyInstance) {
+          return { success : false, data: { message: "Failed to create itinerary agent instance." } }
+        }
         return {success : true , data : await itinerayStrategyInstance.executeAgent(prompt, this.genrateTripHistory(history))};
       default:
         return { success: true, data: {

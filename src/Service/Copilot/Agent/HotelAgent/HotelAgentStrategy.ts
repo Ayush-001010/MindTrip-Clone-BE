@@ -7,9 +7,27 @@ import IHotel from "../../../../Interface/DataInterface/IHotel";
 import path from "path";
 import fs from "fs";
 import HotelService from "../../../Hotels/HotelService";
+import CommonService from "../../../Common/CommonService";
+import ITripHistory from "../../../../Interface/DataInterface/ITripHistory";
+import HotelInformationGatherPrompt from "../../../../Prompt/HotelInformationGatherPrompt";
+import HotelSearchPrompt from "../../../../Prompt/HotelSearchPrompt";
 
 export default class HotelAgentStrategy implements IAgentStrategy {
-    private searchHotel = defineTool("searchHotel", {
+  constructor(private finalItinerary: any) {}
+
+  public static readonly getInstance = async (tripID: string) => {
+    const isFinalItineraryExist =
+      await CommonService.getInstance().checkIsFinalItineraryIsCreatedOrNot(
+        tripID,
+      );
+    if (isFinalItineraryExist) {
+      return new HotelAgentStrategy(isFinalItineraryExist);
+    } else {
+      return null;
+    }
+  };
+
+  private searchHotel = defineTool("searchHotel", {
     description: "Search hotels based on the provided city",
     skipPermission: true,
     parameters: {
@@ -47,7 +65,7 @@ export default class HotelAgentStrategy implements IAgentStrategy {
       } catch (err) {
         console.error("searchHotel tool error:", err);
         try {
-          fs.appendFileSync( 
+          fs.appendFileSync(
             path.resolve(process.cwd(), "debug", "searchHotel.log"),
             `${new Date().toISOString()} - error: ${String(err)}\n`,
           );
@@ -69,32 +87,130 @@ export default class HotelAgentStrategy implements IAgentStrategy {
     },
   });
 
- executeAgent = async (prompt: string): Promise<HotelAgentResult | null> => {
-    const copilotClientInstance = CopilotClientFactory.getInstance();
+  private getRoute = async ( prompt: string, history: Array<ITripHistory>,): Promise<{route: "hotel-question-gather-agent"| "hotel-search-agent"| "fallback-agent";}> => {
+    try {
+      const copilotClientInstance = CopilotClientFactory.getInstance();
 
+      console.log("Prompt for routing:", prompt);
+      console.log("History for routing:", history);
+      console.log("Final itinerary for routing:", this.finalItinerary);
+
+      const session = await copilotClientInstance.createSession({
+        sessionId: `route-${Date.now()}`,
+        model: "gpt-5-mini",
+        availableTools: [],
+        systemMessage: {
+          content: HotelPrompt,
+        },
+      });
+
+      const response = await session.sendAndWait({
+        prompt: JSON.stringify({
+          history,
+          finalItinerary: this.finalItinerary,
+          userPrompt: prompt,
+        }),
+      });
+      await session.disconnect();
+
+      try {
+        return JSON.parse(response?.data?.content || "{}");
+      } catch {
+        return {
+          route: "fallback-agent",
+        };
+      }
+    } catch (error) {
+      return { route: "fallback-agent" };
+    }
+  };
+
+  private hotelQuestionGatherAgent = async (prompt: string, history: Array<ITripHistory>) => {
+    // Implement the logic for the hotel question gather agent here.
+    const copilotClientInstance = CopilotClientFactory.getInstance();
     const session = await copilotClientInstance.createSession({
-      sessionId: `hotel-${Date.now()}`,
+      sessionId: `hotel-question-gather-${Date.now()}`,
       model: "gpt-5.4",
-      tools: [this.searchHotel],
-      availableTools: ["searchHotel"],
+      availableTools: [],
       systemMessage: {
-        content: HotelPrompt,
+        content: HotelInformationGatherPrompt,
       },
     });
 
     const response = await session.sendAndWait({
-      prompt: `${prompt}`,
+        prompt: JSON.stringify({
+          history,
+          finalItinerary: this.finalItinerary,
+          userPrompt: prompt,
+        }),
+      });
+      await session.disconnect();
+
+      try {
+        console.log("Response from hotel question gather agent:", response?.data?.content);
+        return JSON.parse(response?.data?.content || "{}");
+      } catch {
+        return {
+          route: "fallback-agent",
+        };
+      }
+
+  };
+
+  private hotelSearchAgent = async (prompt: string, history: Array<ITripHistory>) => {
+    // Implement the logic for the hotel search agent here.
+    const copilotClientInstance = CopilotClientFactory.getInstance();
+    const session = await copilotClientInstance.createSession({
+      sessionId: `hotel-search-${Date.now()}`,
+      model: "gpt-5.4",
+      tools: [this.searchHotel],
+      availableTools: ["searchHotel"],
+      systemMessage: {
+        content: HotelSearchPrompt,
+      },
     });
 
-    // console.log("Hotel agent raw response object:", response);
+    const response = await session.sendAndWait({
+        prompt: JSON.stringify({
+          history,
+          finalItinerary: this.finalItinerary,
+          userPrompt: prompt,
+        }),
+      });
+      await session.disconnect();
 
-    await session.disconnect();
+      try {
+        console.log("Response from hotel search agent:", response?.data?.content);
+        return JSON.parse(response?.data?.content || "{}");
+      } catch {
+        return {
+          route: "fallback-agent",
+        };
+      }
+  };
 
-    // return response;
-    try {
-      return JSON.parse(response?.data?.content || "{}");
-    } catch {
-      return null;
+  executeAgent = async (prompt: string, history: Array<ITripHistory> = []) => {
+    const coordinates = await this.getRoute(prompt, history);
+    const { route } = coordinates;
+    console.log("Route determined by hotel agent:", route);
+
+    switch (route) {
+      case "hotel-question-gather-agent":
+        // Handle hotel question gather agent logic here
+        return await this.hotelQuestionGatherAgent(prompt, history);
+        break;
+      case "hotel-search-agent":
+        // Handle hotel search agent logic here
+        return await this.hotelSearchAgent(prompt, history);
+        break;
+      case "fallback-agent":
+        // Handle fallback agent logic here
+        break;
+      default:
+        // Handle unknown route
+        break;
     }
+
+    return route;
   };
 }

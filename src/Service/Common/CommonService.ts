@@ -3,11 +3,16 @@ import ICommonService from "../../Interface/ClassInterface/ICommonService";
 import IActivites from "../../Interface/DataInterface/IActivites";
 import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
 import axios from "axios";
+import DataBaseService from "../Database/Database";
 
 export default class CommonService implements ICommonService {
     private static instance : CommonService;
-    private constructor() {};
     private CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    private dbInstance : DataBaseService;
+
+    constructor() {
+        this.dbInstance = new DataBaseService();
+    }
 
     private stringToBase62 = (str: string) => {
     if (!str) return this.CHARS[0];
@@ -118,6 +123,33 @@ export default class CommonService implements ICommonService {
         } catch (error) {
             console.log("Error fetching place image: ", error);
             return '';
+        }
+    }
+
+    checkIsFinalItineraryIsCreatedOrNot = async (base62: string) : Promise<any> => {
+        try {
+            const tripIDRes = await this.dbInstance.fetchData<any>("TripID", undefined, undefined, {
+                base62
+            });
+            console.log("TripID response: ", tripIDRes);
+            const tripID = tripIDRes.dataSuccess && tripIDRes.data ? tripIDRes.data[0].dataValues.tripID : null;
+            if(!tripID) {
+                return null;
+            }
+
+            const res = await this.dbInstance.fetchData<any>("TripDetails",undefined,undefined,{
+                tripID
+            });
+
+            if(res.dataSuccess && res.data){
+                return res.data[0].dataValues;
+            }
+
+            return null;
+        }
+        catch(error){
+            console.log("Error checking if final itinerary is created: ", error);
+            return null;
         }
     }
 }

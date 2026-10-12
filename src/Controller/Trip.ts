@@ -2,6 +2,8 @@ import { Request , Response } from "express";
 import { validationResult } from "express-validator";
 import Trip from "../Service/Trip/Trip";
 import SplitWiseFacade from "../Service/SplitWise/SplitWiseFacade";
+import CopilotClientFactory from "../Factory/CopilotClientFactory";
+import CopilotManager from "../Manager/CopilotManager";
 
 export const createNewTrip = async (req: Request, res: Response) => {
     try {
@@ -192,4 +194,20 @@ export const fetchTripIDs = async (req: Request, res: Response) => {
     const tripInstance = new Trip();
     const fetchTripIDsResponse = await tripInstance.fetchTripIDs(userId);
     return res.send(fetchTripIDsResponse);
+};
+
+export const chatWithAI = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const { prompt, tripID } = req.body;
+        const copilotClientInstance = new CopilotManager()
+        const response = await copilotClientInstance.tripItinerary(prompt, tripID , "3");
+        return res.send({ success: true, data: response });
+    } catch (error) {
+        console.log("Error chatting with AI: ", error);
+        return res.send({ success: false, error: "Failed to chat with AI" });
+    }
 };

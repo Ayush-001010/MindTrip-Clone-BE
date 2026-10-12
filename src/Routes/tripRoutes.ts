@@ -18,7 +18,8 @@ import {
     fetchTripExpenses,
     joinTrip,
     validateUserInvite,
-    fetchTripIDs
+    fetchTripIDs,
+    chatWithAI
 } from "../Controller/Trip";
 
 import { authenticateToken } from "../Middleware/authMiddleware";
@@ -72,5 +73,10 @@ router.post(
 );
 
 router.get("/fetchTripIDs",fetchTripIDs)
+
+router.post(
+    "/chatWithAI",
+    chatWithAI
+); 
 
 export default router;
