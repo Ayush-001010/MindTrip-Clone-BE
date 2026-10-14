@@ -2,7 +2,6 @@ import { Request , Response } from "express";
 import { validationResult } from "express-validator";
 import Trip from "../Service/Trip/Trip";
 import SplitWiseFacade from "../Service/SplitWise/SplitWiseFacade";
-import CopilotClientFactory from "../Factory/CopilotClientFactory";
 import CopilotManager from "../Manager/CopilotManager";
 
 export const createNewTrip = async (req: Request, res: Response) => {
@@ -211,3 +210,10 @@ export const chatWithAI = async (req: Request, res: Response) => {
         return res.send({ success: false, error: "Failed to chat with AI" });
     }
 };
+
+export const getImportantDates = async (req: Request, res: Response) => {
+    const tripServiceInstance = new Trip();
+    const { userID } = req.query as { userID: string };
+    const importantDatesResponse = await tripServiceInstance.searchImportantDates(userID);
+    return res.send(importantDatesResponse);
+}

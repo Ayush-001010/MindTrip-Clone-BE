@@ -30,6 +30,18 @@ const User = sequelize.define("User",
             allowNull: true,
             unique: true,
         },
+        holidayDate:{
+            type:DataTypes.STRING,
+            allowNull: true,
+        },
+        birthdayDate:{
+            type:DataTypes.DATE,
+            allowNull: true,
+        },
+        anniversaryDate:{
+            type:DataTypes.DATE,
+            allowNull: true,
+        }
     },
 );
 

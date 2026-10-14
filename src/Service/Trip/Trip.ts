@@ -7,6 +7,8 @@ import DataBaseService from "../Database/Database";
 import CommonService from "../Common/CommonService";
 import { v4 as uuidv4 } from 'uuid';
 import ITripDetails from "../../Interface/DataInterface/ITripDetails";
+import IImportantDateResponse from "../../Interface/DataInterface/IImportantDateResponse";
+import UserService from "../User/UserService";
 
 export default class Trip implements ITripInterface {
     dataBaseServiceInstance : DataBaseService;
@@ -15,7 +17,7 @@ export default class Trip implements ITripInterface {
     constructor(){
         this.dataBaseServiceInstance = new DataBaseService();    
         this.cloudServiceInstance = CloudFactory.getCloudServiceInstance();
-    }
+    };
 
     exploreTrip = async (pageNo : number) : Promise<APIResponseInterface<IExploreTrip[] | null>> => {
         const dbFetchExploreTripResponse = await this.dataBaseServiceInstance.fetchData<IExploreTrip[]>("ExploreTrip", 4, (pageNo - 1) * 4);
@@ -32,7 +34,7 @@ export default class Trip implements ITripInterface {
         } else {
             return { success: false, error : "Failed to fetch data from database", data: null };
         }
-    }
+    };
 
     createNewTrip = async (userID : string) : Promise<APIResponseInterface<{ "url" : string }>> => {
         try { 
@@ -63,7 +65,7 @@ export default class Trip implements ITripInterface {
             console.log("Error  ",error);
             return { success: false, error: "Failed to create new trip"};
         }
-    }
+    };
 
     fetchTripDetails = async (tripID : string) : Promise<APIResponseInterface<ITripDetails|null>> => {
         const dbFetchTripDetailsResponse = await this.dataBaseServiceInstance.fetchData<ITripDetails[]>("TripDetails", 1, 0, { tripID });
@@ -75,7 +77,7 @@ export default class Trip implements ITripInterface {
         } else {
             return { success: false, error : "Failed to fetch trip details from database", data: null };
         }
-    }
+    };
 
     fetchTripMemberDetails = async (tripID : string) : Promise<APIResponseInterface<Array<{
         "userId": string;
@@ -118,7 +120,7 @@ export default class Trip implements ITripInterface {
         }
         
         return { success: false, error : "Failed to fetch trip member details from database", data: null };
-    }
+    };
 
     createUserInvite = async (tripID: string, inviteUserBy: string): Promise<APIResponseInterface<{
         "url": string;
@@ -138,7 +140,7 @@ export default class Trip implements ITripInterface {
             return { success: true, data: {  "url": `http://localhost:3000/i/${base62InviteURLID}` } };
         }
         return { success: false, error : "Failed to create user invite in database", data: {url : ""}};
-    }
+    };
 
     validateUserInvite = async (
         inviteURLID: string
@@ -237,6 +239,7 @@ export default class Trip implements ITripInterface {
             }
         };
     };
+
     resolveUserInviteShortUrl = async (
         base62: string
     ): Promise<APIResponseInterface<{ inviteURLID: string } | null>> => {
@@ -301,7 +304,7 @@ export default class Trip implements ITripInterface {
                 : null
         };
 
-    }
+    };
 
     setTripStartAndEnd = async (base62: string, startDate: string, endDate: string): Promise<APIResponseInterface<null>> => {
         try {
@@ -316,7 +319,8 @@ export default class Trip implements ITripInterface {
             console.log("Error  ",error);
             return { success: false, error: "Failed to set trip start and end dates", data: null };
         }
-    }
+    };
+
     setTripBudget = async (base62: string, budget: number): Promise<APIResponseInterface<null>> => {
         try {
             const dbTripDFetchResponse = await this.dataBaseServiceInstance.fetchData<{id:number , tripID:string}[]>("TripID", 1, 0, { base62 });
@@ -330,7 +334,7 @@ export default class Trip implements ITripInterface {
             console.log("Error  ",error);
             return { success: false, error: "Failed to set trip budget", data: null };
         }
-    }
+    };
 
     joinTrip = async (
         tripID: string,
@@ -450,4 +454,114 @@ export default class Trip implements ITripInterface {
 
         return null;
     };
+
+    searchImportantDates = async (userID: string): Promise<APIResponseInterface<IImportantDateResponse[]>> => {
+        try{
+            const userServiceInstance = new UserService();
+            const importantDates = await userServiceInstance.fetchImportantDates(userID);
+            if (!importantDates) {
+                throw new Error("FAILED_TO_FETCH_IMPORTANT_DATES");
+            }
+
+            const { dateRange, birthdayDate, anniversaryDate } = importantDates;
+
+            const response : IImportantDateResponse[] = [];
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+            let isBirthDayOccurMiddleOfLongWeekend = false;
+            let isAnniversaryOccurMiddleOfLongWeekend = false;
+
+            for(let index = 0;index<dateRange.length;index++) {
+                const { day, month } = dateRange[index];
+                if(month < currentMonth) { 
+                    continue;
+                }
+                const date = new Date(currentYear, month - 1, day , 10,0,0);
+                const weekDay = date.getDay();
+                if(weekDay === 0 || weekDay === 6) {
+                    continue;
+                }
+                let startDate : Date | null = null;
+                let endDate : Date | null = null;
+                if(weekDay === 1 || weekDay === 2){
+                    if(weekDay === 1){
+                        startDate = new Date(date);
+                        startDate.setDate(startDate.getDate() - 2);
+                    }
+                    if(weekDay === 2){
+                        startDate = new Date(date);
+                        startDate.setDate(startDate.getDate() - 3);
+                    }
+                    endDate = new Date(date);
+                } else {
+                    startDate = new Date(date);
+                    console.log("Start Date: ", startDate);
+                    endDate = new Date(date);
+                    if(weekDay === 5){
+                        endDate.setDate(endDate.getDate() + 2);
+                    }
+                    if(weekDay === 4){
+                        endDate.setDate(endDate.getDate() + 3);
+                    }
+                    if(weekDay === 3){
+                        endDate.setDate(endDate.getDate() + 4);
+                    }
+                    console.log("End Date: ", endDate);
+                }
+                while(index + 1 < dateRange.length) {
+                    const { day: nextDay, month: nextMonth } = dateRange[index + 1];
+                    const nextDate = new Date(currentYear, nextMonth - 1, nextDay , 10,0,0);
+                    if(nextDate > endDate) {
+                        const nextThreeDate = new Date(endDate);
+                        nextThreeDate.setDate(nextThreeDate.getDate() + 3);
+                        if(nextThreeDate >= nextDate) {
+                            console.log("Next Date: ", nextDate, "End Date: ", endDate);
+                            endDate = nextDate;
+                        } else {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                    index++;
+                }
+                if(startDate && endDate){
+                    let type : "long-weekend" | "long-birthday-weekend" | "long-anniversary-weekend" = "long-weekend";
+                    if(startDate <= birthdayDate && birthdayDate <= endDate){
+                        type = "long-birthday-weekend";
+                        isBirthDayOccurMiddleOfLongWeekend = true;
+                    } else if(startDate <= anniversaryDate && anniversaryDate <= endDate){
+                        type = "long-anniversary-weekend";
+                        isAnniversaryOccurMiddleOfLongWeekend = true;
+                    }
+                    response.push({
+                        to:startDate,
+                        from:endDate,
+                        type:type
+                    });
+                }
+                console.log("Start Date: ", startDate, "End Date: ", endDate);  
+                console.log("Current Response: ", response);
+            }
+            console.log("Response: ", response);
+            if(!isBirthDayOccurMiddleOfLongWeekend){
+                response.push({
+                    to: birthdayDate,
+                    from: birthdayDate,
+                    type: "birthday"
+                });
+            }
+            if(!isAnniversaryOccurMiddleOfLongWeekend){
+                response.push({
+                    to: anniversaryDate,
+                    from: anniversaryDate,
+                    type: "anniversary"
+                });
+            }
+            return {success: true, data: response};
+        } catch(error){
+            console.log("Error searching important dates: ", error);
+            return {success: false, error: "FAILED_TO_SEARCH_IMPORTANT_DATES", data: []};
+        }
+    }
 }
