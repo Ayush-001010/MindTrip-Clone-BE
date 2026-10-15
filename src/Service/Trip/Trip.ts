@@ -267,12 +267,7 @@ export default class Trip implements ITripInterface {
             };
         }
     
-        return {
-            success: true,
-            data: {
-                inviteURLID: inviteData.inviteURLID
-            }
-        };
+        return { success: true,data: {inviteURLID: inviteData.inviteURLID}};
     };
 
     fetchFinalItinerary = async (base62: string): Promise<APIResponseInterface<ITripDetails & { countUserOnTrip: number } | null>> => {
@@ -562,6 +557,20 @@ export default class Trip implements ITripInterface {
         } catch(error){
             console.log("Error searching important dates: ", error);
             return {success: false, error: "FAILED_TO_SEARCH_IMPORTANT_DATES", data: []};
+        }
+    }
+
+    editTripName = async (base62 : string, newTripName: string): Promise<APIResponseInterface<boolean>> => {
+        try{
+            await this.dataBaseServiceInstance.updateData("TripID",{
+                tripName: newTripName
+            },{
+                base62: base62
+            })
+            return {success: true, data: true};
+        } catch(error){
+            console.log("Error editing trip name: ", error);
+            return {success: false, error: "FAILED_TO_EDIT_TRIP_NAME", data: false};
         }
     }
 }

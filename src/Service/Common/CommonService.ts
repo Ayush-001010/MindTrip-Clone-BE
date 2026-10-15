@@ -110,7 +110,7 @@ export default class CommonService implements ICommonService {
         try {
             const baseURL = `https://serpapi.com/search?engine=google_maps&q=${placeName}&type=search&api_key=${process.env.SERPAPI_API_KEY}`;
             const response = await axios.get(baseURL);
-            console.log("Response from SerpApi: ", response.data);
+            // console.log("Response from SerpApi: ", response.data);
             if (response.status === 200 && response.data && response.data) {
                 const place = response.data.place_results;
                 const image = place?.thumbnail;           // Google-hosted image

@@ -18,4 +18,5 @@ export default interface ITripInterface {
   joinTrip(tripID: string, userID: number): Promise<APIResponseInterface<null>>;
   createFinalItinerary : (tripID:string , tripName:string , itinerary:any) => Promise<null>;
   searchImportantDates : (userID : string) => Promise<APIResponseInterface<IImportantDateResponse[]>>;
+  editTripName: (tripID : string, newTripName: string) => Promise<APIResponseInterface<boolean>>;
 }
