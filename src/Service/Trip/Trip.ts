@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import ITripDetails from "../../Interface/DataInterface/ITripDetails";
 import IImportantDateResponse from "../../Interface/DataInterface/IImportantDateResponse";
 import UserService from "../User/UserService";
+import ITripHotelData from "../../Interface/DataInterface/ITripHotelData";
 
 export default class Trip implements ITripInterface {
     dataBaseServiceInstance : DataBaseService;
@@ -69,7 +70,7 @@ export default class Trip implements ITripInterface {
 
     fetchTripDetails = async (tripID : string) : Promise<APIResponseInterface<ITripDetails|null>> => {
         const dbFetchTripDetailsResponse = await this.dataBaseServiceInstance.fetchData<ITripDetails[]>("TripDetails", 1, 0, { tripID });
-        console.log("Fetch Trip Details From Database : ", dbFetchTripDetailsResponse);
+        // console.log("Fetch Trip Details From Database : ", dbFetchTripDetailsResponse);
 
         if(dbFetchTripDetailsResponse.dataSuccess){
             const tripDetailsData = dbFetchTripDetailsResponse.data?.[0] || null;
@@ -271,7 +272,7 @@ export default class Trip implements ITripInterface {
     };
 
     fetchFinalItinerary = async (base62: string): Promise<APIResponseInterface<ITripDetails & { countUserOnTrip: number } | null>> => {
-        console.log("Fetching final itinerary for tripID: ", base62);
+        // console.log("Fetching final itinerary for tripID: ", base62);
 
         const dbTripDFetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", 1, 0, { base62 });
 
@@ -290,7 +291,7 @@ export default class Trip implements ITripInterface {
             return { success: false, error : "Failed to fetch final itinerary details from database", data: null };
         }
         const tripDetailsData = dpTripDetailsResponse.data?.[0] || null;
-        console.log("Trip details data: ", tripDetailsData);
+        // console.log("Trip details data: ", tripDetailsData);
 
         return {
             success: true,
@@ -408,7 +409,6 @@ export default class Trip implements ITripInterface {
         const dbResponse = await this.dataBaseServiceInstance.fetchData<any>("UserTripMappingTable", undefined , undefined,{
             userId
         });
-        console.log(" DB Response : " ,dbResponse);
         if(dbResponse.dataSuccess && dbResponse.data) {
             const tripIDs = dbResponse.data.map( async (row:any) => {
                 const data = row.dataValues;
@@ -558,7 +558,7 @@ export default class Trip implements ITripInterface {
             console.log("Error searching important dates: ", error);
             return {success: false, error: "FAILED_TO_SEARCH_IMPORTANT_DATES", data: []};
         }
-    }
+    };
 
     editTripName = async (base62 : string, newTripName: string): Promise<APIResponseInterface<boolean>> => {
         try{
@@ -572,5 +572,84 @@ export default class Trip implements ITripInterface {
             console.log("Error editing trip name: ", error);
             return {success: false, error: "FAILED_TO_EDIT_TRIP_NAME", data: false};
         }
-    }
+    };
+
+    createTripHotel = async (tripHotelData: ITripHotelData , type : "booked" | "wishlist"): Promise<APIResponseInterface<"booked" | "wishlist">> => {
+        try{
+            const addObj = {
+                ...tripHotelData,
+                isBooked : type === "booked"
+            }
+            await this.dataBaseServiceInstance.createData("TripHotel", addObj);
+            return {success: true, data: type};
+        } catch(error){
+            console.log("Error  ",error);
+            return {success : false};
+        }
+    };
+
+    fetchTripHotelDetails = async (base62: string): Promise<APIResponseInterface<ITripHotelData[] | null>> => {
+        try{
+            const response = await this.dataBaseServiceInstance.fetchData<any>("TripHotel", undefined , undefined,{
+                base62: base62
+            });
+            return {success: true, data: response.data};
+        } catch(error){
+            console.log("Error fetching trip hotel details: ", error);
+            return {success: false, error: "FAILED_TO_FETCH_TRIP_HOTEL_DETAILS", data: null};
+        }
+    };
+
+    likeOrDislikeTripHotel = async (base62: string , id : number, action: "like" | "dislike"): Promise<APIResponseInterface<null>> => {
+        try{
+            const fetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripHotel", undefined, undefined, {
+                id: id
+            });
+            const data = fetchResponse.data;
+            if(!data || data.length === 0){
+                return {success: false, error: "TRIP_HOTEL_NOT_FOUND", data: null};
+            }
+            const tripHotel = data[0].dataValues;
+            if(action === "like"){
+                tripHotel.likeCount = (tripHotel.likeCount || 0) + 1;
+            } else if(action === "dislike"){
+                tripHotel.dislikeCount = (tripHotel.dislikeCount || 0) + 1;
+            }
+            await this.dataBaseServiceInstance.updateData("TripHotel", tripHotel, {
+                id: id
+            });
+
+            return {success: true, data: null};
+        } catch(error){
+            console.log("Error liking or disliking trip hotel: ", error);
+            return {success: false, error: "FAILED_TO_LIKE_OR_DISLIKE_TRIP_HOTEL", data: null};
+        }
+    };
+
+    commentOnTripHotel = async (base62: string, id: number, comment: string): Promise<APIResponseInterface<null>> => {
+        try{
+            const fetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripHotel", undefined, undefined, {
+                id: id
+            });
+            const data = fetchResponse.data;
+            if(!data || data.length === 0){
+                return {success: false, error: "TRIP_HOTEL_NOT_FOUND", data: null};
+            }
+            const tripHotel = data[0].dataValues;
+            tripHotel.comments = tripHotel.comments || "" ;
+            if(tripHotel.comments.length > 0){
+                tripHotel.comments += "|";
+            }
+            tripHotel.comments += comment;
+
+            await this.dataBaseServiceInstance.updateData("TripHotel", tripHotel, {
+                id: id
+            });
+
+            return {success: true, data: null};
+        } catch(error){
+            console.log("Error commenting on trip hotel: ", error);
+            return {success: false, error: "FAILED_TO_COMMENT_ON_TRIP_HOTEL", data: null};
+        }
+    };
 }

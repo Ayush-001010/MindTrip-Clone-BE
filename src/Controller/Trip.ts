@@ -216,4 +216,52 @@ export const getImportantDates = async (req: Request, res: Response) => {
     const { userID } = req.query as { userID: string };
     const importantDatesResponse = await tripServiceInstance.searchImportantDates(userID);
     return res.send(importantDatesResponse);
-}
+};
+
+export const fetchTripHotelDetails = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const { base62 } = req.query as { base62: string };
+        const tripServiceInstance = new Trip();
+        const fetchTripHotelDetailsResponse = await tripServiceInstance.fetchTripHotelDetails(base62);
+        return res.send(fetchTripHotelDetailsResponse);
+    } catch(error){
+        console.log("Error fetching trip hotel details: ", error);
+        return res.send({success:false , error: "Failed to fetch trip hotel details"});
+    }
+};
+
+export const commentOnTripHotel = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const { base62, id, comment } = req.body;
+        const tripServiceInstance = new Trip();
+        const commentOnTripHotelResponse = await tripServiceInstance.commentOnTripHotel(base62, id, comment);
+        return res.send(commentOnTripHotelResponse);
+    } catch(error){
+        console.log("Error commenting on trip hotel: ", error);
+        return res.send({success:false , error: "Failed to comment on trip hotel"});
+    }
+};
+
+export const likeOrDislikeTripHotel = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const { base62, id, action } = req.body;
+        const tripServiceInstance = new Trip();
+        const likeOrDislikeTripHotelResponse = await tripServiceInstance.likeOrDislikeTripHotel(base62, id, action);
+        return res.send(likeOrDislikeTripHotelResponse);
+    } catch(error){
+        console.log("Error liking or disliking trip hotel: ", error);
+        return res.send({success:false , error: "Failed to like or dislike trip hotel"});
+    }
+};

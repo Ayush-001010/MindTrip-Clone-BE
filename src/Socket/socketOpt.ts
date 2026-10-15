@@ -133,5 +133,22 @@ export const initSocket = (io: Server) => {
             mssg : response.success ? `Trip name changed to ${newTripName}` : `Failed to change trip name`,
         } )
     });
+
+    socket.on("room:createTripHotel", async (data) => {
+      const { tripHotelData, type } = data;
+      console.log("Create Trip Hotel request:", { tripHotelData, type });
+      const tripServiceInstance = new Trip();
+      let response: any = await tripServiceInstance.createTripHotel(
+        tripHotelData,
+        type,
+      );
+      console.log("Trip ID: ", tripHotelData.base62);
+      console.log("Create Trip Hotel Response: ", response);
+      io.to(tripHotelData.base62).emit("room:createTripHotel-response", {
+        success: response.success,
+        data: response.data,
+      });
+    });
+
   });
 };

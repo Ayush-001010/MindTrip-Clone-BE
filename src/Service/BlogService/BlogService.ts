@@ -73,7 +73,6 @@ export default class BlogService implements IBlogService {
                     sideActivities: JSON.stringify(activity.sideActivities),
                     amountSpent: activity.amountSpent,
                 });
-                console.log("DB Response Activity: ", dbResponseActivity);
                 return dbResponseActivity;
             }));
 

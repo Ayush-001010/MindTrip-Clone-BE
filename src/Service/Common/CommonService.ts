@@ -115,7 +115,7 @@ export default class CommonService implements ICommonService {
                 const place = response.data.place_results;
                 const image = place?.thumbnail;           // Google-hosted image
                 const proxiedImage = place?.serpapi_thumbnail; // SerpApi-hosted/proxied image
-                console.log(image, proxiedImage);
+                // console.log(image, proxiedImage);
                 return proxiedImage || image || '';
             } else {
                 throw new Error('Image not found');
@@ -131,7 +131,7 @@ export default class CommonService implements ICommonService {
             const tripIDRes = await this.dbInstance.fetchData<any>("TripID", undefined, undefined, {
                 base62
             });
-            console.log("TripID response: ", tripIDRes);
+            // console.log("TripID response: ", tripIDRes);
             const tripID = tripIDRes.dataSuccess && tripIDRes.data ? tripIDRes.data[0].dataValues.tripID : null;
             if(!tripID) {
                 return null;

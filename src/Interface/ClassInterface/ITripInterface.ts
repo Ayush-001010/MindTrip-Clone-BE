@@ -3,6 +3,7 @@ import IExploreTrip from "../DataInterface/IExploreTrip";
 import ITripDetails from "../DataInterface/ITripDetails";
 import IFinalItinerary from "../DataInterface/IFinalItinerary";
 import IImportantDateResponse from "../DataInterface/IImportantDateResponse";
+import ITripHotelData from "../DataInterface/ITripHotelData";
 
 export default interface ITripInterface {
   exploreTrip(pageNo: number,): Promise<APIResponseInterface<IExploreTrip[] | null>>;
@@ -19,4 +20,8 @@ export default interface ITripInterface {
   createFinalItinerary : (tripID:string , tripName:string , itinerary:any) => Promise<null>;
   searchImportantDates : (userID : string) => Promise<APIResponseInterface<IImportantDateResponse[]>>;
   editTripName: (tripID : string, newTripName: string) => Promise<APIResponseInterface<boolean>>;
+  createTripHotel : (tripHotelData: ITripHotelData , type : "booked" | "wishlist") => Promise<APIResponseInterface<"booked" | "wishlist">>;
+  fetchTripHotelDetails : (base62: string) => Promise<APIResponseInterface<ITripHotelData[] | null>>;
+  likeOrDislikeTripHotel: (base62: string , id : number, action: "like" | "dislike") => Promise<APIResponseInterface<null>>;
+  commentOnTripHotel: (base62: string , id : number, comment: string ) => Promise<APIResponseInterface<null>>;
 }

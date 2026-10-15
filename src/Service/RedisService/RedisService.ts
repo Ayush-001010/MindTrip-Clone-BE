@@ -42,7 +42,6 @@ export default class RedisService  implements IRedisService{
 
     createOrUpdate = async (key: string, value: string  | object, optType:"list" | "other"): Promise<IRedisOutput> => {
         try {
-            console.log("Value  ",value);
             const serializedValue = JSON.stringify(value);
             switch(optType) {
                 case "list":

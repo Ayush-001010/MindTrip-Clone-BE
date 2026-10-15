@@ -1,4 +1,5 @@
 import Activities from "./Model/Activites";
+import TripHotel from "./Model/TripHotel";
 import UserInvite from "./Model/UserInvite";
 import TripExpense from "./Model/TripExpense";
 import TripExpenseShare from "./Model/TripExpenseShare";
@@ -40,6 +41,7 @@ export interface Models {
   FavouritesActivity: typeof FavouritesActivity;
   FavouritesHotel: typeof FavouritesHotel;
   FavouritesBlog: typeof FavouritesBlog;
+  TripHotel : typeof TripHotel;
 }
 
 const models: Models = {
@@ -63,6 +65,7 @@ const models: Models = {
   FavouritesActivity,
   FavouritesHotel,
   FavouritesBlog,
+  TripHotel,
 };
 
 User.hasMany(UserTripMappingTable, {
