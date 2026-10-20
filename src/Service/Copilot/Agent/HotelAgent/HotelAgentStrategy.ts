@@ -2,7 +2,6 @@ import { defineTool } from "@github/copilot-sdk";
 import IAgentStrategy from "../../../../Interface/ClassInterface/IAgentStrategy";
 import CopilotClientFactory from "../../../../Factory/CopilotClientFactory";
 import HotelPrompt from "../../../../Prompt/HotelPrompt";
-import { HotelAgentResult } from "../../../../Interface/DataInterface/ICopilot";
 import IHotel from "../../../../Interface/DataInterface/IHotel";
 import path from "path";
 import fs from "fs";
@@ -29,7 +28,7 @@ export default class HotelAgentStrategy implements IAgentStrategy {
 
   private searchHotel = defineTool("searchHotel", {
     description: "Search hotels based on the provided city",
-    skipPermission: true,
+    skipPermission: true, 
     parameters: {
       type: "object",
       properties: {
@@ -87,12 +86,12 @@ export default class HotelAgentStrategy implements IAgentStrategy {
     },
   });
 
-  private getRoute = async ( prompt: string, history: Array<ITripHistory>,): Promise<{route: "hotel-question-gather-agent"| "hotel-search-agent"| "fallback-agent";}> => {
+  private getRoute = async ( prompt: string, history: Array<ITripHistory>): Promise<{route: "hotel-question-gather-agent"| "hotel-search-agent"| "fallback-agent";}> => {
     try {
       const copilotClientInstance = CopilotClientFactory.getInstance();
 
       console.log("Prompt for routing:", prompt);
-      console.log("History for routing:", history);
+      // console.log("History for routing:", history);
       console.log("Final itinerary for routing:", this.finalItinerary);
 
       const session = await copilotClientInstance.createSession({

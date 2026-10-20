@@ -41,7 +41,7 @@ export default class CopilotService implements ICopilotService {
     }
   }
 
-  coordinatorAgent = async (prompt: string,history: Array<ITripChat> , tripID: string): Promise<APIResponseInterface<any>> => {
+  coordinatorAgent = async (prompt: string,history: Array<ITripChat> , tripID: string , userID : number): Promise<APIResponseInterface<any>> => {
     const coordinatorResponse = await this.getRoute(prompt);
     const { route } = coordinatorResponse;
     console.log("Route determined by coordinator agent:", route);
@@ -81,6 +81,16 @@ export default class CopilotService implements ICopilotService {
           return { success : false, data: { message: "Failed to create itinerary agent instance." } }
         }
         return {success : true , data : await itinerayStrategyInstance.executeAgent(prompt, this.genrateTripHistory(history))};
+      case "favourite-agent":
+        const favouriteStrategyInstance = await AgentFactory.createAgent("favourite", tripID, userID);
+        if (!favouriteStrategyInstance) {
+          return { success: false, data: { message: "Failed to create favourite agent instance." } };
+        }
+        const favouriteData = await favouriteStrategyInstance.executeAgent(prompt, this.genrateTripHistory(history));
+        return {
+          success: true,
+          data: favouriteData,
+        };
       default:
         return { success: true, data: {
             message:"I can help with travel and destination suggestions. Tell me the kind of place you'd like to visit, such as mountains, beaches, adventure, or a romantic getaway.",

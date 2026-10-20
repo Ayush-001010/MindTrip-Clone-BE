@@ -201,9 +201,9 @@ export const chatWithAI = async (req: Request, res: Response) => {
         if (!errors.isEmpty()) {
             return res.status(400).json({ success: false, errors: errors.array() });
         }
-        const { prompt, tripID } = req.body;
+        const { prompt, tripID , userID } = req.body;
         const copilotClientInstance = new CopilotManager()
-        const response = await copilotClientInstance.tripItinerary(prompt, tripID , "3");
+        const response = await copilotClientInstance.tripItinerary(prompt, tripID , userID);
         return res.send({ success: true, data: response });
     } catch (error) {
         console.log("Error chatting with AI: ", error);

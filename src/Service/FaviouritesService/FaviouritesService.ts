@@ -13,7 +13,6 @@ export default class FaviouritesService implements IFaviouritesService {
         try {
             const dbOpt = await this.dbInstance.fetchData<IFaviouritesCollection[]>("Collections",undefined,undefined, { createdBy });
             if(dbOpt.dataSuccess && dbOpt.data) {
-                console.log("Fetched collections successfully:", dbOpt.data);
                 return { success: true, data: dbOpt.data };
             } else {
                 return { success: false, data: [] };

@@ -332,10 +332,7 @@ export default class Trip implements ITripInterface {
         }
     };
 
-    joinTrip = async (
-        tripID: string,
-        userID: number
-    ): Promise<APIResponseInterface<null>> => {
+    joinTrip = async (tripID: string,userID: number): Promise<APIResponseInterface<null>> => {
     
         // Find the actual TripID row
         const dbTripResponse = await this.dataBaseServiceInstance.fetchData<{

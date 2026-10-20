@@ -1,7 +1,7 @@
 import IHotel from "./IHotel";
 
 export interface RouteResult {
-  route: "destination-agent" | "fallback" | "hotel-agent" | "itinerary-agent";
+  route: "destination-agent" | "fallback" | "hotel-agent" | "itinerary-agent" | "favourite-agent";
   reason: string;
 }
 

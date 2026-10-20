@@ -7,4 +7,5 @@ export default interface ICommonService {
     uuidToBase62 : (uuid: string) => string;
     getPlaceImage:(placeName: string) => Promise<string>;
     checkIsFinalItineraryIsCreatedOrNot : (tripID: string) => Promise<boolean>;
+    fetchUserDetails : (userID: number) => Promise<APIResponseInterface<any>>;
 }

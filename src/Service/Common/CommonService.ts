@@ -106,6 +106,22 @@ export default class CommonService implements ICommonService {
         return this.stringToBase62(id);
     }
 
+    fetchUserDetails = async (userID: number) : Promise<APIResponseInterface<any>> => {
+        try {
+            const response = await models.User.findOne({
+                where: {
+                    id: userID
+                }
+            });
+            if(response) {
+                return {success: true,data: response.dataValues}
+            }
+            return {success: false,}
+        } catch(err) {
+            return {success: false,error: "Error while fetching user details"}
+        }
+    }
+
     getPlaceImage = async (placeName: string) : Promise<string> => {
         try {
             const baseURL = `https://serpapi.com/search?engine=google_maps&q=${placeName}&type=search&api_key=${process.env.SERPAPI_API_KEY}`;

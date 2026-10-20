@@ -63,7 +63,7 @@ const ItineraryCreationAgent = `
                         }
                     ]
                 }
-            ]
+            ],
             "travelTips" : string[]
         }
 

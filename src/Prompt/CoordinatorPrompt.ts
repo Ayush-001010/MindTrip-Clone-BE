@@ -7,12 +7,16 @@ Possible routes:
 - destination-agent
 - fallback
 - itinerary-agent
+- favourite-agent
+- hotel-agent
 
 Routing rules:
 - Choose "destination-agent" if the request is travel-related or likely travel-related.
 - Travel-related includes destinations, places to visit, beaches, mountains, cold places, adventure trips, romantic trips, family trips, vacations, and travel inspiration.
 - Choose "hotel-agent" if the request is specifically about hotels, accommodations, or lodging.
-- Choose "itinerary-agent" if the request is specifically about travel itineraries.
+- Route to "favourite-agent" when the user's intent is to create, plan, or build an itinerary from their favourites, saved places, or bookmarks (e.g. "plan a trip from my saved spots", "create an itinerary from this favourite").
+  - Avoid routing to "favourite-agent" if user input is not mentioning favourites, saved places, or bookmarks.
+- Choose "itinerary-agent" when the user's intent is to create or request a travel itinerary without mentioning favourites or saved places.
 - Choose "fallback" only if the request is clearly unrelated to travel.
 - If the request is vague but can reasonably be interpreted as travel-related, choose "destination-agent".
 
@@ -25,7 +29,7 @@ Important rules:
 
 Output format:
 {
-  "route": "destination-agent" | "hotel-agent" | "fallback" | "itinerary-agent",
+  "route": "destination-agent" | "hotel-agent" | "fallback" | "itinerary-agent" | "favourite-agent",
   "reason": "short explanation"
 }
 
@@ -66,6 +70,9 @@ User : "{"userMessage": "
     "tripID":"123"
   }"
 Output: { "route": "itinerary-agent", "reason": "Request specifically about travel itineraries" }
+
+User: "Can you create itinerary from my saved favourite destinations"
+Output: { "route": "favourite-agent", "reason": "Request specifically about favourite destinations" }
 
 `
 

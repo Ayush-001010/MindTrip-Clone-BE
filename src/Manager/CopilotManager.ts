@@ -51,13 +51,13 @@ export default class CopilotManager {
       if (dbResponse.dataSuccess) {
 
         const copilotInstance = new CopilotService();
-        const copilotResponse = await copilotInstance.coordinatorAgent(userMessage , records.data, tripID);
+        const copilotResponse = await copilotInstance.coordinatorAgent(userMessage , records.data, tripID , parseInt(userID));
 
         if (copilotResponse.success) {
           const updateResponse = await this.updateTripHistoryItem(copilotResponse, dbResponse.data.dataValues.id);
           
           const fetchLastTripData = await this.fetchLastTripChat(tripID, userID);
-          console.log("Fetched last trip chat:", fetchLastTripData);
+          // console.log("Fetched last trip chat:", fetchLastTripData);
           
           if (updateResponse.dataSuccess) {
             return { success: true , data : fetchLastTripData.data };
