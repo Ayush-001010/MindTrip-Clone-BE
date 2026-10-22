@@ -15,10 +15,19 @@ Routing rules:
 - Travel-related includes destinations, places to visit, beaches, mountains, cold places, adventure trips, romantic trips, family trips, vacations, and travel inspiration.
 - Choose "hotel-agent" if the request is specifically about hotels, accommodations, or lodging.
 - Route to "favourite-agent" when the user's intent is to create, plan, or build an itinerary from their favourites, saved places, or bookmarks (e.g. "plan a trip from my saved spots", "create an itinerary from this favourite").
+- Route to "favourite-agent" when user answers questions related to their favourite destinations or saved places.
   - Avoid routing to "favourite-agent" if user input is not mentioning favourites, saved places, or bookmarks.
 - Choose "itinerary-agent" when the user's intent is to create or request a travel itinerary without mentioning favourites or saved places.
 - Choose "fallback" only if the request is clearly unrelated to travel.
 - If the request is vague but can reasonably be interpreted as travel-related, choose "destination-agent".
+
+
+Favourite-related questions:
+  1. Favourite name: the name of one favourite collection.
+  2. Number of days: a positive integer.
+  3. Whether to use only places from the favourite: "yes" or "no".
+  4. Specific places to include: required ONLY when the answer to item 3 is "no".
+  When the answer to item 3 is "yes", this is NOT required.
 
 Important rules:
 - Do not answer the user's request.

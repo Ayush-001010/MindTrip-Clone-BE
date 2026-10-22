@@ -7,6 +7,8 @@ import FavouritePrompt from "../../../../Prompt/FavouritePrompt";
 import FaviouritesService from "../../../FaviouritesService/FaviouritesService";
 import UserService from "../../../User/UserService";
 import FavouriteInformationGatherRoundOne from "../../../../Prompt/FavouriteInformationGatherRoundOne";
+import FavouriteInformationGatherRoundSecond from "../../../../Prompt/FavouriteInformationGatherRoundSecond";
+import FavouriteItineraryCreation from "../../../../Prompt/FavouriteItineraryCreation";
 
 
 export default class FavouriteAgent implements IAgentStrategy {
@@ -29,6 +31,40 @@ export default class FavouriteAgent implements IAgentStrategy {
             const response = await favouriteInstance.getCollections(email || "");
             console.log("Favourite Collections Response: ", response);
             return response.data || [];
+        }
+    });
+
+    private fetchFavouriteDetails = defineTool("fetchFavouriteDetails",{
+        description: "Fetch the details of the selected favourite collection which selected by the user",
+        skipPermission: true,
+        parameters: {
+            type: "object",
+            properties: {
+                favouriteName: {
+                    type: "string",
+                },
+            },
+        },
+        handler : async ({favouriteName}: {favouriteName: string}) => {
+            console.log("I am start executing fetchFavouriteDetails with userID:", this.userID, "and favouriteName:", favouriteName);
+            const userInstance = new UserService();
+            const userDetails = await userInstance.fetchUserDetails(this.userID.toString());
+            console.log("User Details: ", userDetails);
+            const {email} = userDetails || {};
+            const favouriteInstance = new FaviouritesService();
+            const response = await favouriteInstance.getCollections(email || "");
+            let favouriteID = 0;
+            if (response.data && Array.isArray(response.data)) {
+                response.data.forEach((f: any) => {
+                    if (f.dataValues.name === favouriteName) {
+                        favouriteID = f.dataValues.id;
+                    }
+                });
+            }
+            console.log("Favourite Collection ID: ", favouriteID);
+            const favouriteDetails = await favouriteInstance.getCollectionDetails(favouriteID,"Activity");
+            console.log("Favourite Collection Details: ", favouriteDetails);
+            return favouriteDetails.data || [];
         }
     });
 
@@ -58,6 +94,66 @@ export default class FavouriteAgent implements IAgentStrategy {
 
         try {
             console.log("Response from favourite question gather round1 agent:", response?.data?.content);
+            return JSON.parse(response?.data?.content || "{}");
+        } catch {
+            return {
+            route: "fallback-agent",
+            };
+        }
+    }
+
+    private questionGatherRound2 = async (prompt:string) => {
+        console.log("Starting question gather round2 with prompt:", prompt);
+        const copilotClientInstance = CopilotClientFactory.getInstance();
+        const session = await copilotClientInstance.createSession({ 
+            sessionId: `favourite-question-gather-round2-${Date.now()}`,
+            model: LIGHT_MODEL,
+            systemMessage: {
+                content: FavouriteInformationGatherRoundSecond,
+            },
+            tools: [this.fetchFavouriteDetails],
+            availableTools: ["fetchFavouriteDetails"],
+        });
+
+        const response = await session.sendAndWait({
+            prompt: JSON.stringify({
+            userPrompt: prompt,
+            }),
+        });
+        await session.disconnect();
+
+        try {
+            console.log("Response from favourite question gather round2 agent:", response?.data?.content);
+            return JSON.parse(response?.data?.content || "{}");
+        } catch {
+            return {
+            route: "fallback-agent",
+            };
+        }
+    }
+
+    private favouriteItineraryAgent = async (prompt: string) => {
+        console.log("Starting favourite itinerary agent with prompt:", prompt);
+        const copilotClientInstance = CopilotClientFactory.getInstance();
+        const session = await copilotClientInstance.createSession({
+            sessionId: `favourite-itinerary-agent-${Date.now()}`,
+            model: LIGHT_MODEL,
+            systemMessage: {
+                content: FavouriteItineraryCreation,
+            },
+            tools: [],
+            availableTools: [],
+        });
+
+        const response = await session.sendAndWait({
+            prompt: JSON.stringify({
+            userPrompt: prompt,
+            }),
+        });
+        await session.disconnect();
+
+        try {
+            console.log("Response from favourite itinerary agent:", response?.data?.content);
             return JSON.parse(response?.data?.content || "{}");
         } catch {
             return {
@@ -110,11 +206,9 @@ export default class FavouriteAgent implements IAgentStrategy {
             case "favourite-question-gather-round1":
                 return await this.questionGatherRound1(userPrompt);
             case "favourite-question-gather-round2":
-                // Yet to be implemented
-                break;
+                return await this.questionGatherRound2(userPrompt);
             case "favourite-itinerary-agent":
-                // Yet to be implemented
-                break;
+                return await this.favouriteItineraryAgent(userPrompt);
             case "fallback-agent":
                 return { route: "fallback-agent" , message : "Something went wrong"};
                 // break; (no longer needed since we are returning)
