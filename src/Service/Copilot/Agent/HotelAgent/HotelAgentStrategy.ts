@@ -1,3 +1,4 @@
+import { HEAVY_MODEL, LIGHT_MODEL } from "../../../../config/models";
 import { defineTool } from "@github/copilot-sdk";
 import IAgentStrategy from "../../../../Interface/ClassInterface/IAgentStrategy";
 import CopilotClientFactory from "../../../../Factory/CopilotClientFactory";
@@ -96,7 +97,7 @@ export default class HotelAgentStrategy implements IAgentStrategy {
 
       const session = await copilotClientInstance.createSession({
         sessionId: `route-${Date.now()}`,
-        model: "gpt-5-mini",
+        model: LIGHT_MODEL,
         availableTools: [],
         systemMessage: {
           content: HotelPrompt,
@@ -129,7 +130,7 @@ export default class HotelAgentStrategy implements IAgentStrategy {
     const copilotClientInstance = CopilotClientFactory.getInstance();
     const session = await copilotClientInstance.createSession({
       sessionId: `hotel-question-gather-${Date.now()}`,
-      model: "gpt-5.4",
+      model: HEAVY_MODEL,
       availableTools: [],
       systemMessage: {
         content: HotelInformationGatherPrompt,
@@ -153,7 +154,6 @@ export default class HotelAgentStrategy implements IAgentStrategy {
           route: "fallback-agent",
         };
       }
-
   };
 
   private hotelSearchAgent = async (prompt: string, history: Array<ITripHistory>) => {
@@ -161,7 +161,7 @@ export default class HotelAgentStrategy implements IAgentStrategy {
     const copilotClientInstance = CopilotClientFactory.getInstance();
     const session = await copilotClientInstance.createSession({
       sessionId: `hotel-search-${Date.now()}`,
-      model: "gpt-5.4",
+      model: HEAVY_MODEL,
       tools: [this.searchHotel],
       availableTools: ["searchHotel"],
       systemMessage: {

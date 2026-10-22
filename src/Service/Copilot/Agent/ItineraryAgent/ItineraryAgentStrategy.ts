@@ -1,3 +1,4 @@
+import { HEAVY_MODEL, LIGHT_MODEL } from "../../../../config/models";
 import CopilotClientFactory from "../../../../Factory/CopilotClientFactory";
 import IAgentStrategy from "../../../../Interface/ClassInterface/IAgentStrategy";
 import ITripHistory from "../../../../Interface/DataInterface/ITripHistory";
@@ -17,7 +18,7 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
         console.log("Starting questionGratherAgent with prompt:", prompt);
         const copilotInstance = CopilotClientFactory.getInstance();
         const session = await copilotInstance.createSession({
-            model:"gpt-5-mini",
+            model:LIGHT_MODEL,
             sessionId:this.createSessionId("itinerary-question-gathering"),
             systemMessage :{
                 content: InformationGatherPrompt
@@ -43,7 +44,7 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
     private planningItineraryAgent = async (prompt: string, history: Array<ITripHistory>) => {
         const copilotInstance = CopilotClientFactory.getInstance();
         const session = await copilotInstance.createSession({
-            model:"gpt-5.4",
+            model:HEAVY_MODEL,
             sessionId:this.createSessionId("itinerary-planning"),
             systemMessage :{
                 content: ItineraryPlannerAgent
@@ -68,7 +69,7 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
     private creatingItineraryAgent = async (prompt: string, history: Array<ITripHistory>) => {
         const copilotInstance = CopilotClientFactory.getInstance();
         const session = await copilotInstance.createSession({
-            model:"gpt-5.4",
+            model:HEAVY_MODEL,
             sessionId:this.createSessionId("itinerary-creation"),
             systemMessage :{
                 content: ItineraryCreationAgent
@@ -101,7 +102,7 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
         // Decide which sub-agent to route the request to based on the user's input and history.
         const copilotInstance = CopilotClientFactory.getInstance();
         const session = await copilotInstance.createSession({
-            model:"gpt-5-mini",
+            model:LIGHT_MODEL,
             sessionId:this.createSessionId("itinerary-routing"),
             systemMessage :{
                 content: ItineraryPrompt

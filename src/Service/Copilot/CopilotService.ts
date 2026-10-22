@@ -1,3 +1,4 @@
+import { HEAVY_MODEL } from "../../config/models";
 import ICopilotService from "../../Interface/ClassInterface/ICopilotService";
 import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
 import CopilotClientFactory from "../../Factory/CopilotClientFactory";
@@ -21,7 +22,7 @@ export default class CopilotService implements ICopilotService {
 
     const session = await copilotClientInstance.createSession({
       sessionId: `route-${Date.now()}`,
-      model: "gpt-5.4",
+      model: HEAVY_MODEL,
       availableTools: [],
       systemMessage: {
         content: CoordinatorPrompt,

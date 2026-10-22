@@ -1,3 +1,4 @@
+import { HEAVY_MODEL } from "../../../../config/models";
 import IAgentStrategy from "../../../../Interface/ClassInterface/IAgentStrategy";
 import CopilotClientFactory from "../../../../Factory/CopilotClientFactory";
 import DestinationPrompt from "../../../../Prompt/DestinationPrompt";
@@ -8,7 +9,7 @@ export default class DestinationAgentStrategy implements IAgentStrategy {
 
     const session = await copilotClientInstance.createSession({
       sessionId: `destination-${Date.now()}`,
-      model: "gpt-5.4",
+      model: HEAVY_MODEL,
       availableTools: [],
       systemMessage: {
         content: DestinationPrompt,

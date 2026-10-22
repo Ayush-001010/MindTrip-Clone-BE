@@ -44,4 +44,23 @@ export default class UserService implements IUserService {
       return null;
     }
   }
+  async fetchUserDetails(userID: string): Promise<{name: string, email: string} | null> {
+    try {
+      const userDetails = await this.dataBaseServiceInstance.fetchData<any>("User",undefined,undefined,
+        {
+          id: userID,
+        },
+      );
+      if (userDetails.dataSuccess && userDetails.data) {
+        const name = userDetails.data?.[0]?.dataValues.name || "";
+        const email = userDetails.data?.[0]?.dataValues.email || "";
+        return { name, email };
+      } else {
+        throw new Error("FAILED_TO_FETCH_USER_DETAILS");
+      }
+    } catch (error) {
+      console.error("Error fetching user details: ", error);
+      return null;
+    }
+  }
 }
