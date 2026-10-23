@@ -4,6 +4,7 @@ import ITripDetails from "../DataInterface/ITripDetails";
 import IFinalItinerary from "../DataInterface/IFinalItinerary";
 import IImportantDateResponse from "../DataInterface/IImportantDateResponse";
 import ITripHotelData from "../DataInterface/ITripHotelData";
+import { IMessage } from "./IGroupHub";
 
 export default interface ITripInterface {
   exploreTrip(pageNo: number,): Promise<APIResponseInterface<IExploreTrip[] | null>>;
@@ -24,4 +25,6 @@ export default interface ITripInterface {
   fetchTripHotelDetails : (base62: string) => Promise<APIResponseInterface<ITripHotelData[] | null>>;
   likeOrDislikeTripHotel: (base62: string , id : number, action: "like" | "dislike") => Promise<APIResponseInterface<null>>;
   commentOnTripHotel: (base62: string , id : number, comment: string ) => Promise<APIResponseInterface<null>>;
+  isUserTripAdmin : (base62:string , userID : string) => Promise<APIResponseInterface<boolean>>;
+  fetchOldMessages: (base62: string) => Promise<APIResponseInterface<IMessage[]>>;
 }

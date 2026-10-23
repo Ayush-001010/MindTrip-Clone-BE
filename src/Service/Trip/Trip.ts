@@ -10,6 +10,8 @@ import ITripDetails from "../../Interface/DataInterface/ITripDetails";
 import IImportantDateResponse from "../../Interface/DataInterface/IImportantDateResponse";
 import UserService from "../User/UserService";
 import ITripHotelData from "../../Interface/DataInterface/ITripHotelData";
+import { IMessage } from "../../Interface/ClassInterface/IGroupHub";
+import GroupHub from "../GroupHub/GroupHub";
 
 export default class Trip implements ITripInterface {
     dataBaseServiceInstance : DataBaseService;
@@ -648,5 +650,28 @@ export default class Trip implements ITripInterface {
             console.log("Error commenting on trip hotel: ", error);
             return {success: false, error: "FAILED_TO_COMMENT_ON_TRIP_HOTEL", data: null};
         }
+    };
+
+    isUserTripAdmin = async (base62: string, userID: string): Promise<APIResponseInterface<boolean>> => {
+        try {
+            const fetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", undefined, undefined, {
+                base62: base62,
+                userID: userID
+            });
+            const data = fetchResponse.data;
+            console.log("Fetched trip admin data: ", data , base62, userID);
+            if(!data || data.length === 0){
+                return {success: true, data: false};
+            }
+            return {success: true, data: true};
+        } catch (error){
+            console.log("Error checking if user is trip admin: ", error);
+            return {success : false };
+        }
+    };
+
+    fetchOldMessages = async (base62: string): Promise<APIResponseInterface<IMessage[]>> => {
+        const groupHub = new GroupHub();
+        return await groupHub.fetchOldMessages(base62);
     };
 }

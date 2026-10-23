@@ -1,4 +1,6 @@
 import Activities from "./Model/Activites";
+import PollOption from "./Model/PollOption";
+import Opinion from "./Model/Opinion";
 import TripHotel from "./Model/TripHotel";
 import UserInvite from "./Model/UserInvite";
 import TripExpense from "./Model/TripExpense";
@@ -19,6 +21,8 @@ import Collections from "./Model/Collections";
 import FavouritesActivity from "./Model/FavouritesActivity";
 import FavouritesHotel from "./Model/FavouritesHotel";
 import FavouritesBlog from "./Model/FavouritesBlog";
+import GroupPost from "./Model/GroupPost";
+import OpinionComment from "./Model/OpinionComment";
 
 export interface Models {
   ExploreTrip: typeof ExploreTrip;
@@ -42,6 +46,10 @@ export interface Models {
   FavouritesHotel: typeof FavouritesHotel;
   FavouritesBlog: typeof FavouritesBlog;
   TripHotel : typeof TripHotel;
+  GroupPost: typeof GroupPost;
+  Opinion: typeof Opinion;
+  OpinionComment: typeof OpinionComment;
+  PollOption: typeof PollOption;
 }
 
 const models: Models = {
@@ -66,6 +74,10 @@ const models: Models = {
   FavouritesHotel,
   FavouritesBlog,
   TripHotel,
+  GroupPost,
+  Opinion,
+  OpinionComment,
+  PollOption
 };
 
 User.hasMany(UserTripMappingTable, {
@@ -130,6 +142,30 @@ Collections.hasMany(FavouritesBlog, {
 
 FavouritesBlog.belongsTo(Collections, {
   foreignKey: "collectionId",
+});
+
+Opinion.hasMany(OpinionComment, {
+  foreignKey: "opinionId",
+});
+
+OpinionComment.belongsTo(Opinion, {
+  foreignKey: "opinionId",
+});
+
+GroupPost.hasMany(PollOption, {
+  foreignKey: "groupPostId",
+});
+
+PollOption.belongsTo(GroupPost, {
+  foreignKey: "groupPostId",
+});
+
+GroupPost.hasMany(Opinion, {
+  foreignKey: "groupPostId",
+});
+
+Opinion.belongsTo(GroupPost, {
+  foreignKey: "groupPostId",
 });
 
 export default models;

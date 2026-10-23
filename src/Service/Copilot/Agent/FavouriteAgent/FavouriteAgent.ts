@@ -70,7 +70,7 @@ export default class FavouriteAgent implements IAgentStrategy {
 
     constructor(userID: number) {
         this.userID = userID;
-    }
+    };
 
     private questionGatherRound1 = async (prompt:string) => {
         console.log("Starting question gather round1 with prompt:", prompt);
@@ -100,7 +100,7 @@ export default class FavouriteAgent implements IAgentStrategy {
             route: "fallback-agent",
             };
         }
-    }
+    };
 
     private questionGatherRound2 = async (prompt:string) => {
         console.log("Starting question gather round2 with prompt:", prompt);
@@ -130,7 +130,7 @@ export default class FavouriteAgent implements IAgentStrategy {
             route: "fallback-agent",
             };
         }
-    }
+    };
 
     private favouriteItineraryAgent = async (prompt: string) => {
         console.log("Starting favourite itinerary agent with prompt:", prompt);
@@ -160,7 +160,7 @@ export default class FavouriteAgent implements IAgentStrategy {
             route: "fallback-agent",
             };
         }
-    }
+    };
 
     private getRoute = async (prompt: string,history: Array<ITripHistory>,): Promise<{ route: "favourite-question-gather-round1" | "favourite-question-gather-round2" | "fallback-agent" | "favourite-itinerary-agent" }> => {
         try {

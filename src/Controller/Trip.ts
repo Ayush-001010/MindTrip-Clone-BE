@@ -265,3 +265,35 @@ export const likeOrDislikeTripHotel = async (req: Request, res: Response) => {
         return res.send({success:false , error: "Failed to like or dislike trip hotel"});
     }
 };
+
+export const isUserTripAdmin = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const { base62, userID } = req.query as { base62: string, userID: string };
+        const tripServiceInstance = new Trip();
+        const isUserTripAdminResponse = await tripServiceInstance.isUserTripAdmin(base62, userID);
+        return res.send(isUserTripAdminResponse);
+    } catch(error){
+        console.log("Error checking if user is trip admin: ", error);
+        return res.send({success:false , error: "Failed to check if user is trip admin"});
+    }
+};
+
+export const fetchOldMessages = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const { base62 } = req.query as { base62: string };
+        const tripServiceInstance = new Trip();
+        const fetchOldMessagesResponse = await tripServiceInstance.fetchOldMessages(base62);
+        return res.send(fetchOldMessagesResponse);
+    } catch(error){
+        console.log("Error fetching old messages: ", error);
+        return res.send({success:false , error: "Failed to fetch old messages"});
+    }
+};

@@ -4,6 +4,7 @@ import { fetchTripChat, tripItineraryHandler } from "../Controller/Copilot";
 import Trip from "../Service/Trip/Trip";
 import SplitWiseFacade from "../Service/SplitWise/SplitWiseFacade";
 import CopilotManager from "../Manager/CopilotManager";
+import GroupHub from "../Service/GroupHub/GroupHub";
 
 export const initSocket = (io: Server) => {
   io.on("connection", (socket) => {
@@ -148,6 +149,14 @@ export const initSocket = (io: Server) => {
         success: response.success,
         data: response.data,
       });
+    });
+
+    socket.on("room:newGroupMessage", async (data) => {
+      const { userID, userName, message } = data;
+      console.log("New group message:", { userID, userName, message });
+      const groupHubInstance = new GroupHub();
+      const response = await groupHubInstance.newMessage(userID, userName, message);
+      io.to(message.base62).emit("room:newGroupMessage-response", { ...response });
     });
 
   });

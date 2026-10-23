@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {createNewTripValidation,fetchTripMemberDetailsValidation,createUserInviteValidation,fetchFinalItineraryValidation,joinTripValidation,validateUserInviteValidation} from "../Validation/TripValidation";
-import { createNewTrip,fetchTripMemberDetails,createUserInvite,fetchFinalItinerary,fetchTripAnalytics,fetchTripExpenses,joinTrip,validateUserInvite,fetchTripIDs,chatWithAI,getImportantDates, fetchTripHotelDetails, commentOnTripHotel, likeOrDislikeTripHotel } from "../Controller/Trip";
+import { createNewTrip,fetchTripMemberDetails,createUserInvite,fetchFinalItinerary,fetchTripAnalytics,fetchTripExpenses,joinTrip,validateUserInvite,fetchTripIDs,chatWithAI,getImportantDates, fetchTripHotelDetails, commentOnTripHotel, likeOrDislikeTripHotel, isUserTripAdmin, fetchOldMessages } from "../Controller/Trip";
 
 const router = Router();
 
@@ -18,5 +18,7 @@ router.get("/getImportantDates",getImportantDates);
 router.get("/fetchTripHotelDetails",fetchTripHotelDetails);
 router.post("/commentOnTripHotel",commentOnTripHotel);
 router.post("/likeOrDislikeTripHotel",likeOrDislikeTripHotel);
+router.get("/isUserTripAdmin",isUserTripAdmin);
+router.get("/fetchOldGroupHubPost", fetchOldMessages);
 
 export default router;
