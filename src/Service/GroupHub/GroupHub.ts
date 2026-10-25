@@ -24,7 +24,8 @@ export default class GroupHub  implements IGroupHub {
                     content : message.content,
                     base62: message.base62,
                     createdAt : new Date().toISOString(),
-                    options: message.options || []
+                    options: message.options || [],
+                    imageUrl: message.imageUrl || undefined
                 }
             }}
         } else {
@@ -38,5 +39,9 @@ export default class GroupHub  implements IGroupHub {
 
     likeOrDislikePollOption = async (optionID: number, like: boolean): Promise<APIResponseInterface<boolean>> => {
         return await this.createOpt.likeOrDislikePollOption(optionID, like);
+    }
+
+    addCommentOnOpinion = async (postId : number , comment : string , userName : string , parentOpinionCommentId?: number) : Promise<APIResponseInterface<boolean>> => {
+        return await this.createOpt.addCommentOnOpinion(postId, comment, userName, parentOpinionCommentId);
     }
 }

@@ -313,3 +313,19 @@ export const likeOrDislikePollOption = async (req: Request, res: Response) => {
         return res.send({success:false , error: "Failed to like or dislike poll option"});
     }
 };
+
+export const addCommentOnOpinion = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const { postId, comment, userName, parentOpinionCommentId } = req.body;
+        const tripServiceInstance = new Trip();
+        const addCommentOnOpinionResponse = await tripServiceInstance.addCommentOnOpinion(postId, comment, userName, parentOpinionCommentId);
+        return res.send(addCommentOnOpinionResponse);
+    } catch(error){
+        console.log("Error adding comment on opinion: ", error);
+        return res.send({success:false , error: "Failed to add comment on opinion"});
+    }
+};

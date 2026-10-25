@@ -11,16 +11,6 @@ const Opinion = sequelize.define("Opinion", {
     imageUrl: {
         type: DataTypes.STRING,
         allowNull: true
-    },
-    likeCount: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0
-    },
-    disLikeCount: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0
     }
 });
 

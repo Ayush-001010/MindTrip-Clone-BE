@@ -28,4 +28,5 @@ export default interface ITripInterface {
   isUserTripAdmin : (base62:string , userID : string) => Promise<APIResponseInterface<boolean>>;
   fetchOldMessages: (base62: string) => Promise<APIResponseInterface<IMessage[]>>;
   likeOrDislikePollOption: (optionID: number, like: boolean) => Promise<APIResponseInterface<boolean>>;
+  addCommentOnOpinion: (postId : number , comment : string , userName : string , parentOpinionCommentId?: number) => Promise<APIResponseInterface<boolean>>;
 }

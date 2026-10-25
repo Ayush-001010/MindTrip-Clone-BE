@@ -15,6 +15,10 @@ const OpinionComment = sequelize.define("OpinionComment", {
     parentCommentId: {
         type: DataTypes.INTEGER,
         allowNull: true
+    },
+    userName : {
+        type: DataTypes.STRING,
+        allowNull: false
     }
 });
 

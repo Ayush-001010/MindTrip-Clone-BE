@@ -685,4 +685,9 @@ export default class Trip implements ITripInterface {
         const groupHub = new GroupHub();
         return await groupHub.likeOrDislikePollOption(optionID, like);
     };
+
+    addCommentOnOpinion = async (postId : number , comment : string , userName : string , parentOpinionCommentId?: number): Promise<APIResponseInterface<boolean>> => {
+        const groupHub = new GroupHub();
+        return await groupHub.addCommentOnOpinion(postId, comment, userName, parentOpinionCommentId);
+    };
 }

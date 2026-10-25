@@ -7,6 +7,8 @@ export interface IMessage {
     createdAt?: string;
     options?: string[];
     id?: number;
+    imageUrl?: string;
+    comments?: any[];
 }
 
 export interface INewMessageResponse {
@@ -18,12 +20,14 @@ export interface INewMessageResponse {
         base62: string;
         createdAt : string;
         options?: string[];
+        imageUrl?: string;
     }
 }
 
 export interface IGroupCreationOpt {
     newMessage : (userID : string , userName : string , message : IMessage) => Promise<APIResponseInterface<boolean>>;
     likeOrDislikePollOption : (optionID: number, like: boolean) => Promise<APIResponseInterface<boolean>>;
+    addCommentOnOpinion : (postId : number , comment : string , userName : string , parentOpinionCommentId?: number) => Promise<APIResponseInterface<boolean>>;
 }
 
 export interface IGroupHubReadOpt {
@@ -34,4 +38,5 @@ export default interface IGroupHub {
     newMessage : (userID : string , userName : string , message : IMessage) => Promise<APIResponseInterface<INewMessageResponse>>;
     fetchOldMessages : (base62: string) => Promise<APIResponseInterface<IMessage[]>>;
     likeOrDislikePollOption : (optionID: number, like: boolean) => Promise<APIResponseInterface<boolean>>;
+    addCommentOnOpinion : (postId : number , comment : string , userName : string , parentOpinionCommentId?: number) => Promise<APIResponseInterface<boolean>>;
 }

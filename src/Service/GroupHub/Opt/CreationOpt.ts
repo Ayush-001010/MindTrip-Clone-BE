@@ -36,6 +36,12 @@ export default class CreationOpt  implements IGroupCreationOpt {
                     };
                     return await this.dbInstance.createData("PollOption", optionsObj);
                 }));
+            } else if(message.type === "opinion" && message.imageUrl){
+                const opinionObj = {
+                    "groupPostId" : id,
+                    "imageUrl" : message.imageUrl
+                };
+                await this.dbInstance.createData("Opinion", opinionObj);
             }
             return { success : true , data : true };
         } catch (error) {
@@ -67,6 +73,30 @@ export default class CreationOpt  implements IGroupCreationOpt {
             }
         } catch (error) {
             console.log("Error in likeOrDislikePollOption:", error);
+            return { success: false, data: false };
+        }
+    }
+
+    addCommentOnOpinion = async (postId : number , comment : string , userName : string , parentOpinionCommentId?: number): Promise<APIResponseInterface<boolean>> => {
+        try{
+            const opinionData = await this.dbInstance.fetchData<any>("Opinion", undefined, undefined, {
+                groupPostId: postId
+            });
+            if(!opinionData || !opinionData.data || opinionData.data.length === 0){
+                return { success: false, data: false };
+            }
+            const opinionId = opinionData.data[0].dataValues.id;
+
+            const commentObj = {
+                "opinionId" : opinionId,
+                "comment" : comment,
+                "userName" : userName,
+                "parentCommentId" : parentOpinionCommentId || null
+            };
+            await this.dbInstance.createData("OpinionComment", commentObj);
+            return { success: true, data: true };
+        } catch (error) {
+            console.log("Error in addCommentOnOpinion:", error);
             return { success: false, data: false };
         }
     }
