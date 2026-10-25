@@ -27,4 +27,5 @@ export default interface ITripInterface {
   commentOnTripHotel: (base62: string , id : number, comment: string ) => Promise<APIResponseInterface<null>>;
   isUserTripAdmin : (base62:string , userID : string) => Promise<APIResponseInterface<boolean>>;
   fetchOldMessages: (base62: string) => Promise<APIResponseInterface<IMessage[]>>;
+  likeOrDislikePollOption: (optionID: number, like: boolean) => Promise<APIResponseInterface<boolean>>;
 }

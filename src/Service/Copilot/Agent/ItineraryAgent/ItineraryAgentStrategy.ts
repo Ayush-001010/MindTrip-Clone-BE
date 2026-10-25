@@ -10,6 +10,11 @@ import Trip from "../../../Trip/Trip";
 
 export default class ItineraryAgentStrategy implements IAgentStrategy {
     private static readonly SESSION_WAIT_TIMEOUT_MS = 180000;
+    private tripID : string | null = null;
+
+    constructor(tripID: string | null = null) {
+        this.tripID = tripID;
+    }
 
     private createSessionId = (prefix: string) => `${prefix}-${Date.now()}`;
 
@@ -88,7 +93,7 @@ export default class ItineraryAgentStrategy implements IAgentStrategy {
             const obj = JSON.parse(response?.data?.content || "{}");
             if(obj.type === "final-itinerary"){
                 const tripInstance = new Trip();
-                await tripInstance.createFinalItinerary("", obj.itineraryTitle, obj);
+                await tripInstance.createFinalItinerary(this.tripID || "", obj.itineraryTitle, obj);
             }
 
             return obj;

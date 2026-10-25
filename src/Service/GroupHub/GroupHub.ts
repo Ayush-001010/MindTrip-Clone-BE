@@ -23,7 +23,8 @@ export default class GroupHub  implements IGroupHub {
                     type : message.type,
                     content : message.content,
                     base62: message.base62,
-                    createdAt : new Date().toISOString()
+                    createdAt : new Date().toISOString(),
+                    options: message.options || []
                 }
             }}
         } else {
@@ -33,5 +34,9 @@ export default class GroupHub  implements IGroupHub {
 
     fetchOldMessages = async (base62: string) : Promise<APIResponseInterface<IMessage[]>> => {
         return await this.readOpt.fetchOldMessages(base62);
+    }
+
+    likeOrDislikePollOption = async (optionID: number, like: boolean): Promise<APIResponseInterface<boolean>> => {
+        return await this.createOpt.likeOrDislikePollOption(optionID, like);
     }
 }

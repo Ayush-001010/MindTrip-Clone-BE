@@ -44,7 +44,7 @@ export default class CopilotService implements ICopilotService {
 
   coordinatorAgent = async (prompt: string,history: Array<ITripChat> , tripID: string , userID : number): Promise<APIResponseInterface<any>> => {
     const coordinatorResponse = await this.getRoute(prompt);
-    const { route } = coordinatorResponse;
+    const { route , reason } = coordinatorResponse;
     console.log("Route determined by coordinator agent:", route);
     switch (route) {
       case "destination-agent":
@@ -77,7 +77,8 @@ export default class CopilotService implements ICopilotService {
           data: hotelData,
         };
       case "itinerary-agent":
-        const itinerayStrategyInstance = await AgentFactory.createAgent("itinerary");
+        const itinerayStrategyInstance = await AgentFactory.createAgent("itinerary" , tripID);
+        console.log("Trip ID : ",tripID);
         if (!itinerayStrategyInstance) {
           return { success : false, data: { message: "Failed to create itinerary agent instance." } }
         }
@@ -94,7 +95,7 @@ export default class CopilotService implements ICopilotService {
         };
       default:
         return { success: true, data: {
-            message:"I can help with travel and destination suggestions. Tell me the kind of place you'd like to visit, such as mountains, beaches, adventure, or a romantic getaway.",
+            message: reason,
             type: "fallback"
           },
         };

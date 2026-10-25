@@ -431,7 +431,13 @@ export default class Trip implements ITripInterface {
         }
     };
 
-    createFinalItinerary = async (tripID: string, tripName: string, tripItinerary: any): Promise<null> => {
+    createFinalItinerary = async (base62: string, tripName: string, tripItinerary: any): Promise<null> => {
+        const tripDetails = await this.dataBaseServiceInstance.fetchData<any>("TripID", undefined, undefined, {
+            base62
+        });
+
+        const tripID = tripDetails.data?.[0]?.tripID;
+
         const createItineraryResponse = await this.dataBaseServiceInstance.createData(
             "TripDetails",
             {
@@ -440,7 +446,7 @@ export default class Trip implements ITripInterface {
                 tripItinerary : JSON.stringify(tripItinerary)
             }
         );
-        console.log("Create Itinerary Response: ", createItineraryResponse);
+        // console.log("Create Itinerary Response: ", createItineraryResponse);
 
         if (!createItineraryResponse.dataSuccess) {
             return null;
@@ -673,5 +679,10 @@ export default class Trip implements ITripInterface {
     fetchOldMessages = async (base62: string): Promise<APIResponseInterface<IMessage[]>> => {
         const groupHub = new GroupHub();
         return await groupHub.fetchOldMessages(base62);
+    };
+
+    likeOrDislikePollOption = async (optionID: number, like: boolean): Promise<APIResponseInterface<boolean>> => {
+        const groupHub = new GroupHub();
+        return await groupHub.likeOrDislikePollOption(optionID, like);
     };
 }

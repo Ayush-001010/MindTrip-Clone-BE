@@ -297,3 +297,19 @@ export const fetchOldMessages = async (req: Request, res: Response) => {
         return res.send({success:false , error: "Failed to fetch old messages"});
     }
 };
+
+export const likeOrDislikePollOption = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const { optionID, like } = req.body;
+        const tripServiceInstance = new Trip();
+        const likeOrDislikePollOptionResponse = await tripServiceInstance.likeOrDislikePollOption(optionID, like);
+        return res.send(likeOrDislikePollOptionResponse);
+    } catch(error){
+        console.log("Error liking or disliking poll option: ", error);
+        return res.send({success:false , error: "Failed to like or dislike poll option"});
+    }
+};

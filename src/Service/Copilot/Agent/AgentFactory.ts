@@ -9,7 +9,7 @@ export default class AgentFactory {
             case "destination":
                 return new DestinationAgentStrategy();
             case "itinerary":
-                return new ItineraryAgentStrategy();
+                return new ItineraryAgentStrategy(tripID || "");
             case "hotel":
                 return await HotelAgentStrategy.getInstance(tripID || "");
             case "favourite":

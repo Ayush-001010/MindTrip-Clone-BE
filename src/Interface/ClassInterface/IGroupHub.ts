@@ -5,6 +5,8 @@ export interface IMessage {
     content : string;
     base62: string;
     createdAt?: string;
+    options?: string[];
+    id?: number;
 }
 
 export interface INewMessageResponse {
@@ -15,11 +17,13 @@ export interface INewMessageResponse {
         content : string;
         base62: string;
         createdAt : string;
+        options?: string[];
     }
 }
 
 export interface IGroupCreationOpt {
     newMessage : (userID : string , userName : string , message : IMessage) => Promise<APIResponseInterface<boolean>>;
+    likeOrDislikePollOption : (optionID: number, like: boolean) => Promise<APIResponseInterface<boolean>>;
 }
 
 export interface IGroupHubReadOpt {
@@ -29,4 +33,5 @@ export interface IGroupHubReadOpt {
 export default interface IGroupHub {
     newMessage : (userID : string , userName : string , message : IMessage) => Promise<APIResponseInterface<INewMessageResponse>>;
     fetchOldMessages : (base62: string) => Promise<APIResponseInterface<IMessage[]>>;
+    likeOrDislikePollOption : (optionID: number, like: boolean) => Promise<APIResponseInterface<boolean>>;
 }

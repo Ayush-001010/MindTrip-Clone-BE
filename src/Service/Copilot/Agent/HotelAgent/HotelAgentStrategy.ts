@@ -91,10 +91,6 @@ export default class HotelAgentStrategy implements IAgentStrategy {
     try {
       const copilotClientInstance = CopilotClientFactory.getInstance();
 
-      console.log("Prompt for routing:", prompt);
-      // console.log("History for routing:", history);
-      console.log("Final itinerary for routing:", this.finalItinerary);
-
       const session = await copilotClientInstance.createSession({
         sessionId: `route-${Date.now()}`,
         model: LIGHT_MODEL,
@@ -179,7 +175,6 @@ export default class HotelAgentStrategy implements IAgentStrategy {
       await session.disconnect();
 
       try {
-        console.log("Response from hotel search agent:", response?.data?.content);
         return JSON.parse(response?.data?.content || "{}");
       } catch {
         return {
