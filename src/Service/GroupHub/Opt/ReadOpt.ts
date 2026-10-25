@@ -44,6 +44,19 @@ export default class ReadOpt implements IGroupHubReadOpt {
                         opinionId: opinionData.data[0].dataValues.id
                     });
                     msg.comments = commentsData.data.map((comment: any) => comment.dataValues);
+                } else if(msg.type === "check-ins"){
+                    const checkInData = await this.dbInstance.fetchData<any>("CheckIns", undefined, undefined, {
+                        groupPostId: msg.id
+                    });
+                    if(checkInData && checkInData.data && checkInData.data.length > 0){
+                        msg.checkIn = checkInData.data.map((checkIn: any) => ({
+                            id: checkIn.dataValues.id,
+                            userMember: checkIn.dataValues.userMember,
+                            status: checkIn.dataValues.status,
+                            reachWhen: checkIn.dataValues.ReachWhen,
+                            createdAt: checkIn.dataValues.createdAt
+                        }));
+                    }
                 }
             }));
             return { success: true, data: message };

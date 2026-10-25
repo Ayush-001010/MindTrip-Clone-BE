@@ -23,7 +23,6 @@ export const initSocket = (io: Server) => {
             io.to(tripID).emit("room:joined", { userName });
             const tripServiceInstance = new Trip();
             const suggestionDateResponse = await tripServiceInstance.checkAndSuggestTripDates(tripID);
-            console.log("Suggested trip dates response: ", suggestionDateResponse);
 
             if(suggestionDateResponse.success && !suggestionDateResponse.data?.isAlreadyExist) {
               io.to(tripID).emit("room:suggestedTripDates-response", { ...suggestionDateResponse });
@@ -44,7 +43,6 @@ export const initSocket = (io: Server) => {
 
     socket.on("room:fetchOldChat", async (data) => {
       const { tripID, userID } = data;
-      console.log("Fetch old chat request:", { tripID, userID });
       const response: any = await fetchTripChat(tripID, userID);
     //   console.log("Fetch old chat response:", { tripID, userID, response });
       io.to(tripID).emit("room:oldChatDetails", { response });
@@ -79,39 +77,13 @@ export const initSocket = (io: Server) => {
     });
 
     socket.on("room:addExpense", async (data) => {
-      const {
-        tripID,
-        paidBy,
-        totalAmount,
-        title,
-        category,
-        spendAt,
-        splitMethod,
-        splitAmong,
-        notes,
-      } = data;
-      console.log("Add expense request:", {
-        tripID,
-        paidBy,
-        totalAmount,
-        title,
-        category,
-        spendAt,
-        splitMethod,
-        splitAmong,
-        notes,
-      });
-      const splitWiseFacadeInstance = new SplitWiseFacade(tripID);
-      const response = await splitWiseFacadeInstance.addExpense(
-        paidBy,
-        totalAmount,
-        title,
-        category,
-        spendAt,
-        splitMethod,
-        splitAmong,
-        notes,
-      );
+      const {tripID,paidBy,totalAmount,title,category,spendAt,splitMethod,splitAmong,notes} = data;
+      const tripServiceInstance = new Trip();
+      const tripDetails = await tripServiceInstance.fetchTripDetails("",tripID);
+      const id = tripDetails?.data?.id;
+      
+      const splitWiseFacadeInstance = new SplitWiseFacade(id ? parseInt(id) : 0);
+      const response = await splitWiseFacadeInstance.addExpense(paidBy,totalAmount,title,category,spendAt,splitMethod,splitAmong,notes);
       io.to(tripID).emit("room:addExpense-response", {
         success: response.splitOptSuccess,
         data: `Expense of ₹${totalAmount} logged by ${paidBy.userName}`,
@@ -168,7 +140,6 @@ export const initSocket = (io: Server) => {
 
       // Check and suggest trip dates after creating or updating a trip hotel
       const suggestionDateResponse = await tripServiceInstance.checkAndSuggestTripDates(tripHotelData.base62);
-      console.log("Suggested trip dates response: ", suggestionDateResponse);
 
       if(suggestionDateResponse.success && !suggestionDateResponse.data?.isAlreadyExist) {
         io.to(tripHotelData.base62).emit("room:suggestedTripDates-response", { ...suggestionDateResponse });

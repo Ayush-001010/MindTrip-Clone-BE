@@ -25,7 +25,8 @@ export default interface ISplitWiseGroup {
     splitWiseExpenseInstance: SplitWiseExpenses;
 
     addExpense : (paidBy :{userId: number, userName: string} , totalAmount:number, title : string , category : string, spendAt: Date, splitMethod: "equal" | "percentage" | "custom" | "ratio",   splitAmong: {userId : number , userName : string , amount : number}[] ,  notes?: string) => Promise<ISplitWiseResponse>;
-    fetchExpenses: () => Promise<ISplitWiseResponse>;
+    fetchExpenses: (userID : string) => Promise<ISplitWiseResponse>;
     analitics: (userID : string) => Promise<ISplitWiseResponse>;
+    settelExpense: (expenseID: string) => Promise<ISplitWiseResponse>;
 
 }

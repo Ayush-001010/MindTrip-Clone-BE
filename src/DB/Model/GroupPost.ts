@@ -20,7 +20,7 @@ const GroupPost = sequelize.define("GroupPost", {
         allowNull: false
     },
     type:{
-        type: DataTypes.ENUM("announcement","medical-emergency","poll","opinion"),
+        type: DataTypes.ENUM("announcement","medical-emergency","poll","opinion","check-ins"),
         allowNull: false
     },
     content: {

@@ -1,6 +1,7 @@
 import  {IGroupCreationOpt , IMessage } from "../../../Interface/ClassInterface/IGroupHub";
 import APIResponseInterface from "../../../Interface/ResponseInterface/APIResponseInterface";
 import DataBaseService from "../../Database/Database";
+import Trip from "../../Trip/Trip";
 
 export default class CreationOpt  implements IGroupCreationOpt {
     private dbInstance : DataBaseService;
@@ -42,6 +43,19 @@ export default class CreationOpt  implements IGroupCreationOpt {
                     "imageUrl" : message.imageUrl
                 };
                 await this.dbInstance.createData("Opinion", opinionObj);
+            } else if(message.type === "check-ins"){
+                const trip = new Trip();
+                const userMembers = await trip.fetchTripMemberDetails(message.base62);
+
+                const users = userMembers.data || [];
+                await Promise.all(users.map(async user => {
+                    const checkInObj = {
+                        "groupPostId" : id,
+                        "userMember" : user.userName,
+                        "status" : "Not Reached Yet"
+                    }
+                    await this.dbInstance.createData("CheckIns", checkInObj);
+                }))
             }
             return { success : true , data : true };
         } catch (error) {
@@ -97,6 +111,21 @@ export default class CreationOpt  implements IGroupCreationOpt {
             return { success: true, data: true };
         } catch (error) {
             console.log("Error in addCommentOnOpinion:", error);
+            return { success: false, data: false };
+        }
+    }
+
+    checkInUpdate = async (id: string, status: "Reached" | "Not Reached Yet", reachWhen?: string) : Promise<APIResponseInterface<boolean>> => {
+        try {
+            const updateObj = {
+                "status" : status,
+                "ReachWhen" : reachWhen || null
+            };
+            console.log("Updating check-in with:", updateObj);
+            await this.dbInstance.updateData("CheckIns", updateObj, { id });
+            return { success: true, data: true };
+        } catch(error){
+            console.log("Error in checkInUpdate:", error);
             return { success: false, data: false };
         }
     }

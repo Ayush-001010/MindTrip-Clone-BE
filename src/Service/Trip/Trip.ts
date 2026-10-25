@@ -694,5 +694,10 @@ export default class Trip implements ITripInterface {
             console.log("Error checking and suggesting trip dates: ", error);
             return {success: false, error: "FAILED_TO_CHECK_AND_SUGGEST_TRIP_DATES"};
         }
-    }
+    };
+
+    checkInUpdate = async (id: string, status: "Reached" | "Not Reached Yet", reachWhen?: string): Promise<APIResponseInterface<boolean>> => {
+        const groupHub = new GroupHub();
+        return await groupHub.checkInUpdate(id, status, reachWhen);
+    };
 }

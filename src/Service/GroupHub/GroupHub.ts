@@ -44,4 +44,8 @@ export default class GroupHub  implements IGroupHub {
     addCommentOnOpinion = async (postId : number , comment : string , userName : string , parentOpinionCommentId?: number) : Promise<APIResponseInterface<boolean>> => {
         return await this.createOpt.addCommentOnOpinion(postId, comment, userName, parentOpinionCommentId);
     }
+
+    checkInUpdate = async (id : string , status : "Reached" | "Not Reached Yet" , reachWhen? : string) : Promise<APIResponseInterface<boolean>> => {
+        return await this.createOpt.checkInUpdate(id, status, reachWhen);
+    }
 }

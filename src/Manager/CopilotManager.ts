@@ -87,7 +87,6 @@ export default class CopilotManager {
         { tripID: tripID},
         [["messageDate", "ASC"]],
       );
-      console.log("Fetch trip chat response:", dbResponse );
       if (dbResponse.dataSuccess) {
         return {
           success: true,

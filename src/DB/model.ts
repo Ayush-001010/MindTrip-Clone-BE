@@ -1,4 +1,5 @@
 import Activities from "./Model/Activites";
+import CheckIns from "./Model/CheckIns";
 import PollOption from "./Model/PollOption";
 import Opinion from "./Model/Opinion";
 import TripHotel from "./Model/TripHotel";
@@ -50,6 +51,7 @@ export interface Models {
   Opinion: typeof Opinion;
   OpinionComment: typeof OpinionComment;
   PollOption: typeof PollOption;
+  CheckIns: typeof CheckIns;
 }
 
 const models: Models = {
@@ -77,7 +79,8 @@ const models: Models = {
   GroupPost,
   Opinion,
   OpinionComment,
-  PollOption
+  PollOption,
+  CheckIns
 };
 
 User.hasMany(UserTripMappingTable, {
@@ -165,6 +168,14 @@ GroupPost.hasMany(Opinion, {
 });
 
 Opinion.belongsTo(GroupPost, {
+  foreignKey: "groupPostId",
+});
+
+CheckIns.belongsTo(GroupPost, {
+  foreignKey: "groupPostId",
+});
+
+GroupPost.hasMany(CheckIns, {
   foreignKey: "groupPostId",
 });
 

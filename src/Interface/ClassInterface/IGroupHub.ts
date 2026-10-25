@@ -1,7 +1,7 @@
 import APIResponseInterface from "../ResponseInterface/APIResponseInterface";
 
 export interface IMessage {
-    type : "announcement" | "medical-emergency" | "poll" | "opinion";
+    type : "announcement" | "medical-emergency" | "poll" | "opinion" | "check-ins";
     content : string;
     base62: string;
     createdAt?: string;
@@ -9,13 +9,20 @@ export interface IMessage {
     id?: number;
     imageUrl?: string;
     comments?: any[];
+    checkIn?: {
+        id: number;
+        userMember : string;
+        status: "Reached" | "Not Reached Yet";
+        reachWhen?: string;
+        createdAt: string;
+    }[]
 }
 
 export interface INewMessageResponse {
-    type : "announcement" | "medical-emergency" | "poll" | "opinion";
+    type : "announcement" | "medical-emergency" | "poll" | "opinion" | "check-ins";
     userName : string;
     newMessage : {
-        type : "announcement" | "medical-emergency" | "poll" | "opinion";
+        type : "announcement" | "medical-emergency" | "poll" | "opinion" | "check-ins";
         content : string;
         base62: string;
         createdAt : string;
@@ -28,6 +35,7 @@ export interface IGroupCreationOpt {
     newMessage : (userID : string , userName : string , message : IMessage) => Promise<APIResponseInterface<boolean>>;
     likeOrDislikePollOption : (optionID: number, like: boolean) => Promise<APIResponseInterface<boolean>>;
     addCommentOnOpinion : (postId : number , comment : string , userName : string , parentOpinionCommentId?: number) => Promise<APIResponseInterface<boolean>>;
+    checkInUpdate : (id : string , status : "Reached" | "Not Reached Yet" , reachWhen? : string ) => Promise<APIResponseInterface<boolean>>;
 }
 
 export interface IGroupHubReadOpt {
@@ -39,4 +47,5 @@ export default interface IGroupHub {
     fetchOldMessages : (base62: string) => Promise<APIResponseInterface<IMessage[]>>;
     likeOrDislikePollOption : (optionID: number, like: boolean) => Promise<APIResponseInterface<boolean>>;
     addCommentOnOpinion : (postId : number , comment : string , userName : string , parentOpinionCommentId?: number) => Promise<APIResponseInterface<boolean>>;
+    checkInUpdate : (id : string , status : "Reached" | "Not Reached Yet" , reachWhen? : string ) => Promise<APIResponseInterface<boolean>>;
 }

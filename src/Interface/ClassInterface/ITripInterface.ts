@@ -28,5 +28,6 @@ export default interface ITripInterface {
   likeOrDislikePollOption: (optionID: number, like: boolean) => Promise<APIResponseInterface<boolean>>;
   addCommentOnOpinion: (postId : number , comment : string , userName : string , parentOpinionCommentId?: number) => Promise<APIResponseInterface<boolean>>;
   updateBookingDate : (tripHotelData: ITripHotelData) => Promise<APIResponseInterface<"booked">>;
-  checkAndSuggestTripDates : (base62:string) => Promise<APIResponseInterface<{isAlreadyExist:boolean , startDate?: Date , endDate?: Date }>>
+  checkAndSuggestTripDates : (base62:string) => Promise<APIResponseInterface<{isAlreadyExist:boolean , startDate?: Date , endDate?: Date }>>;
+  checkInUpdate : (id: string, status: "Reached" | "Not Reached Yet", reachWhen?: string) => Promise<APIResponseInterface<boolean>>;
 }
