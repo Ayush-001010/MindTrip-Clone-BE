@@ -16,11 +16,18 @@ export const initSocket = (io: Server) => {
     //   console.log("Add to room response:", { tripID, userID, userName });
       socketInstance
         .addToRoom(socket, tripID, userID, userName)
-        .then((response) => {
+        .then(async (response) => {
           if (!response.socketOptSuccess) {
             console.log("Failed to add user to room:", tripID, userID);
           } else {
             io.to(tripID).emit("room:joined", { userName });
+            const tripServiceInstance = new Trip();
+            const suggestionDateResponse = await tripServiceInstance.checkAndSuggestTripDates(tripID);
+            console.log("Suggested trip dates response: ", suggestionDateResponse);
+
+            if(suggestionDateResponse.success && !suggestionDateResponse.data?.isAlreadyExist) {
+              io.to(tripID).emit("room:suggestedTripDates-response", { ...suggestionDateResponse });
+            }
           }
         })
         .catch((error) => {
@@ -37,6 +44,7 @@ export const initSocket = (io: Server) => {
 
     socket.on("room:fetchOldChat", async (data) => {
       const { tripID, userID } = data;
+      console.log("Fetch old chat request:", { tripID, userID });
       const response: any = await fetchTripChat(tripID, userID);
     //   console.log("Fetch old chat response:", { tripID, userID, response });
       io.to(tripID).emit("room:oldChatDetails", { response });
@@ -136,19 +144,59 @@ export const initSocket = (io: Server) => {
     });
 
     socket.on("room:createTripHotel", async (data) => {
-      const { tripHotelData, type } = data;
-      console.log("Create Trip Hotel request:", { tripHotelData, type });
+      const { tripHotelData, type , userId , userName } = data;
+      console.log("Create Trip Hotel request:", { tripHotelData, type , userId , userName });
+      const { id } = tripHotelData;
       const tripServiceInstance = new Trip();
-      let response: any = await tripServiceInstance.createTripHotel(
-        tripHotelData,
-        type,
-      );
+      let success = false;
+      let resData: any = null;
+      if(!id){
+        let response: any = await tripServiceInstance.createTripHotel(tripHotelData,type);
+        success = response.success;
+        resData = response.data;
+      } else {
+        let response: any = await tripServiceInstance.updateBookingDate(tripHotelData);
+        success = response.success;
+        resData = response.data;
+      }
       console.log("Trip ID: ", tripHotelData.base62);
-      console.log("Create Trip Hotel Response: ", response);
+      console.log("Create Trip Hotel Response: ", { success, resData });
       io.to(tripHotelData.base62).emit("room:createTripHotel-response", {
-        success: response.success,
-        data: response.data,
+        success: success,
+        data: resData,
       });
+
+      // Check and suggest trip dates after creating or updating a trip hotel
+      const suggestionDateResponse = await tripServiceInstance.checkAndSuggestTripDates(tripHotelData.base62);
+      console.log("Suggested trip dates response: ", suggestionDateResponse);
+
+      if(suggestionDateResponse.success && !suggestionDateResponse.data?.isAlreadyExist) {
+        io.to(tripHotelData.base62).emit("room:suggestedTripDates-response", { ...suggestionDateResponse });
+      }
+
+      // Add Hotel Amount to Split Wise
+      const tripDetailsResponse = await tripServiceInstance.fetchTripDetails(tripHotelData.base62, tripHotelData.base62);
+      const tripMemberDetailsResponse = await tripServiceInstance.fetchTripMemberDetails(tripHotelData.base62);
+      console.log("Trip Member Details Response: ", tripMemberDetailsResponse);
+      console.log("Trip Details Response: ", tripDetailsResponse);
+      const tripID = tripDetailsResponse.data?.id || "";
+
+
+      const splitWiseInstance = new SplitWiseFacade(parseInt(tripID));
+
+      const splitWiseUsers = tripMemberDetailsResponse.data?.map(member => ({
+        userId: parseInt(member.userId),
+        userName: member.userName,
+        amount : tripHotelData.price / (tripMemberDetailsResponse.data?.length || 1)
+      })) || [];
+
+
+      const spliWiseResponse = await splitWiseInstance.addExpense({userId: parseInt(userId), userName: userName} , tripHotelData.price || 0, tripHotelData.name , "Hotel" , new Date() , "equal" , splitWiseUsers , "");
+
+      console.log("Split Wise Response: ", spliWiseResponse);
+
+      io.to(tripHotelData.base62).emit("room:addHotelAmount-response", { success: spliWiseResponse.splitOptSuccess, data: spliWiseResponse.data });
+
     });
 
     socket.on("room:newGroupMessage", async (data) => {

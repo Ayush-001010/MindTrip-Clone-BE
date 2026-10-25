@@ -70,7 +70,14 @@ export default class Trip implements ITripInterface {
         }
     };
 
-    fetchTripDetails = async (tripID : string) : Promise<APIResponseInterface<ITripDetails|null>> => {
+    fetchTripDetails = async (tripID : string , base62?:string) : Promise<APIResponseInterface<ITripDetails|null>> => {
+        if(base62){
+            const dbFetchTripIDResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", 1, 0, { base62 });
+            if(!dbFetchTripIDResponse.dataSuccess){
+                return { success: false, error : "Failed to fetch trip ID from database", data: null };
+            }
+            tripID = dbFetchTripIDResponse.data?.[0]?.dataValues.tripID || "";
+        }
         const dbFetchTripDetailsResponse = await this.dataBaseServiceInstance.fetchData<ITripDetails[]>("TripDetails", 1, 0, { tripID });
         // console.log("Fetch Trip Details From Database : ", dbFetchTripDetailsResponse);
 
@@ -82,12 +89,12 @@ export default class Trip implements ITripInterface {
         }
     };
 
-    fetchTripMemberDetails = async (tripID : string) : Promise<APIResponseInterface<Array<{
+    fetchTripMemberDetails = async (base62 : string) : Promise<APIResponseInterface<Array<{
         "userId": string;
         "userName": string;
         "userEmail": string;
     }>|null>> => {
-        const dbTripIDFetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", 1, 0, { base62: tripID });
+        const dbTripIDFetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", 1, 0, { base62 });
         if(!dbTripIDFetchResponse.dataSuccess){
             return { success: false, error : "Failed to fetch trip ID from database", data: null };
         }
@@ -605,59 +612,6 @@ export default class Trip implements ITripInterface {
         }
     };
 
-    likeOrDislikeTripHotel = async (base62: string , id : number, action: "like" | "dislike"): Promise<APIResponseInterface<null>> => {
-        try{
-            const fetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripHotel", undefined, undefined, {
-                id: id
-            });
-            const data = fetchResponse.data;
-            if(!data || data.length === 0){
-                return {success: false, error: "TRIP_HOTEL_NOT_FOUND", data: null};
-            }
-            const tripHotel = data[0].dataValues;
-            if(action === "like"){
-                tripHotel.likeCount = (tripHotel.likeCount || 0) + 1;
-            } else if(action === "dislike"){
-                tripHotel.dislikeCount = (tripHotel.dislikeCount || 0) + 1;
-            }
-            await this.dataBaseServiceInstance.updateData("TripHotel", tripHotel, {
-                id: id
-            });
-
-            return {success: true, data: null};
-        } catch(error){
-            console.log("Error liking or disliking trip hotel: ", error);
-            return {success: false, error: "FAILED_TO_LIKE_OR_DISLIKE_TRIP_HOTEL", data: null};
-        }
-    };
-
-    commentOnTripHotel = async (base62: string, id: number, comment: string): Promise<APIResponseInterface<null>> => {
-        try{
-            const fetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripHotel", undefined, undefined, {
-                id: id
-            });
-            const data = fetchResponse.data;
-            if(!data || data.length === 0){
-                return {success: false, error: "TRIP_HOTEL_NOT_FOUND", data: null};
-            }
-            const tripHotel = data[0].dataValues;
-            tripHotel.comments = tripHotel.comments || "" ;
-            if(tripHotel.comments.length > 0){
-                tripHotel.comments += "|";
-            }
-            tripHotel.comments += comment;
-
-            await this.dataBaseServiceInstance.updateData("TripHotel", tripHotel, {
-                id: id
-            });
-
-            return {success: true, data: null};
-        } catch(error){
-            console.log("Error commenting on trip hotel: ", error);
-            return {success: false, error: "FAILED_TO_COMMENT_ON_TRIP_HOTEL", data: null};
-        }
-    };
-
     isUserTripAdmin = async (base62: string, userID: string): Promise<APIResponseInterface<boolean>> => {
         try {
             const fetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", undefined, undefined, {
@@ -665,7 +619,6 @@ export default class Trip implements ITripInterface {
                 userID: userID
             });
             const data = fetchResponse.data;
-            console.log("Fetched trip admin data: ", data , base62, userID);
             if(!data || data.length === 0){
                 return {success: true, data: false};
             }
@@ -690,4 +643,56 @@ export default class Trip implements ITripInterface {
         const groupHub = new GroupHub();
         return await groupHub.addCommentOnOpinion(postId, comment, userName, parentOpinionCommentId);
     };
+
+    updateBookingDate = async (tripHotelData: ITripHotelData): Promise<APIResponseInterface<"booked">> => {
+        try{
+            const updateObj = {
+                ...tripHotelData,
+                isBooked: true,
+                fromDate: tripHotelData.fromDate,
+                toDate: tripHotelData.toDate
+            }
+            await this.dataBaseServiceInstance.updateData("TripHotel", updateObj, {
+                id: tripHotelData.id
+            });
+            return {success: true, data: "booked"};
+        } catch(error){
+            console.log("Error updating booking date: ", error);
+            return {success: false, error: "FAILED_TO_UPDATE_BOOKING_DATE"};
+        }
+    };
+
+    checkAndSuggestTripDates = async (base62:string): Promise<APIResponseInterface<{isAlreadyExist:boolean , startDate?: Date , endDate?: Date }>> => {
+        try{
+            const tripIdDetails = await this.dataBaseServiceInstance.fetchData<any>("TripID",undefined,undefined, { base62: base62 });
+            const tripId = tripIdDetails && tripIdDetails.data && tripIdDetails.data.length > 0 ? tripIdDetails.data[0].dataValues.tripID : null;
+            if(!tripId){
+                return {success: false, data: {isAlreadyExist: false}};
+            }
+            const tripDetails = await this.dataBaseServiceInstance.fetchData<any>("TripDetails",undefined,undefined, { tripID: tripId });
+            if(!tripDetails || !tripDetails.data || tripDetails.data.length === 0 || !tripDetails.dataSuccess){
+                throw new Error("Trip details not found");
+            }
+            const tripDetail = tripDetails.data[0];
+            if(tripDetail.dataValues.endDate && tripDetail.dataValues.startDate){
+                return {success: true, data: {isAlreadyExist: true}};
+            } else {
+                const tripHotels = await this.dataBaseServiceInstance.fetchData<any>("TripHotel",undefined,undefined, { base62: base62 },[["toDate" , "ASC"]]);
+                if(!tripHotels || !tripHotels.data || tripHotels.data.length === 0 || !tripHotels.dataSuccess){
+                    throw new Error("Trip hotels not found");
+                }
+                const bookedHotels = tripHotels.data.filter((hotel: any) => hotel.dataValues.isBooked);
+
+                if(bookedHotels.length === 0){
+                    throw new Error("No booked hotels found");
+                }
+                const firstBookedHotel = bookedHotels[0];
+                const lastBookedHotel = bookedHotels[bookedHotels.length - 1];
+                return {success: true, data: {isAlreadyExist: false, startDate: firstBookedHotel.dataValues.fromDate, endDate: lastBookedHotel.dataValues.toDate}};
+            }
+        } catch(error){
+            console.log("Error checking and suggesting trip dates: ", error);
+            return {success: false, error: "FAILED_TO_CHECK_AND_SUGGEST_TRIP_DATES"};
+        }
+    }
 }
