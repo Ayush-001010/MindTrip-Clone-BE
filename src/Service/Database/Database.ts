@@ -42,4 +42,13 @@ export default class DataBaseService implements IDataBaseService {
         return { dataSuccess: false, data: null };
     }
   };
+  deleteData = async<T>(tableName: keyof Models, condition?: Partial<T>): Promise<IDatabaseResponse<T>> => {
+    try {
+      const response = await models[tableName].destroy({ where: condition as any });
+      return { dataSuccess: true, data: response as T };
+    } catch (error) {
+        console.log(`Error deleting data in table: ${tableName}`, error);
+        return { dataSuccess: false, data: null };
+    }
+  };
 }

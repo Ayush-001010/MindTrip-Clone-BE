@@ -18,6 +18,7 @@ export default interface IBlogData {
 
 export interface IBlogActivite {
     type:"activity";
+    index?: number;
     day: number;
     placeName: string;
     activityType:"trek" | "surfing" | "sightseeing" | "sketting" | "attraction" | "boating" | "temple";

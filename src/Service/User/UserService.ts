@@ -1,6 +1,8 @@
 import IUserService from "../../Interface/ClassInterface/IUserService";
 import IImportantDateRange from "../../Interface/DataInterface/IImportantDateRange";
+import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
 import DataBaseService from "../Database/Database";
+import UserActivity from "../UserActivity/UserActivity";
 
 export default class UserService implements IUserService {
   private dataBaseServiceInstance: DataBaseService;
@@ -62,6 +64,90 @@ export default class UserService implements IUserService {
     } catch (error) {
       console.error("Error fetching user details: ", error);
       return null;
+    }
+  }
+
+  async followUser(userID: string, followingUserID: string): Promise<APIResponseInterface<boolean>> {
+    try{
+      const userDetailsFollower = await this.dataBaseServiceInstance.fetchData<any>("User",undefined,undefined,
+        {
+          id: userID,
+        },
+      );
+      const userDetailsFollowing = await this.dataBaseServiceInstance.fetchData<any>("User",undefined,undefined,
+        {
+          id: followingUserID,
+        },
+      );
+      const response = await this.dataBaseServiceInstance.createData<any>("UserFollowing",{
+        userId: userID,
+        followingUserId: followingUserID,
+        userName : userDetailsFollower.data?.[0]?.dataValues.name || "",
+        followingUserName : userDetailsFollowing.data?.[0]?.dataValues.name || "",
+      });
+      if(response.dataSuccess){
+        return { success: true, data: true };
+      } else {
+        return { success: false, data: false };
+      }
+    } catch (error) {
+      console.error("Error following user: ", error);
+      return { success: false, data: false };
+    }
+  }
+
+  async likeBlog(userID: string, blogID: string): Promise<APIResponseInterface<boolean>> {
+    try {
+      const response = await this.dataBaseServiceInstance.createData<any>("BlogLikeByUser", {
+        userId: userID,
+        blogId: blogID,
+      });
+      const userActivity = new UserActivity();
+      await userActivity.createActivity(parseInt(userID), "like" , parseInt(blogID));
+      if (response.dataSuccess) {
+        return { success: true, data: true };
+      } else {
+        return { success: false, data: false };
+      }
+    } catch (error) {
+      console.error("Error liking blog: ", error);
+      return { success: false, data: false };
+    }
+  }
+
+  async dislikeBlog(userID: string, blogID: string): Promise<APIResponseInterface<boolean>> {
+    try {
+      const response = await this.dataBaseServiceInstance.deleteData<any>("BlogLikeByUser", {
+        userId: userID,
+        blogId: blogID,
+      });
+      const userActivity = new UserActivity();
+      await userActivity.createActivity(parseInt(userID), "dislike" , parseInt(blogID));
+      if (response.dataSuccess) {
+        return { success: true, data: true };
+      } else {
+        return { success: false, data: false };
+      }
+    } catch (error) {
+      console.error("Error disliking blog: ", error);
+      return { success: false, data: false };
+    }
+  }
+
+  async userLikedBlogs(userID: string): Promise<APIResponseInterface<string[]>> {
+    try {
+      const response = await this.dataBaseServiceInstance.fetchData<any>("BlogLikeByUser", undefined, undefined, {
+        userId: userID,
+      });
+      if (response.dataSuccess) {
+        const likedBlogs = response.data?.map((item: any) => item.dataValues.blogId) || [];
+        return { success: true, data: likedBlogs };
+      } else {
+        return { success: false, data: [] };
+      }
+    } catch (error) {
+      console.error("Error fetching user liked blogs: ", error);
+      return { success: false, data: [] };
     }
   }
 }

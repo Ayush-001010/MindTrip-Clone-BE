@@ -6,4 +6,5 @@ export default interface IDataBaseService {
     createData<T>(tableName : keyof Models , data: T): Promise<IDatabaseResponse<T>>;
     updateData<T>(tableName : keyof Models , data: Partial<T>, filter?: Partial<T>): Promise<IDatabaseResponse<T>>;
     countData<T>(tableName : keyof Models , filter?: Partial<T>): Promise<IDatabaseResponse<number>>;
+    deleteData<T>(tableName : keyof Models , filter?: Partial<T>): Promise<IDatabaseResponse<T>>;
 }

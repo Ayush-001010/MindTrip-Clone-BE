@@ -11,6 +11,7 @@ import authRoutes from "./Routes/authRoutes";
 import hotelRoutes from "./Routes/hotelRoutes";
 import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
+import userRoutes from "./Routes/userRoutes";
 import blogRoutes from "./Routes/blogRoutes";
 import faviouritesRoutes from "./Routes/FaviouritesRoutes";
 
@@ -51,6 +52,7 @@ app.use("/common", commonRoutes);
 app.use("/trip", tripRoutes);
 app.use("/blog", blogRoutes);
 app.use("/faviourites", faviouritesRoutes);
+app.use("/user", userRoutes);
 
 
 app.get("/health", (_req, res) => {

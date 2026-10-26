@@ -26,6 +26,8 @@ import FavouritesHotel from "./Model/FavouritesHotel";
 import FavouritesBlog from "./Model/FavouritesBlog";
 import GroupPost from "./Model/GroupPost";
 import OpinionComment from "./Model/OpinionComment";
+import UserActivity from "./Model/UserActivity";
+import BlogLikeByUser from "./Model/BlogLikeByUser";
 
 export interface Models {
   ExploreTrip: typeof ExploreTrip;
@@ -56,6 +58,8 @@ export interface Models {
   CheckIns: typeof CheckIns;
   UserFollowing : typeof UserFollowing;
   UserFriends: typeof UserFriends;
+  UserActivity: typeof UserActivity;
+  BlogLikeByUser: typeof BlogLikeByUser;
 }
 
 const models: Models = {
@@ -86,7 +90,9 @@ const models: Models = {
   PollOption,
   CheckIns,
   UserFollowing,
-  UserFriends
+  UserFriends,
+  UserActivity,
+  BlogLikeByUser
 };
 
 User.hasMany(UserTripMappingTable, {

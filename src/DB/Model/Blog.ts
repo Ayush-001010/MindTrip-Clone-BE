@@ -55,6 +55,10 @@ const Blog = sequelize.define("Blog", {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0
+    },
+    userID: {
+        type: DataTypes.STRING,
+        allowNull: false
     }
 });
 

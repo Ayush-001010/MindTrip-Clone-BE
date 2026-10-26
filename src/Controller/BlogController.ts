@@ -4,10 +4,10 @@ import FuzzySearch from 'fuzzy-search';
 
 export const createNewBlog = async (req : Request, res: Response) => {
     try{
-        const { blogData } = req.body;
+        const { blogData , userID } = req.body;
 
         const blogService = new BlogService();
-        const response = await blogService.createNewBlog(blogData);
+        const response = await blogService.createNewBlog(blogData, userID);
         res.send(response);
     } catch (error) {
         console.error("Error creating new blog: ", error);

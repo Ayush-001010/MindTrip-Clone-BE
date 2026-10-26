@@ -30,7 +30,7 @@ export default class BlogService implements IBlogService {
         }
     }
 
-    createNewBlog = async (blogData: IBlogData): Promise<APIResponseInterface<string>> => {
+    createNewBlog = async (blogData: IBlogData , userID: string): Promise<APIResponseInterface<string>> => {
         try {
             
             // Adding Blog
@@ -47,6 +47,7 @@ export default class BlogService implements IBlogService {
                 profileTitle: blogData?.profileTitle,
                 profileIcon: blogData?.profileIcon,
                 numberOfLikes: blogData?.numberOfLikes || 0,
+                userID: userID,
             });
 
             if(!dbResponseBlog.dataSuccess){
@@ -56,6 +57,10 @@ export default class BlogService implements IBlogService {
 
             const blogId = dbResponseBlog.data.id;
             console.log("Blog ID: ", blogId);
+
+            blogData.activities.sort((a, b) => (a.index || 0) - (b.index || 0));
+
+            console.log("Sorted Activities: ", blogData.activities);
 
             // Adding Activity for Blog
             await Promise.all(blogData.activities.map(async (activity) => {
@@ -183,15 +188,16 @@ export default class BlogService implements IBlogService {
                 return { success: false, data: emptyResult };
             }
 
-            const blogs: IBlogData[] = (dbResponse.data || []).map((blog: any) => {
+            const blogs: IBlogData[] = await Promise.all((dbResponse.data || []).map(async (blog: any) => {
                 const plainBlog = blog.get ? blog.get({ plain: true }) : blog;
+                const like = await this.dbInstance.countData("BlogLikeByUser", { blogId: plainBlog.id });
                 return {
                     ...plainBlog,
-                    numberOfLikes: plainBlog.numberOfLikes || 0,
+                    numberOfLikes: like.data || 0,
                     profileImages: (plainBlog.profileImages as string)?.split(",") || [],
                     metaData: (plainBlog.metaData as string)?.split(",").filter(Boolean) || [],
                 };
-            });
+            }));
 
             return {
                 success: true,
