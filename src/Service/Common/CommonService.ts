@@ -1,9 +1,12 @@
-import models from "../../DB/model";
+import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
+import IUserFollowing from "../../Interface/DataInterface/IUserFollowing";
 import ICommonService from "../../Interface/ClassInterface/ICommonService";
 import IActivites from "../../Interface/DataInterface/IActivites";
-import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
 import axios from "axios";
 import DataBaseService from "../Database/Database";
+import IUserFriends from "../../Interface/DataInterface/IUserFriends";
+import models from "../../DB/model";
+import IUserFollower from "../../Interface/DataInterface/IUserFollower";
 
 export default class CommonService implements ICommonService {
     private static instance : CommonService;
@@ -116,7 +119,7 @@ export default class CommonService implements ICommonService {
             if(response) {
                 return {success: true,data: response.dataValues}
             }
-            return {success: false,}
+            return {success: false}
         } catch(err) {
             return {success: false,error: "Error while fetching user details"}
         }
@@ -166,6 +169,73 @@ export default class CommonService implements ICommonService {
         catch(error){
             console.log("Error checking if final itinerary is created: ", error);
             return null;
+        }
+    }
+
+    fetchUserFollowing = async (userID: number) : Promise<APIResponseInterface<IUserFollowing[]>> => {
+        try{
+            const response = await this.dbInstance.fetchData<any>("UserFollowing", undefined, undefined, {
+                userId: userID
+            });
+            if(response.dataSuccess && response.data){
+                return {success: true, data: response.data.map((item: any) => item.dataValues)};
+            }
+            return {success: false, error: "No user following found"};
+        } catch(error){
+            console.log("Error fetching user following: ", error);
+            return {success: false, error: "Error fetching user following"};
+        }
+    }
+    
+    fetchUserFriends = async (userID: number) : Promise<APIResponseInterface<IUserFriends[]>> => {
+        try{
+            const response = await this.dbInstance.fetchData<any>("UserFriends", undefined, undefined, {
+                userId: userID
+            });
+            if(response.dataSuccess && response.data){
+                return {success: true, data: response.data.map((item: any) => item.dataValues)};
+            }
+            return {success: false, error: "No user friends found"};
+        } catch(error){
+            console.log("Error fetching user friends: ", error);
+            return {success: false, error: "Error fetching user friends"};
+        }
+    }
+    
+    fetchUserFollowers = async (userID: number) : Promise<APIResponseInterface<IUserFollower[]>> => {
+        try{
+            const response = await this.dbInstance.fetchData<any>("UserFollowing", undefined, undefined, {
+                followingUserId: userID
+            });
+            if(response.dataSuccess && response.data){
+                return {success: true, data: response.data.map((item: any) => {
+                    const data = item.dataValues;
+                    return {
+                        userID: data.userId,
+                        followerID: data.userId,
+                        followerName: data.userName
+                    };
+                })};
+            }
+            return {success: false, error: "No user followers found"};
+        } catch(error){
+            console.log("Error fetching user followers: ", error);
+            return {success: false, error: "Error fetching user followers"};
+        }
+    }
+
+    updateUserDetails = async (userID: number, data: any) : Promise<APIResponseInterface<boolean>> => {
+        try{
+            const response = await this.dbInstance.updateData("User", data, {
+                id: userID
+            });
+            if(response.dataSuccess){
+                return {success: true, data: true};
+            }
+            return {success: false, error: "Failed to update user details"};
+        } catch(error){
+            console.log("Error updating user details: ", error);
+            return {success: false, error: "Error updating user details"};
         }
     }
 }

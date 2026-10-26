@@ -44,6 +44,7 @@ export default class UserService implements IUserService {
       return null;
     }
   }
+  
   async fetchUserDetails(userID: string): Promise<{name: string, email: string} | null> {
     try {
       const userDetails = await this.dataBaseServiceInstance.fetchData<any>("User",undefined,undefined,

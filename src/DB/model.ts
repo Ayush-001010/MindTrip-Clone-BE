@@ -1,4 +1,6 @@
 import Activities from "./Model/Activites";
+import UserFriends from "./Model/UserFriends";
+import UserFollowing from "./Model/UserFollowing";
 import CheckIns from "./Model/CheckIns";
 import PollOption from "./Model/PollOption";
 import Opinion from "./Model/Opinion";
@@ -52,6 +54,8 @@ export interface Models {
   OpinionComment: typeof OpinionComment;
   PollOption: typeof PollOption;
   CheckIns: typeof CheckIns;
+  UserFollowing : typeof UserFollowing;
+  UserFriends: typeof UserFriends;
 }
 
 const models: Models = {
@@ -80,7 +84,9 @@ const models: Models = {
   Opinion,
   OpinionComment,
   PollOption,
-  CheckIns
+  CheckIns,
+  UserFollowing,
+  UserFriends
 };
 
 User.hasMany(UserTripMappingTable, {
