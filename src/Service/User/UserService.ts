@@ -102,8 +102,6 @@ export default class UserService implements IUserService {
         userId: userID,
         blogId: blogID,
       });
-      const userActivity = new UserActivity();
-      await userActivity.createActivity(parseInt(userID), "like" , parseInt(blogID));
       if (response.dataSuccess) {
         return { success: true, data: true };
       } else {
@@ -121,8 +119,6 @@ export default class UserService implements IUserService {
         userId: userID,
         blogId: blogID,
       });
-      const userActivity = new UserActivity();
-      await userActivity.createActivity(parseInt(userID), "dislike" , parseInt(blogID));
       if (response.dataSuccess) {
         return { success: true, data: true };
       } else {

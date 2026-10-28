@@ -20,7 +20,7 @@ const UserActivity = sequelize.define("UserActivity", {
         allowNull: true,
     },
     place: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: true,
     }
 });

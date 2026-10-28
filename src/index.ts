@@ -17,6 +17,7 @@ import faviouritesRoutes from "./Routes/FaviouritesRoutes";
 
 import passport from "./config/passport";
 import inviteRoutes from "./Routes/InviteRoutes";
+import BlogFeed from "./Service/BlogFeed/BlogFeed";
 
 
 const app = express();
@@ -59,6 +60,14 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+
+setInterval(() => {
+  const blogFeedInstance = new BlogFeed();
+  blogFeedInstance.tredingBlog();
+}, 600000 * 5); // Log every 5 minutes
+
+const blogFeedInstance = new BlogFeed();
+blogFeedInstance.getUserFeedBlogs("3");
 
 
 sequelize.sync().then(() => {

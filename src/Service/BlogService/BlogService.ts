@@ -3,6 +3,7 @@ import IBlogService, { IFetchBlogFilter, IFetchBlogResult } from "../../Interfac
 import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
 import IBlogData, { IBlogActivite, IBlogHotel, IBlogTravel } from "../../Interface/DataInterface/IBlogData";
 import DataBaseService from "../Database/Database";
+import BlogFeed from "../BlogFeed/BlogFeed";
 
 export default class BlogService implements IBlogService { 
     private dbInstance: DataBaseService;
@@ -103,6 +104,9 @@ export default class BlogService implements IBlogService {
                     blogId: blogId,
                 });
             }));
+
+            const blogFeedService = new BlogFeed();
+            await blogFeedService.addBlogToFriendAndFollowers(blogId, userID);
 
             return { success: true, data: blogId };
         } catch (error) {
@@ -327,5 +331,9 @@ export default class BlogService implements IBlogService {
             return [];
         }
 
+    }
+
+    fetchLastSevenDaysMostLikedBlogs = async () : Promise<IBlogData[]> => {
+        return [];
     }
 }
