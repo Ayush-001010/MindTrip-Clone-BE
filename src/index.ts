@@ -13,6 +13,7 @@ import placeRoutes from "./Routes/placeRoutes";
 import tripRoutes from "./Routes/tripRoutes";
 import userRoutes from "./Routes/userRoutes";
 import blogRoutes from "./Routes/blogRoutes";
+import blogVideoGenrationRoutes from "./Routes/blogVideoGenration";
 import faviouritesRoutes from "./Routes/FaviouritesRoutes";
 
 import passport from "./config/passport";
@@ -52,6 +53,7 @@ app.use("/home", homeRoutes);
 app.use("/common", commonRoutes);
 app.use("/trip", tripRoutes);
 app.use("/blog", blogRoutes);
+app.use("/blogVideoGenration", blogVideoGenrationRoutes);
 app.use("/faviourites", faviouritesRoutes);
 app.use("/user", userRoutes);
 
