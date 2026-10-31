@@ -26,4 +26,5 @@ export default interface IBlogService{
     fetchBlogByID: (id: number) => Promise<APIResponseInterface<IBlogData>>;
     fetchProfileAndTitle: () => Promise<{profile: string; title: string }[]>;
     fetchLastSevenDaysMostLikedBlogs: () => Promise<IBlogData[]>;
+    fetchBlogActivityName:(blogId:number) => Promise<APIResponseInterface<string[]>>;
 }

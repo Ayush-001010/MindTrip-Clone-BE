@@ -336,4 +336,20 @@ export default class BlogService implements IBlogService {
     fetchLastSevenDaysMostLikedBlogs = async () : Promise<IBlogData[]> => {
         return [];
     }
+
+    fetchBlogActivityName = async (blogId: number) : Promise<APIResponseInterface<string[]>> => {
+        try {
+            const dbResponse = await this.dbInstance.fetchData<any[]>("BlogActivity",undefined,undefined,{
+                blogId
+            },[["createdAt", "DESC"]]);
+            if(dbResponse.dataSuccess && dbResponse.data){
+                const activityNames = dbResponse.data.map(activity => activity.placeName || "");
+                return { success: true, data: activityNames };
+            }
+            return { success: false, data: [] };
+        } catch (error) {
+            console.log("Error fetching blog activity names: ", error);
+            return { success: false, data: [] };
+        }
+    }
 }

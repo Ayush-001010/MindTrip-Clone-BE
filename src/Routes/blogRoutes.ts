@@ -1,6 +1,5 @@
 import { Router } from "express";
-import passport from "passport";
-import { createNewBlog, fetchTopFiveBlogs, fetchProfileAndTitle, fetchMetaData, fetchBlog, fetchBlogByID } from "../Controller/BlogController";
+import { createNewBlog, fetchTopFiveBlogs, fetchProfileAndTitle, fetchMetaData, fetchBlog, fetchBlogByID, fetchBlogActivityName } from "../Controller/BlogController";
 
 const router = Router();
 
@@ -10,6 +9,7 @@ router.get("/fetch/:id", fetchBlogByID);
 router.get("/top-five", fetchTopFiveBlogs);
 router.get("/profile-and-title", fetchProfileAndTitle);
 router.get("/fetchMetaData", fetchMetaData);
+router.get("/activity-name", fetchBlogActivityName);
 
 
 
