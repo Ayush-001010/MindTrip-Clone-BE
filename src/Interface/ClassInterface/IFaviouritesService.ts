@@ -4,6 +4,9 @@ export interface IFaviouritesCollection {
     id?: number;
     name: string;
     createdBy: string;
+    image1?: string | null;
+    image2?: string | null;
+    image3?: string | null;
 }
 
 export interface IFaviouritesActivity {

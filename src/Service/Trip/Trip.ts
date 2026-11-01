@@ -53,7 +53,7 @@ export default class Trip implements ITripInterface {
             });
             if(dbResponse.dataSuccess){
                 const userMappingDbResponse = await this.dataBaseServiceInstance.createData("UserTripMappingTable", {
-                    userID: userID,
+                    userId: userID,
                     tripDetailsId:dbResponse.data?.dataValues.id
                 });
                 if(!userMappingDbResponse.dataSuccess){
@@ -393,7 +393,7 @@ export default class Trip implements ITripInterface {
                 "UserTripMappingTable",
                 {
                     userId: userID,
-                    tripDetailsId
+                    tripDetailsId:tripDetailsId
                 }
             );
     
@@ -464,6 +464,20 @@ export default class Trip implements ITripInterface {
 
     searchImportantDates = async (userID: string): Promise<APIResponseInterface<IImportantDateResponse[]>> => {
         try{
+            /*
+            "data": [
+        {
+            "to": null,
+            "from": null,
+            "type": "birthday"
+        },
+        {
+            "to": null,
+            "from": null,
+            "type": "anniversary"
+        }
+    ]
+            */
             const userServiceInstance = new UserService();
             const importantDates = await userServiceInstance.fetchImportantDates(userID);
             if (!importantDates) {
@@ -471,7 +485,8 @@ export default class Trip implements ITripInterface {
             }
 
             const { dateRange, birthdayDate, anniversaryDate } = importantDates;
-
+            console.log("Birthday Date U: ", birthdayDate);
+            console.log("Anniversary Date: ", anniversaryDate);
             const response : IImportantDateResponse[] = [];
             const currentMonth = new Date().getMonth() + 1;
             const currentYear = new Date().getFullYear();
