@@ -5,21 +5,31 @@ export default class RedisService  implements IRedisService{
     private static redisClientInstance: Redis | null = null;
     private redisClient: Redis;
 
-    constructor() {
-        if (!RedisService.redisClientInstance) {
-            RedisService.redisClientInstance = new Redis({
-                // host: process.env.SOCKET_REDIS_HOST || "127.0.0.1",
-                // port: Number(process.env.SOCKET_REDIS_PORT || 6381),
-                // maxRetriesPerRequest: 1,
-            });
+   
+constructor() {
+    if (!RedisService.redisClientInstance) {
+        RedisService.redisClientInstance = new Redis({
+            host: process.env.SOCKET_REDIS_HOST || "127.0.0.1",
+            port: Number(process.env.SOCKET_REDIS_PORT || 6379),
+            maxRetriesPerRequest: 1,
+        });
 
-            RedisService.redisClientInstance.on("error", (error) => {
-                console.error("Socket Redis connection error:", error.message);
-            });
-        }
+        RedisService.redisClientInstance.on("connect", () => {
+            console.log("Socket Redis connected");
+        });
 
-        this.redisClient = RedisService.redisClientInstance;
+        RedisService.redisClientInstance.on("ready", () => {
+            console.log("Socket Redis ready");
+        });
+
+        RedisService.redisClientInstance.on("error", (error) => {
+            console.error("Socket Redis connection error:", error.message);
+        });
     }
+
+    this.redisClient = RedisService.redisClientInstance;
+}
+
 
     private pushToList = async (key: string, serializedValue: string): Promise<void> => {
         const keyType = await this.redisClient.type(key);
