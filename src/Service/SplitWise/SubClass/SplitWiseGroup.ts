@@ -14,6 +14,7 @@ export default class SplitWiseGroup implements ISplitWiseGroup {
         this.tripID = tripID;
         this.splitWiseExpenseInstance = new SplitWiseExpenses(this.tripID);
     }
+
     addExpense = async (paidBy :{userId: number, userName: string} , totalAmount:number, title : string , category : string, spendAt: Date, splitMethod: "equal" | "percentage" | "custom" | "ratio", splitAmong: {userId : number , userName : string , amount : number}[] ,  notes?: string): Promise<ISplitWiseResponse>  => {
         
         const addExpenseResult : ISplitWiseResponse = await this.splitWiseExpenseInstance.addExpense(paidBy, totalAmount, title, category, spendAt, splitMethod, splitAmong, notes);
@@ -33,16 +34,17 @@ export default class SplitWiseGroup implements ISplitWiseGroup {
 
         return { splitOptSuccess: true };
     }
-    fetchExpenses = async (): Promise<ISplitWiseResponse> => {
+    fetchExpenses = async (userID : string): Promise<ISplitWiseResponse> => {
         const splitWiseExpenseInstance = new SplitWiseExpenses(this.tripID);
-        const fetchExpensesResult = await splitWiseExpenseInstance.fetchExpenses();
+        const fetchExpensesResult = await splitWiseExpenseInstance.fetchExpenses(userID);
         if(!fetchExpensesResult.splitOptSuccess) {
             return { splitOptSuccess: false };
         }
         return { splitOptSuccess: true, data: fetchExpensesResult.data };
     }
     analitics = async (userID : string): Promise<ISplitWiseResponse> => {
-        const expenses = await this.fetchExpenses();
+        const expenses = await this.fetchExpenses(userID);
+        console.log("Fetched expenses: ", expenses);
         if(!expenses.splitOptSuccess) {
             return { splitOptSuccess: false };
         }
@@ -52,19 +54,19 @@ export default class SplitWiseGroup implements ISplitWiseGroup {
         const balances =  new Map<number, {userName: string, amount: number , userID : number }>();
         await Promise.all((data as ITripExpense[]).map(async (expense) => {
             const tripExpenseShares = await this.splitWiseExpenseInstance.fetchExpenseDetails(expense.id);
-            if(expense.category.includes("surffing") || expense.category.includes("trek")) {
+            if(expense.category.toLowerCase().includes("surffing") || expense.category.toLowerCase().includes("trek")) {
                 activities += expense.totalAmount;
-            } else if(expense.category.includes("hotel")) {
+            } else if(expense.category.toLowerCase().includes("hotel")) {
                 hotel += expense.totalAmount;
-            } else if(expense.category.includes("transport") || expense.title.toLowerCase().includes("cab") || expense.title.toLowerCase().includes("taxi") || expense.title.toLowerCase().includes("uber") || expense.title.toLowerCase().includes("transport") || expense.title.toLowerCase().includes("bus") || expense.title.toLowerCase().includes("train") || expense.title.toLowerCase().includes("flight") || expense.title.toLowerCase().includes("rapido") || expense.title.toLowerCase().includes("auto") || expense.title.toLowerCase().includes("ola")) {
+            } else if(expense.category.toLowerCase().includes("transport") || expense.title.toLowerCase().includes("cab") || expense.title.toLowerCase().includes("taxi") || expense.title.toLowerCase().includes("uber") || expense.title.toLowerCase().includes("transport") || expense.title.toLowerCase().includes("bus") || expense.title.toLowerCase().includes("train") || expense.title.toLowerCase().includes("flight") || expense.title.toLowerCase().includes("rapido") || expense.title.toLowerCase().includes("auto") || expense.title.toLowerCase().includes("ola")) {
                 transport += expense.totalAmount;
-            } else if(expense.category.includes("food")) {
+            } else if(expense.category.toLowerCase().includes("food")) {
                 food += expense.totalAmount;
-            } else if(expense.category.includes("dress")) {
+            } else if(expense.category.toLowerCase().includes("dress")) {
                 dress += expense.totalAmount;
             }
             if(expense.paidByUserID === parseInt(userID)) {
-                ownedExpenses += expense.totalAmount;
+                ownedExpenses += expense.ownedAmount || 0;
                 tripExpenseShares.forEach(share => {
                     if(share.userID === parseInt(userID)) {
                         return;
@@ -101,5 +103,13 @@ export default class SplitWiseGroup implements ISplitWiseGroup {
             dress: dress,
         };
         return { splitOptSuccess: true, data: analytics };
+    }
+    settelExpense = async (expenseID: string) : Promise<ISplitWiseResponse> => {
+        try {
+            // const 
+            return { splitOptSuccess: true };
+        } catch (error) {
+            return { splitOptSuccess: false };
+        }
     }
 };

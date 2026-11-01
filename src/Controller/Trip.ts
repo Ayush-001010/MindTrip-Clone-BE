@@ -167,7 +167,10 @@ export const fetchTripAnalytics = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, errors: errors.array() });
         }
         const {tripID, userID} = req.body;
-        const splitWiseFacadeInstance = new SplitWiseFacade(tripID);
+        const tripInstance = new Trip();
+        const tripDetailsResponse = await tripInstance.fetchTripDetails("",tripID);
+        const id = tripDetailsResponse.data && tripDetailsResponse.data.id;
+        const splitWiseFacadeInstance = new SplitWiseFacade(id ? parseInt(id) : 0);
         const fetchTripAnalyticsResponse = await splitWiseFacadeInstance.analitics(userID);
         return res.send({success: fetchTripAnalyticsResponse.splitOptSuccess, data: fetchTripAnalyticsResponse.data});
     } catch(error){
@@ -178,9 +181,13 @@ export const fetchTripAnalytics = async (req: Request, res: Response) => {
 
 export const fetchTripExpenses = async (req: Request, res: Response) => {
     try {
-        const {tripID} = req.body;
-        const splitWiseFacadeInstance = new SplitWiseFacade(tripID);
-        const fetchTripExpensesResponse = await splitWiseFacadeInstance.fetchExpenses();
+        const {tripID , userID} = req.body;
+        const tripInstance = new Trip();
+        const tripDetailsResponse = await tripInstance.fetchTripDetails("",tripID);
+        const id = tripDetailsResponse.data && tripDetailsResponse.data.id;
+
+        const splitWiseFacadeInstance = new SplitWiseFacade(id ? parseInt(id) : 0);
+        const fetchTripExpensesResponse = await splitWiseFacadeInstance.fetchExpenses(userID);
         return res.send({success: fetchTripExpensesResponse.splitOptSuccess, data: fetchTripExpensesResponse.data});
     } catch(error){
         console.log("Error fetching trip expenses: ", error);
@@ -234,37 +241,6 @@ export const fetchTripHotelDetails = async (req: Request, res: Response) => {
     }
 };
 
-export const commentOnTripHotel = async (req: Request, res: Response) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ success: false, errors: errors.array() });
-        }
-        const { base62, id, comment } = req.body;
-        const tripServiceInstance = new Trip();
-        const commentOnTripHotelResponse = await tripServiceInstance.commentOnTripHotel(base62, id, comment);
-        return res.send(commentOnTripHotelResponse);
-    } catch(error){
-        console.log("Error commenting on trip hotel: ", error);
-        return res.send({success:false , error: "Failed to comment on trip hotel"});
-    }
-};
-
-export const likeOrDislikeTripHotel = async (req: Request, res: Response) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ success: false, errors: errors.array() });
-        }
-        const { base62, id, action } = req.body;
-        const tripServiceInstance = new Trip();
-        const likeOrDislikeTripHotelResponse = await tripServiceInstance.likeOrDislikeTripHotel(base62, id, action);
-        return res.send(likeOrDislikeTripHotelResponse);
-    } catch(error){
-        console.log("Error liking or disliking trip hotel: ", error);
-        return res.send({success:false , error: "Failed to like or dislike trip hotel"});
-    }
-};
 
 export const isUserTripAdmin = async (req: Request, res: Response) => {
     try {
@@ -327,5 +303,21 @@ export const addCommentOnOpinion = async (req: Request, res: Response) => {
     } catch(error){
         console.log("Error adding comment on opinion: ", error);
         return res.send({success:false , error: "Failed to add comment on opinion"});
+    }
+};
+
+export const checkInUpdate = async (req: Request, res: Response) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, errors: errors.array() });
+        }
+        const { id, status, reachWhen } = req.body;
+        const tripServiceInstance = new Trip();
+        const checkInUpdateResponse = await tripServiceInstance.checkInUpdate(id, status, reachWhen);
+        return res.send(checkInUpdateResponse);
+    } catch(error){
+        console.log("Error updating check-in: ", error);
+        return res.send({success:false , error: "Failed to update check-in"});
     }
 };

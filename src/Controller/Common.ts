@@ -105,3 +105,78 @@ export const getUploadedFileURL = async (req: Request, res: Response) => {
         res.send({success: false, data: ""});
     }
 };
+
+export const fetchUserFollowing = async (req: Request, res: Response) => {
+    try {
+        const userID = parseInt(req.query.userID as string);
+        if (isNaN(userID)) {
+            return res.status(400).json({ error: "Invalid userID query parameter" });
+        }
+        const commonServiceInstance = CommonService.getInstance();
+        const result = await commonServiceInstance.fetchUserFollowing(userID);
+        return res.send(result);
+    } catch(error) {
+        console.log("Error fetching user following: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const fetchUserFriends = async (req: Request, res: Response) => {
+    try {
+        const userID = parseInt(req.query.userID as string);
+        if (isNaN(userID)) {
+            return res.status(400).json({ error: "Invalid userID query parameter" });
+        }
+        const commonServiceInstance = CommonService.getInstance();
+        const result = await commonServiceInstance.fetchUserFriends(userID);
+        return res.send(result);
+    } catch(error) {
+        console.log("Error fetching user friends: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const fetchUserDetails = async (req: Request, res: Response) => {
+    const userID = parseInt(req.query.userID as string);
+    if (isNaN(userID)) {
+        return res.status(400).json({ error: "Invalid userID query parameter" });
+    }
+    try {
+        const commonServiceInstance = CommonService.getInstance();
+        const result = await commonServiceInstance.fetchUserDetails(userID);
+        return res.send(result);
+    } catch(error) {
+        console.log("Error fetching user details: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const fetchUserFollowers = async (req: Request, res: Response) => {
+    try {
+        const userID = parseInt(req.query.userID as string);
+        if (isNaN(userID)) {
+            return res.status(400).json({ error: "Invalid userID query parameter" });
+        }
+        const commonServiceInstance = CommonService.getInstance();
+        const result = await commonServiceInstance.fetchUserFollowers(userID);
+        return res.send(result);
+    } catch(error) {
+        console.log("Error fetching user followers: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const updateUserDetails = async (req: Request, res: Response) => {
+    const { data , userID } = req.body; 
+    if (!data || !userID) {
+        return res.status(400).json({ error: "Missing data or userID in request body" });
+    }
+    try {
+        const commonServiceInstance = CommonService.getInstance();
+        const result = await commonServiceInstance.updateUserDetails(userID, data);
+        return res.send(result);
+    } catch(error) {
+        console.log("Error updating user details: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};

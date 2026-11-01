@@ -84,7 +84,7 @@ export default class CopilotManager {
         "TripChat",
         undefined,
         undefined,
-        { tripID: tripID, userID: userID },
+        { tripID: tripID},
         [["messageDate", "ASC"]],
       );
       if (dbResponse.dataSuccess) {

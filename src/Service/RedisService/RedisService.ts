@@ -21,6 +21,13 @@ constructor() {
         RedisService.redisClientInstance.on("ready", () => {
             console.log("Socket Redis ready");
         });
+    constructor() {
+        if (!RedisService.redisClientInstance) {
+            RedisService.redisClientInstance = new Redis({
+                host: process.env.SOCKET_REDIS_HOST || "127.0.0.1",
+                port: Number(process.env.SOCKET_REDIS_PORT || 6381),
+                maxRetriesPerRequest: 1,
+            });
 
         RedisService.redisClientInstance.on("error", (error) => {
             console.error("Socket Redis connection error:", error.message);
@@ -65,6 +72,22 @@ constructor() {
         }
         catch (error) {
             console.error("Socket Redis write failed:", error);
+            return { redisOptSuccess: false };
+        }
+    }
+
+    get = async (key: string): Promise<IRedisOutput> => {
+        try {
+            const keyType = await this.redisClient.type(key);
+            if (keyType !== "string" && keyType !== "none") {
+                // Stale key written with a different type; drop it so reads/writes work again
+                await this.redisClient.del(key);
+                return { redisOptSuccess: true, value: undefined };
+            }
+            const value = await this.redisClient.get(key);
+            return { redisOptSuccess: true , value : value || undefined };
+        } catch (error) {
+            console.error("Socket Redis read failed:", error);
             return { redisOptSuccess: false };
         }
     }

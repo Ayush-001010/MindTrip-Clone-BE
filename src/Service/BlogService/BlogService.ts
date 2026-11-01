@@ -3,6 +3,7 @@ import IBlogService, { IFetchBlogFilter, IFetchBlogResult } from "../../Interfac
 import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
 import IBlogData, { IBlogActivite, IBlogHotel, IBlogTravel } from "../../Interface/DataInterface/IBlogData";
 import DataBaseService from "../Database/Database";
+import BlogFeed from "../BlogFeed/BlogFeed";
 
 export default class BlogService implements IBlogService { 
     private dbInstance: DataBaseService;
@@ -30,7 +31,7 @@ export default class BlogService implements IBlogService {
         }
     }
 
-    createNewBlog = async (blogData: IBlogData): Promise<APIResponseInterface<string>> => {
+    createNewBlog = async (blogData: IBlogData , userID: string): Promise<APIResponseInterface<string>> => {
         try {
             
             // Adding Blog
@@ -47,6 +48,7 @@ export default class BlogService implements IBlogService {
                 profileTitle: blogData?.profileTitle,
                 profileIcon: blogData?.profileIcon,
                 numberOfLikes: blogData?.numberOfLikes || 0,
+                userID: userID,
             });
 
             if(!dbResponseBlog.dataSuccess){
@@ -56,6 +58,10 @@ export default class BlogService implements IBlogService {
 
             const blogId = dbResponseBlog.data.id;
             console.log("Blog ID: ", blogId);
+
+            blogData.activities.sort((a, b) => (a.index || 0) - (b.index || 0));
+
+            console.log("Sorted Activities: ", blogData.activities);
 
             // Adding Activity for Blog
             await Promise.all(blogData.activities.map(async (activity) => {
@@ -98,6 +104,9 @@ export default class BlogService implements IBlogService {
                     blogId: blogId,
                 });
             }));
+
+            const blogFeedService = new BlogFeed();
+            await blogFeedService.addBlogToFriendAndFollowers(blogId, userID);
 
             return { success: true, data: blogId };
         } catch (error) {
@@ -183,15 +192,16 @@ export default class BlogService implements IBlogService {
                 return { success: false, data: emptyResult };
             }
 
-            const blogs: IBlogData[] = (dbResponse.data || []).map((blog: any) => {
+            const blogs: IBlogData[] = await Promise.all((dbResponse.data || []).map(async (blog: any) => {
                 const plainBlog = blog.get ? blog.get({ plain: true }) : blog;
+                const like = await this.dbInstance.countData("BlogLikeByUser", { blogId: plainBlog.id });
                 return {
                     ...plainBlog,
-                    numberOfLikes: plainBlog.numberOfLikes || 0,
+                    numberOfLikes: like.data || 0,
                     profileImages: (plainBlog.profileImages as string)?.split(",") || [],
                     metaData: (plainBlog.metaData as string)?.split(",").filter(Boolean) || [],
                 };
-            });
+            }));
 
             return {
                 success: true,
@@ -321,5 +331,25 @@ export default class BlogService implements IBlogService {
             return [];
         }
 
+    }
+
+    fetchLastSevenDaysMostLikedBlogs = async () : Promise<IBlogData[]> => {
+        return [];
+    }
+
+    fetchBlogActivityName = async (blogId: number) : Promise<APIResponseInterface<string[]>> => {
+        try {
+            const dbResponse = await this.dbInstance.fetchData<any[]>("BlogActivity",undefined,undefined,{
+                blogId
+            },[["createdAt", "DESC"]]);
+            if(dbResponse.dataSuccess && dbResponse.data){
+                const activityNames = dbResponse.data.map(activity => activity.placeName || "");
+                return { success: true, data: activityNames };
+            }
+            return { success: false, data: [] };
+        } catch (error) {
+            console.log("Error fetching blog activity names: ", error);
+            return { success: false, data: [] };
+        }
     }
 }

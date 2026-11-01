@@ -20,9 +20,11 @@ export interface IFetchBlogResult {
 
 export default interface IBlogService{
     getMetaDataForBlog : () => Promise<APIResponseInterface<string[]>>;
-    createNewBlog: (blogData: IBlogData) => Promise<APIResponseInterface<string>>;
+    createNewBlog: (blogData: IBlogData , userID : string) => Promise<APIResponseInterface<string>>;
     fetchTopFiveBlogs: () => Promise<APIResponseInterface<IBlogData[]>>;
     fetchBlog: (filter: IFetchBlogFilter) => Promise<APIResponseInterface<IFetchBlogResult>>;
     fetchBlogByID: (id: number) => Promise<APIResponseInterface<IBlogData>>;
     fetchProfileAndTitle: () => Promise<{profile: string; title: string }[]>;
+    fetchLastSevenDaysMostLikedBlogs: () => Promise<IBlogData[]>;
+    fetchBlogActivityName:(blogId:number) => Promise<APIResponseInterface<string[]>>;
 }

@@ -22,8 +22,13 @@ export default class SplitWiseFacade implements ISplitWiseFacade {
         return response;
     }
 
-    fetchExpenses = async () : Promise<ISplitWiseResponse> => {
-        const response = await this.splitWiseGroupInstance.fetchExpenses();
+    fetchExpenses = async (userID : string) : Promise<ISplitWiseResponse> => {
+        const response = await this.splitWiseGroupInstance.fetchExpenses(userID);
+        return response;
+    }
+
+    settelExpense = async (expenseID: string) : Promise<ISplitWiseResponse> => {
+        const response = await this.splitWiseGroupInstance.settelExpense(expenseID);
         return response;
     }
 }

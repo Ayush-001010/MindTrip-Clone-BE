@@ -67,6 +67,22 @@ services:
     networks:
       - rate-limit-net
 
+  whisper:
+    image: onerahmet/openai-whisper-asr-webservice:latest
+    container_name: whisper
+    ports:
+      - "9000:9000"
+    environment:
+      - ASR_ENGINE=faster_whisper
+      - ASR_MODEL=small
+    volumes:
+      - whisper-cache:/root/.cache
+    networks:
+      - rate-limit-net
+
+volumes:
+  whisper-cache:
+
 networks:
   rate-limit-net:
     driver: bridge

@@ -8,4 +8,5 @@ export default interface ITripExpense {
     splitMethod: "equal" | "percentage" | "custom";
     notes?: string;
     spendAt: Date;
+    ownedAmount?: number;
 }

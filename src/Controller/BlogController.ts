@@ -1,13 +1,14 @@
 import { Request, Response } from "express";
 import BlogService from "../Service/BlogService/BlogService";
 import FuzzySearch from 'fuzzy-search';
+import BlogFeed from "../Service/BlogFeed/BlogFeed";
 
 export const createNewBlog = async (req : Request, res: Response) => {
     try{
-        const { blogData } = req.body;
+        const { blogData , userID } = req.body;
 
         const blogService = new BlogService();
-        const response = await blogService.createNewBlog(blogData);
+        const response = await blogService.createNewBlog(blogData, userID);
         res.send(response);
     } catch (error) {
         console.error("Error creating new blog: ", error);
@@ -28,25 +29,9 @@ export const fetchTopFiveBlogs = async (req: Request, res: Response) => {
 
 export const fetchBlog = async (req: Request, res: Response) => {
     try{
-        const { page, placeName, budget, noOfPlaces, profileOrTitle, metaData } = req.query;
-        const toStr = (value: unknown) => typeof value === "string" ? value : undefined;
-        const toNum = (value: unknown) => {
-            const num = Number(value);
-            return Number.isFinite(num) && num > 0 ? num : undefined;
-        };
-        const metaDataList = (Array.isArray(metaData) ? metaData : [metaData])
-            .filter((item): item is string => typeof item === "string")
-            .flatMap(item => item.split(","));
-
-        const blogService = new BlogService();
-        const response = await blogService.fetchBlog({
-            page: toNum(page) || 1,
-            placeName: toStr(placeName),
-            budget: toNum(budget),
-            noOfPlaces: toNum(noOfPlaces),
-            profileOrTitle: toStr(profileOrTitle),
-            metaData: metaDataList,
-        });
+        const {userId} = req.query;
+        const blogFeedInstance = new BlogFeed();
+        const response = await blogFeedInstance.getUserFeedBlogs(userId as string);
         res.send(response);
     } catch (error) {
         console.error("Error fetching blogs: ", error);
@@ -97,5 +82,17 @@ export const fetchMetaData = async (req: Request, res: Response) => {
     } catch (error) {
         console.error("Error fetching meta data: ", error);
         res.send({success : false , data: []});
+    }
+};
+
+export const fetchBlogActivityName = async (req: Request, res: Response) => {
+    try{
+        const { blogId } = req.query;
+        const blogService = new BlogService();
+        const response = await blogService.fetchBlogActivityName(Number(blogId));
+        res.send(response);
+    } catch (error) {
+        console.error("Error fetching blog activity names: ", error);
+        res.send({ success: false, data: [] });
     }
 };
