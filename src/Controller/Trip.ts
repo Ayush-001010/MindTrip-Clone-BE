@@ -131,9 +131,7 @@ export const joinTrip = async (req: Request, res: Response) => {
             });
         }
 
-        const { tripID } = req.body;
-
-        const userID = 4;
+        const { tripID  , userID } = req.body;
 
         if (!userID) {
             return res.status(401).json({

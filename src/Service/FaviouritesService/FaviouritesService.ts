@@ -40,6 +40,23 @@ export default class FaviouritesService implements IFaviouritesService {
         }
     }
 
+    private async fillCollectionImage(collectionId: number, image?: string): Promise<void> {
+        try {
+            if (!image) return;
+            const dbOpt = await this.dbInstance.fetchData<IFaviouritesCollection[]>("Collections", 1, undefined, { id: collectionId });
+            const collection = dbOpt.dataSuccess && dbOpt.data ? dbOpt.data[0] : undefined;
+            if (!collection) return;
+            const slots = ["image1", "image2", "image3"] as const;
+            // Skip if this image is already used, so one image fills only one field
+            if (slots.some(slot => collection[slot] === image)) return;
+            const emptySlot = slots.find(slot => !collection[slot]);
+            if (!emptySlot) return;
+            await this.dbInstance.updateData<IFaviouritesCollection>("Collections", { [emptySlot]: image }, { id: collectionId });
+        } catch (error) {
+            console.log("Error updating collection image:", error);
+        }
+    }
+
     async addFavourites(collectionId: number, type : "activity"| "hotel" | "blog" , data : IFaviouritesActivity | IFaviouritesHotel | IFaviouritesBlog): Promise<APIResponseInterface<boolean>>  {
         try {
             // const dbInstance = new DataBaseService();
@@ -61,6 +78,7 @@ export default class FaviouritesService implements IFaviouritesService {
                     });
                     if(dbOpt.dataSuccess && dbOpt.data) {
                         console.log("Added favourite successfully:", dbOpt.data);
+                        await this.fillCollectionImage(collectionId, activityData.activityImage);
                         return { success: true, data: true };
                     } else {
                         return { success: false, data: false };
@@ -82,6 +100,7 @@ export default class FaviouritesService implements IFaviouritesService {
                     });
                     if(dbOptHotel.dataSuccess && dbOptHotel.data) {
                         console.log("Added favourite hotel successfully:", dbOptHotel.data);
+                        await this.fillCollectionImage(collectionId, hotelData.hotelImage);
                         return { success: true, data: true };
                     } else {
                         return { success: false, data: false };
@@ -100,6 +119,7 @@ export default class FaviouritesService implements IFaviouritesService {
                     });
                     if(dbOptBlog.dataSuccess && dbOptBlog.data) {
                         console.log("Added favourite blog successfully:", dbOptBlog.data);
+                        await this.fillCollectionImage(collectionId, blogData.blogImage);
                         return { success: true, data: true };
                     } else {
                         return { success: false, data: false };

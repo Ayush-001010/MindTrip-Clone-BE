@@ -121,6 +121,7 @@ export default class CommonService implements ICommonService {
             }
             return {success: false}
         } catch(err) {
+            console.log("Error fetching user details: ", err);
             return {success: false,error: "Error while fetching user details"}
         }
     }

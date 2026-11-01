@@ -25,9 +25,9 @@ export default class CreationOpt  implements IGroupCreationOpt {
                 const tripDetails = await this.dbInstance.fetchData<any>("TripID", undefined, undefined, {
                     base62: message.base62
                 });
-                const id = tripDetails?.data[0]?.dataValues?.id;
+                const tripId = tripDetails?.data[0]?.dataValues?.id;
                 const userOnTrip = await this.dbInstance.fetchData<any>("UserTripMappingTable", undefined, undefined, {
-                    tripDetailsId: id,
+                    tripDetailsId: tripId,
                 });
                 await Promise.all(message.options.map( async option => {
                     const optionsObj = {

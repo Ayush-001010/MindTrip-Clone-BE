@@ -11,7 +11,7 @@ export default class UserService implements IUserService {
     this.dataBaseServiceInstance = new DataBaseService();
   }
 
-  async fetchImportantDates(userID: string): Promise<{dateRange : IImportantDateRange[] , birthdayDate: Date, anniversaryDate: Date} | null> {
+  async fetchImportantDates(userID: string): Promise<{dateRange : IImportantDateRange[] , birthdayDate: Date | null, anniversaryDate: Date | null} | null> {
     try {
       const userDetails = await this.dataBaseServiceInstance.fetchData<any>("User",undefined,undefined,
         {
@@ -24,10 +24,10 @@ export default class UserService implements IUserService {
         );
         // console.log("Holiday Dates: ", holidayDate);
         const birthDate = (userDetails.data?.[0]?.birthdayDate ||
-          "") as String;
+          null) as String | null;
         console.log("Birthday Date: ", birthDate);
         const anniversaryDate = (userDetails.data?.[0]?.anniversaryDate ||
-          "") as String;
+          null) as String | null;
         // console.log("Anniversary Date: ", anniversaryDate);
         const dateRange: IImportantDateRange[] = [];
         holidayDate.forEach((date: string) => {
@@ -37,7 +37,7 @@ export default class UserService implements IUserService {
           }
         });
         console.log("Date Range: ", dateRange);
-        return { dateRange, birthdayDate: new Date((new Date()).getFullYear(), birthDate.split("-").map(Number)[1] - 1, birthDate.split("-").map(Number)[2], 10, 0, 0), anniversaryDate : new Date((new Date()).getFullYear(), anniversaryDate.split("-").map(Number)[1] - 1, anniversaryDate.split("-").map(Number)[2], 10, 0, 0) };
+        return { dateRange, birthdayDate: birthDate ? new Date((new Date()).getFullYear(), birthDate.split("-").map(Number)[1] - 1, birthDate.split("-").map(Number)[2], 10, 0, 0) : null, anniversaryDate : anniversaryDate ? new Date((new Date()).getFullYear(), anniversaryDate.split("-").map(Number)[1] - 1, anniversaryDate.split("-").map(Number)[2], 10, 0, 0) : null };
       } else {
         throw new Error("FAILED_TO_FETCH_USER_DETAILS");
       }
