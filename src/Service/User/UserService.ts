@@ -10,42 +10,120 @@ export default class UserService implements IUserService {
   constructor() {
     this.dataBaseServiceInstance = new DataBaseService();
   }
-
-  async fetchImportantDates(userID: string): Promise<{dateRange : IImportantDateRange[] , birthdayDate: Date, anniversaryDate: Date} | null> {
-    try {
-      const userDetails = await this.dataBaseServiceInstance.fetchData<any>("User",undefined,undefined,
-        {
-          id: userID,
-        },
-      );
-      if (userDetails.dataSuccess && userDetails.data) {
-        const holidayDate = (userDetails.data?.[0]?.holidayDate || "").split(
-          "|",
-        );
-        // console.log("Holiday Dates: ", holidayDate);
-        const birthDate = (userDetails.data?.[0]?.birthdayDate ||
-          "") as String;
-        console.log("Birthday Date: ", birthDate);
-        const anniversaryDate = (userDetails.data?.[0]?.anniversaryDate ||
-          "") as String;
-        // console.log("Anniversary Date: ", anniversaryDate);
-        const dateRange: IImportantDateRange[] = [];
-        holidayDate.forEach((date: string) => {
-          const [day, month] = date.split("-").map(Number);
-          if (!isNaN(day) && !isNaN(month)) {
-            dateRange.push({ day, month });
-          }
-        });
-        console.log("Date Range: ", dateRange);
-        return { dateRange, birthdayDate: new Date((new Date()).getFullYear(), birthDate.split("-").map(Number)[1] - 1, birthDate.split("-").map(Number)[2], 10, 0, 0), anniversaryDate : new Date((new Date()).getFullYear(), anniversaryDate.split("-").map(Number)[1] - 1, anniversaryDate.split("-").map(Number)[2], 10, 0, 0) };
-      } else {
-        throw new Error("FAILED_TO_FETCH_USER_DETAILS");
-      }
-    } catch (error) {
-      console.error("Error fetching important dates: ", error);
+  private parseDate(value: unknown): { day: number; month: number } | null {
+    if (!value) return null;
+  
+    // Handle JavaScript Date objects
+    if (value instanceof Date) {
+      if (isNaN(value.getTime())) return null;
+  
+      return {
+        day: value.getDate(),
+        month: value.getMonth() + 1,
+      };
+    }
+  
+    if (typeof value !== "string") return null;
+  
+    const date = value.trim();
+    if (!date) return null;
+  
+    let day: number;
+    let month: number;
+  
+    // Frontend format: YYYY-MM-DD
+    if (/^\d{4}-\d{1,2}-\d{1,2}/.test(date)) {
+      const parts = date.split("-");
+      month = Number(parts[1]);
+      day = Number(parts[2].slice(0, 2));
+    }
+    // Existing format: DD-MM or DD-MM-YYYY
+    else {
+      const parts = date.split("-");
+      day = Number(parts[0]);
+      month = Number(parts[1]);
+    }
+  
+    if (
+      !Number.isInteger(day) ||
+      !Number.isInteger(month) ||
+      day < 1 ||
+      day > 31 ||
+      month < 1 ||
+      month > 12
+    ) {
       return null;
     }
+  
+    return { day, month };
   }
+ 
+async fetchImportantDates(
+  userID: string
+): Promise<{
+  dateRange: IImportantDateRange[];
+  birthdayDate: Date | null;
+  anniversaryDate: Date | null;
+} | null> {
+  try {
+    const userDetails = await this.dataBaseServiceInstance.fetchData<any>(
+      "User",
+      undefined,
+      undefined,
+      { id: userID }
+    );
+
+    if (!userDetails.dataSuccess || !userDetails.data?.length) {
+      throw new Error("FAILED_TO_FETCH_USER_DETAILS");
+    }
+
+    const user = userDetails.data[0];
+
+    // Parse birthday and anniversary
+    const birthDate = this.parseDate(user.birthdayDate);
+    const anniversary = this.parseDate(user.anniversaryDate);
+
+    // Parse holiday dates
+    const holidayDate = user.holidayDate || "";
+    const dateRange: IImportantDateRange[] = [];
+
+    String(holidayDate)
+      .split("|")
+      .filter(Boolean)
+      .forEach((date: string) => {
+        const parsedDate = this.parseDate(date);
+
+        if (parsedDate) {
+          dateRange.push(parsedDate);
+        }
+      });
+
+    const currentYear = new Date().getFullYear();
+
+    const birthdayDate = birthDate
+      ? new Date(currentYear, birthDate.month - 1, birthDate.day, 10, 0, 0)
+      : null;
+
+    const anniversaryDate = anniversary
+      ? new Date(currentYear, anniversary.month - 1, anniversary.day, 10, 0, 0)
+      : null;
+
+    console.log("Birthday Date:", birthdayDate);
+    console.log("Anniversary Date:", anniversaryDate);
+    console.log("Holiday Date Range:", dateRange);
+
+    return {
+      dateRange,
+      birthdayDate,
+      anniversaryDate,
+    };
+
+  } catch (error) {
+    console.error("Error fetching important dates:", error);
+    return null;
+  }
+}
+
   
   async fetchUserDetails(userID: string): Promise<{name: string, email: string} | null> {
     try {

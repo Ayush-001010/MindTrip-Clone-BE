@@ -532,33 +532,44 @@ export default class Trip implements ITripInterface {
                     }
                     index++;
                 }
-                if(startDate && endDate){
-                    let type : "long-weekend" | "long-birthday-weekend" | "long-anniversary-weekend" = "long-weekend";
-                    if(startDate <= birthdayDate && birthdayDate <= endDate){
+                if (startDate && endDate) {
+                    let type: "long-weekend" | "long-birthday-weekend" | "long-anniversary-weekend" = "long-weekend";
+                
+                    if (
+                        birthdayDate &&
+                        startDate <= birthdayDate &&
+                        birthdayDate <= endDate
+                    ) {
                         type = "long-birthday-weekend";
                         isBirthDayOccurMiddleOfLongWeekend = true;
-                    } else if(startDate <= anniversaryDate && anniversaryDate <= endDate){
+                    } else if (
+                        anniversaryDate &&
+                        startDate <= anniversaryDate &&
+                        anniversaryDate <= endDate
+                    ) {
                         type = "long-anniversary-weekend";
                         isAnniversaryOccurMiddleOfLongWeekend = true;
                     }
+                
                     response.push({
-                        to:startDate,
-                        from:endDate,
-                        type:type
+                        to: startDate,
+                        from: endDate,
+                        type: type
                     });
                 }
                 console.log("Start Date: ", startDate, "End Date: ", endDate);  
                 console.log("Current Response: ", response);
             }
             console.log("Response: ", response);
-            if(!isBirthDayOccurMiddleOfLongWeekend){
+            if (birthdayDate && !isBirthDayOccurMiddleOfLongWeekend) {
                 response.push({
                     to: birthdayDate,
                     from: birthdayDate,
                     type: "birthday"
                 });
             }
-            if(!isAnniversaryOccurMiddleOfLongWeekend){
+            
+            if (anniversaryDate && !isAnniversaryOccurMiddleOfLongWeekend) {
                 response.push({
                     to: anniversaryDate,
                     from: anniversaryDate,
