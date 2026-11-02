@@ -1,10 +1,11 @@
 import { z } from "zod";
 
-export const MIN_TOTAL_SECONDS = 30;
-export const MAX_TOTAL_SECONDS = 40;
+export const MIN_TOTAL_SECONDS = 10;
+export const MAX_TOTAL_SECONDS = 50;
 export const MIN_SCENE_SECONDS = 2;
 export const MAX_SCENE_SECONDS = 4;
 export const MAX_CAPTION_WORDS = 8;
+export const INTRO_THUMBNAIL_ID = "intro";
 
 const FocusSchema = z.object({
     x: z.number().min(0).max(1),
@@ -31,7 +32,7 @@ const VideoSceneSchema = z.object({
     route_stop: RouteStopSchema,
     trimStart: z.number().min(0),
     trimEnd: z.number().min(0),
-    keepAudio: z.boolean().default(false),
+    keepAudio: z.boolean().default(true),
     caption: z.string().default(""),
     transition: z.enum(["fade", "slide", "none"]).default("fade"),
     reason: z.string().optional(),
@@ -44,6 +45,9 @@ const ThumbnailSceneSchema = z.object({
     text: z.string().default(""),
     route_stop: RouteStopSchema,
     duration: z.number(),
+    style: z.enum(["bold_center", "question", "stat", "quote", "versus", "action"]).default("bold_center"),
+    background_media_ids: z.array(z.string()).default([]),
+    text_position: z.enum(["top", "center", "bottom"]).default("center"),
     transition: z.enum(["fade", "slide", "none"]).default("fade"),
 });
 
@@ -112,7 +116,17 @@ export const normalizeStoryboard = (
             const thumbnail = thumbnailById.get(scene.thumbnail_id);
             if (!thumbnail || usedThumbnails.has(scene.thumbnail_id)) continue;
             usedThumbnails.add(scene.thumbnail_id);
-            scenes.push({ ...scene, text: thumbnail.text, duration: clampDuration(scene.duration) });
+            const backgrounds = scene.background_media_ids
+                .filter((id) => mediaById.get(id)?.type === "image")
+                .slice(0, 2);
+            const style = scene.style === "versus" && backgrounds.length < 2 ? "bold_center" : scene.style;
+            scenes.push({
+                ...scene,
+                style,
+                background_media_ids: backgrounds,
+                text: thumbnail.text,
+                duration: clampDuration(scene.duration),
+            });
             continue;
         }
 
@@ -135,6 +149,7 @@ export const normalizeStoryboard = (
         scenes.push({
             ...scene,
             trimStart: round1(start),
+            keepAudio: true,
             trimEnd: round1(end),
             caption: limitCaption(scene.caption),
         });
@@ -143,6 +158,10 @@ export const normalizeStoryboard = (
     if (scenes.every((s) => s.type === "thumbnail")) {
         throw new Error("Storyboard has no scenes that match the uploaded media");
     }
+
+    // The "Story Mode" card always opens the reel.
+    const introIndex = scenes.findIndex((s) => s.type === "thumbnail" && s.thumbnail_id === INTRO_THUMBNAIL_ID);
+    if (introIndex > 0) scenes.unshift(...scenes.splice(introIndex, 1));
 
     let total = scenes.reduce((sum, s) => sum + sceneLength(s), 0);
 

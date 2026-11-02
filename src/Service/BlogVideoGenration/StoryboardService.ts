@@ -5,6 +5,7 @@ import { BlogContext } from "./BlogContext";
 import { IPreparedVideo } from "../../Interface/ClassInterface/IBlogVideoGenration";
 import {
     IMediaInfo,
+    INTRO_THUMBNAIL_ID,
     MAX_TOTAL_SECONDS,
     MIN_TOTAL_SECONDS,
     parseStoryboard,
@@ -46,6 +47,7 @@ export default class StoryboardService {
             if (model && model.capabilities.supports.vision === false) {
                 throw new Error(`Model ${LIGHT_MODEL} does not support images`);
             }
+            console.log("Max images for model:", model?.capabilities.limits.vision?.max_prompt_images);
             return model?.capabilities.limits.vision?.max_prompt_images ?? DEFAULT_MAX_IMAGES;
         } catch (error) {
             if ((error as Error).message.includes("does not support images")) throw error;
@@ -81,7 +83,10 @@ export default class StoryboardService {
             ),
         ];
 
-        const thumbnails = toThumbnails(input.thumbnails);
+        const thumbnails = [
+            { thumbnail_id: INTRO_THUMBNAIL_ID, text: "Story Mode", description: "The very first scene of the reel" },
+            ...toThumbnails(input.thumbnails),
+        ];
 
         const media: IMediaInfo[] = [
             ...input.photos.map((p) => ({ media_id: p.media_id, type: "image" as const })),

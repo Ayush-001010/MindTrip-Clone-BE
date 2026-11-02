@@ -66,10 +66,9 @@ app.get("/health", (_req, res) => {
 setInterval(() => {
   const blogFeedInstance = new BlogFeed();
   blogFeedInstance.tredingBlog();
-}, 600000 * 5); // Log every 5 minutes
+  // blogFeedInstance.fetchTrendingBlog();
+}, 60000 * 5); // Log every 5 minutes
 
-const blogFeedInstance = new BlogFeed();
-blogFeedInstance.getUserFeedBlogs("3");
 
 
 sequelize.sync().then(() => {

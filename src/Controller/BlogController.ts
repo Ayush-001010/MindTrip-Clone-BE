@@ -18,9 +18,9 @@ export const createNewBlog = async (req : Request, res: Response) => {
 
 export const fetchTopFiveBlogs = async (req: Request, res: Response) => {
     try{
-        const blogService = new BlogService();
-        const response = await blogService.fetchTopFiveBlogs();
-        res.send(response);
+        const blogService = new BlogFeed();
+        const response = await blogService.fetchTrendingBlog();
+        res.send({ success: true, data: response.data?.slice(0,5) });
     } catch (error) {
         console.error("Error fetching top five blogs: ", error);
         res.send({ success: false, data: [] });
