@@ -63,6 +63,26 @@ export default class FaviouritesService implements IFaviouritesService {
             switch(type) {
                 case "activity":
                     const activityData = data as IFaviouritesActivity;
+                    const existingActivity = await this.dbInstance.fetchData<IFaviouritesActivity[]>(
+                        "FavouritesActivity",
+                        1,
+                        undefined,
+                        {
+                            collectionId,
+                            activityName: activityData.activityName,
+                            placeName: activityData.placeName,
+        
+                        }
+                    );
+                    
+                    if (!existingActivity.dataSuccess) {
+                        return { success: false, data: false };
+                    }
+                    
+                    if (existingActivity.data && existingActivity.data.length > 0) {
+                        console.log("Activity already exists in this collection.");
+                        return { success: true, data: true };
+                    }
                     const dbOpt = await this.dbInstance.createData<IFaviouritesActivity>("FavouritesActivity", {
                         collectionId,
                         placeName: activityData.placeName,
@@ -85,6 +105,25 @@ export default class FaviouritesService implements IFaviouritesService {
                     }
                 case "hotel": {
                     const hotelData = data as IFaviouritesHotel;
+                    const existingHotel = await this.dbInstance.fetchData<IFaviouritesHotel[]>(
+                        "FavouritesHotel",
+                        1,
+                        undefined,
+                        {
+                            collectionId,
+                            hotelName: hotelData.hotelName,
+                            placeName: hotelData.placeName
+                        }
+                    );
+                    
+                    if (!existingHotel.dataSuccess) {
+                        return { success: false, data: false };
+                    }
+                    
+                    if (existingHotel.data && existingHotel.data.length > 0) {
+                        console.log("Hotel already exists in this collection.");
+                        return { success: true, data: true };
+                    }
                     const dbOptHotel = await this.dbInstance.createData<IFaviouritesHotel>("FavouritesHotel", {
                         collectionId,
                         placeName: hotelData.placeName,
@@ -165,6 +204,60 @@ export default class FaviouritesService implements IFaviouritesService {
         } catch(error){
             console.log("Error getting collection details:", error);
             return { success: false, data: [] };
+        }
+    }
+
+    async removeFavourite(
+        collectionId: number,
+        favouriteId: number,
+        type: "Activity" | "Hotel",
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>> {
+        try {
+            // First verify that the collection belongs to this user.
+            const collection = await this.dbInstance.fetchData<IFaviouritesCollection[]>(
+                "Collections",
+                1,
+                undefined,
+                { id: collectionId, createdBy }
+            );
+    
+            if (!collection.dataSuccess || !collection.data?.length) {
+                return { success: false, data: false };
+            }
+    
+            let deleteResponse;
+    
+            if (type === "Activity") {
+                deleteResponse = await this.dbInstance.deleteData<IFaviouritesActivity>(
+                    "FavouritesActivity",
+                    {
+                        id: favouriteId,
+                        collectionId
+                    }
+                );
+            } else {
+                deleteResponse = await this.dbInstance.deleteData<IFaviouritesHotel>(
+                    "FavouritesHotel",
+                    {
+                        id: favouriteId,
+                        collectionId
+                    }
+                );
+            }
+    
+            if (!deleteResponse.dataSuccess || !deleteResponse.data) {
+                return { success: false, data: false };
+            }
+    
+            return {
+                success: true,
+                data: deleteResponse.data > 0
+            };
+    
+        } catch (error) {
+            console.log("Error removing favourite:", error);
+            return { success: false, data: false };
         }
     }
 }

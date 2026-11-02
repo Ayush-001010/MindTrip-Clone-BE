@@ -61,16 +61,28 @@ export default class DataBaseService implements IDataBaseService {
     }
   };
 
-  deleteData = async<T>(tableName: keyof Models, condition?: Partial<T>): Promise<IDatabaseResponse<T>> => {
+  deleteData = async <T>(
+    tableName: keyof Models,
+    condition?: Partial<T>
+): Promise<IDatabaseResponse<number>> => {
     try {
-      const response = await models[tableName].destroy({ where: condition as any });
-      return { dataSuccess: true, data: response as T };
+        const response = await models[tableName].destroy({
+            where: condition as any
+        });
+
+        return {
+            dataSuccess: true,
+            data: response
+        };
     } catch (error) {
         console.log(`Error deleting data in table: ${tableName}`, error);
-        return { dataSuccess: false, data: null };
-    }
-  };
 
+        return {
+            dataSuccess: false,
+            data: null
+        };
+    }
+};
   specialQuery = async<T>(type: "mostLikedLastSevenDays" | "mostLikedLastTwoHours" | "mostDislikedLastSevenDays" | "mostDislikedLastTwoHours"): Promise<IDatabaseResponse<T>> => {
     try{
       switch(type){
@@ -147,4 +159,5 @@ export default class DataBaseService implements IDataBaseService {
         return { dataSuccess: false, data: null };
     }
   }
+  
 }
