@@ -7,11 +7,13 @@ export default class RedisService  implements IRedisService{
 
     constructor() {
         if (!RedisService.redisClientInstance) {
-            RedisService.redisClientInstance = new Redis({
-                host: process.env.SOCKET_REDIS_HOST || "127.0.0.1",
-                port: Number(process.env.SOCKET_REDIS_PORT || 6381),
-                maxRetriesPerRequest: 1,
-            });
+            RedisService.redisClientInstance = process.env.REDIS_URL
+                ? new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: 1 })
+                : new Redis({
+                    host: process.env.SOCKET_REDIS_HOST || "127.0.0.1",
+                    port: Number(process.env.SOCKET_REDIS_PORT || 6381),
+                    maxRetriesPerRequest: 1,
+                });
 
             RedisService.redisClientInstance.on("error", (error) => {
                 console.error("Socket Redis connection error:", error.message);
