@@ -9,4 +9,5 @@ export default interface IDataBaseService {
     countData<T>(tableName : keyof Models , filter?: Partial<T>): Promise<IDatabaseResponse<number>>;
     deleteData<T>(tableName : keyof Models , filter?: Partial<T>): Promise<IDatabaseResponse<T>>;
     specialQuery<T>(type : "mostLikedLastSevenDays" | "mostLikedLastTwoHours" | "mostDislikedLastSevenDays" | "mostDislikedLastTwoHours"): Promise<IDatabaseResponse<T>>;
+    groupBy<T>(tableName : keyof Models , column: string[]): Promise<IDatabaseResponse<T>>;
 }

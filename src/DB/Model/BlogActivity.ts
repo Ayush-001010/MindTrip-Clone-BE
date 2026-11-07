@@ -46,6 +46,14 @@ const BlogActivity = sequelize.define("BlogActivity", {
     amountSpent: {
         type: DataTypes.FLOAT,
         allowNull: false
+    },
+    longitude: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+    },
+    latitude: {
+        type: DataTypes.FLOAT,
+        allowNull: false
     }
 });
 

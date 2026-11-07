@@ -15,6 +15,7 @@ import userRoutes from "./Routes/userRoutes";
 import blogRoutes from "./Routes/blogRoutes";
 import blogVideoGenrationRoutes from "./Routes/blogVideoGenration";
 import faviouritesRoutes from "./Routes/FaviouritesRoutes";
+import blogGlobeFeedRoutes from "./Routes/blogGlobeFeed";
 
 import passport from "./config/passport";
 import inviteRoutes from "./Routes/InviteRoutes";
@@ -56,6 +57,7 @@ app.use("/blog", blogRoutes);
 app.use("/blogVideoGenration", blogVideoGenrationRoutes);
 app.use("/faviourites", faviouritesRoutes);
 app.use("/user", userRoutes);
+app.use("/blog-globe-feed", blogGlobeFeedRoutes);
 
 
 app.get("/health", (_req, res) => {
