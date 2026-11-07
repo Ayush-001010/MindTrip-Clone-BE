@@ -15,4 +15,7 @@ export default interface ICommonService {
     fetchUserFriends : (userID: number) => Promise<APIResponseInterface<IUserFriends[]>>;
     fetchUserFollowers : (userID: number) => Promise<APIResponseInterface<IUserFollower[]>>;
     updateUserDetails : (userID: number, data: any) => Promise<APIResponseInterface<boolean>>;
+    fetchUserPlaces : (userID : number) => Promise<APIResponseInterface<string[]>>;
+    fetchUserBlogDetails : (userID: number) => Promise<APIResponseInterface<{blogTitle : string , blogId: number , blogImage: string , numberOfLikes: number , numberOfViews: number}[]>>;
+    addUserDetails : (userDetails : any , userId : number) => Promise<APIResponseInterface<boolean>>;
 }

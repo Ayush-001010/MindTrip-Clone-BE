@@ -180,3 +180,48 @@ export const updateUserDetails = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+export const fetchUserPlaces = async (req: Request, res: Response) => {
+    try {
+        const userID = parseInt(req.query.userID as string);
+        if (isNaN(userID)) {
+            return res.status(400).json({ error: "Invalid userID query parameter" });
+        }
+        const commonServiceInstance = CommonService.getInstance();
+        const result = await commonServiceInstance.fetchUserPlaces(userID);
+        return res.send(result);
+    } catch(error){
+        console.log("Error fetching user places: ", error);
+        res.send({success: false, error: "Error fetching user places"});
+    }
+};
+
+export const fetchUserBlogDetails = async (req: Request, res: Response) => {
+    try {
+        const userID = parseInt(req.query.userID as string);
+        if (isNaN(userID)) {
+            return res.status(400).json({ error: "Invalid userID query parameter" });
+        }
+        const commonServiceInstance = CommonService.getInstance();
+        const result = await commonServiceInstance.fetchUserBlogDetails(userID);
+        return res.send(result);
+    } catch(error) {
+        console.log("Error fetching user blog details: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const addUserDetails = async (req: Request, res: Response) => {
+    const { userDetails , userId } = req.body; 
+    if (!userDetails || !userId) {
+        return res.status(400).json({ error: "Missing userDetails or userId in request body" });
+    }
+    try {
+        const commonServiceInstance = CommonService.getInstance();
+        const result = await commonServiceInstance.addUserDetails(userDetails, userId);
+        return res.send(result);
+    } catch(error) {
+        console.log("Error adding user details: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};

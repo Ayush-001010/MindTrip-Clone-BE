@@ -4,10 +4,10 @@ import IDataBaseService from "../../Interface/ClassInterface/IDataBaseService";
 import { IDatabaseResponse } from "../../Interface/ResponseInterface/IDatabaseResponse";
 
 export default class DataBaseService implements IDataBaseService {
-  fetchData = async <T>(tableName: keyof Models, limit?: number, skip?: number,where?:any,order?:any): Promise<IDatabaseResponse<T>> => {
+  fetchData = async <T>(tableName: keyof Models, limit?: number, skip?: number,where?:any,order?:any,attributes?: any): Promise<IDatabaseResponse<T>> => {
     try {
       // console.log(`Fetching data from table: ${tableName} with limit: ${limit} and skip: ${skip}`);
-      const response = await models[tableName].findAll({ limit, offset: skip, where, order });
+      const response = await models[tableName].findAll({ limit, offset: skip, where, order, attributes });
       return { dataSuccess: true , data: response as T}
     } catch (error) {
       console.error(`Error fetching data from table: ${tableName}`, error);

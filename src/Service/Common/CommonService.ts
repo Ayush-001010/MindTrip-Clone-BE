@@ -51,7 +51,6 @@ export default class CommonService implements ICommonService {
     return Buffer.from(hex, 'hex').toString('utf8');
     }
 
-    // Encode a UUID (canonical form with hyphens) to base62 using the 16 raw bytes
     uuidToBase62 = (uuid: string) => {
     if (!uuid) throw new Error('Invalid UUID');
     const hex = uuid.replace(/-/g, '');
@@ -237,6 +236,73 @@ export default class CommonService implements ICommonService {
         } catch(error){
             console.log("Error updating user details: ", error);
             return {success: false, error: "Error updating user details"};
+        }
+    }
+
+    fetchUserPlaces = async (userID: number) : Promise<APIResponseInterface<string[]>> => {
+        try{
+            const blogIDResponse = await this.dbInstance.fetchData<any>("Blog", undefined, undefined, {
+                userID
+            }, ["id"]);
+            const places = await Promise.all(blogIDResponse.data.map(async (item: any) => {
+                const blogId = item.dataValues.id;
+                const response = await this.dbInstance.fetchData<any>("BlogActivity", undefined, undefined, {
+                    blogId
+                },["placeName"]);
+                if(response.dataSuccess && response.data){
+                    return response.data.map((item: any) => item.dataValues.placeName);
+                }
+                return [];
+            }));
+            const flattenedPlaces = places.flat();
+            if(flattenedPlaces.length > 0){
+                return {success: true, data: flattenedPlaces};
+            }
+            return {success: false, error: "No places found"};
+        } catch(error){
+            console.log("Error fetching places: ", error);
+            return {success: false, error: "Error fetching places"};
+        }
+    }
+
+    fetchUserBlogDetails = async (userID: number) : Promise<APIResponseInterface<{blogTitle : string , blogId: number , blogImage: string , numberOfLikes: number , numberOfViews: number}[]>> => {
+        try {
+            const response = await this.dbInstance.fetchData<any>("Blog", undefined, undefined, {
+                userID
+            }, ["tripTitle", "id", "profileImages", "numberOfLikes"]);
+            const data : {blogTitle : string , blogId: number , blogImage: string , numberOfLikes: number , numberOfViews: number}[] = [];
+            await Promise.all(response.data.map(async (item: any) => {
+                const blogData = item.dataValues;
+                data.push({
+                    blogTitle: blogData.tripTitle,
+                    blogId: blogData.id,
+                    blogImage: blogData.profileImages,
+                    numberOfLikes: blogData.numberOfLikes,
+                    numberOfViews: 100
+                });
+            }));
+            if(data.length > 0){
+                return {success: true, data: data};
+            }
+            return {success: false, error: "No blog found"};
+        } catch(error){
+            console.log("Error fetching user blog details: ", error);
+            return {success: false, error: "Error fetching user blog details"};
+        }
+    }
+
+    addUserDetails = async (userDetails : any , userId : number): Promise<APIResponseInterface<boolean>> => {
+        try{
+            const response = await this.dbInstance.updateData("User",userDetails , {
+                id:userId
+            });
+            if(response.dataSuccess){
+                return {success: true, data: true};
+            }
+            return {success: false, error: "Failed to add user details"};
+        }  catch(error){
+            console.log("Error  ",error);
+            return {success : false};
         }
     }
 }
