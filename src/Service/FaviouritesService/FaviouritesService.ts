@@ -206,6 +206,72 @@ export default class FaviouritesService implements IFaviouritesService {
             return { success: false, data: [] };
         }
     }
+    
+    async renameCollection(
+        collectionId: number,
+        newName: string,
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>> {
+        try {
+            const trimmedName = newName.trim();
+    
+            if (!trimmedName) {
+                return {
+                    success: false,
+                    error: "Collection name cannot be empty",
+                    data: false
+                };
+            }
+    
+            // Verify that the collection belongs to this user.
+            const collection = await this.dbInstance.fetchData<IFaviouritesCollection[]>(
+                "Collections",
+                1,
+                undefined,
+                {
+                    id: collectionId,
+                    createdBy
+                }
+            );
+    
+            if (!collection.dataSuccess || !collection.data?.length) {
+                return {
+                    success: false,
+                    error: "Collection not found",
+                    data: false
+                };
+            }
+    
+            // Update the collection name.
+            const updateResponse = await this.dbInstance.updateData(
+                "Collections",
+                { name: trimmedName },
+                { id: collectionId, createdBy }
+            );
+    
+            if (!updateResponse.dataSuccess) {
+                return {
+                    success: false,
+                    error: "Failed to rename collection",
+                    data: false
+                };
+            }
+    
+            return {
+                success: true,
+                data: true
+            };
+    
+        } catch (error) {
+            console.log("Error renaming collection:", error);
+    
+            return {
+                success: false,
+                error: "Failed to rename collection",
+                data: false
+            };
+        }
+    }
 
     async removeFavourite(
         collectionId: number,
@@ -260,4 +326,88 @@ export default class FaviouritesService implements IFaviouritesService {
             return { success: false, data: false };
         }
     }
+
+    async deleteCollection(
+        collectionId: number,
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>> {
+        try {
+            // First verify that the collection belongs to this user.
+            const collection = await this.dbInstance.fetchData<IFaviouritesCollection[]>(
+                "Collections",
+                1,
+                undefined,
+                {
+                    id: collectionId,
+                    createdBy
+                }
+            );
+    
+            if (!collection.dataSuccess || !collection.data?.length) {
+                return {
+                    success: false,
+                    error: "Collection not found",
+                    data: false
+                };
+            }
+    
+            // Delete all favourite activities.
+            const deleteActivities = await this.dbInstance.deleteData<IFaviouritesActivity>(
+                "FavouritesActivity",
+                { collectionId }
+            );
+    
+            if (!deleteActivities.dataSuccess) {
+                throw new Error("Failed to delete favourite activities");
+            }
+    
+            // Delete all favourite hotels.
+            const deleteHotels = await this.dbInstance.deleteData<IFaviouritesHotel>(
+                "FavouritesHotel",
+                { collectionId }
+            );
+    
+            if (!deleteHotels.dataSuccess) {
+                throw new Error("Failed to delete favourite hotels");
+            }
+    
+            // Delete all favourite blogs.
+            const deleteBlogs = await this.dbInstance.deleteData<IFaviouritesBlog>(
+                "FavouritesBlog",
+                { collectionId }
+            );
+    
+            if (!deleteBlogs.dataSuccess) {
+                throw new Error("Failed to delete favourite blogs");
+            }
+    
+            // Finally delete the collection itself.
+            const deleteCollection = await this.dbInstance.deleteData<IFaviouritesCollection>(
+                "Collections",
+                {
+                    id: collectionId,
+                    createdBy
+                }
+            );
+    
+            if (!deleteCollection.dataSuccess || !deleteCollection.data) {
+                throw new Error("Failed to delete collection");
+            }
+    
+            return {
+                success: true,
+                data: true
+            };
+    
+        } catch (error) {
+            console.error("Error deleting collection:", error);
+    
+            return {
+                success: false,
+                error: "Failed to delete collection",
+                data: false
+            };
+        }
+    }
+
 }

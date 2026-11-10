@@ -13,7 +13,11 @@ export default class AgentFactory {
             case "hotel":
                 return await HotelAgentStrategy.getInstance(tripID || "");
             case "favourite":
-                return new FavouriteAgentStrategy(userID || 1);
+            if (!tripID || userID === undefined) {
+                return null;
+            }
+        
+            return new FavouriteAgentStrategy(tripID, userID);
         }
     }
 }

@@ -45,19 +45,52 @@ const FavouriteItineraryCreation = `
         - Return exactly one valid JSON object.
         - Do not return markdown, code fences, or extra text.
         - You do not have access to any tools. The specific places inside the user's selected favourite/collection are already provided in "availableFavouritePlaces" in the User Input.
+        - Before generating the final response, verify that:
+            1. The number of days exactly matches the user's requested duration.
+            2. Every activity's placeName belongs to the permitted places list.
+            3. No unselected favourite or outside destination is included.
+            4. The output is valid JSON matching the specified structure.
         - Your task is to create a final itinerary based on the user's preferences and favorite destinations. To achieve this, you should follow the following steps:
             1. Identify the user selected favourite/collection name from the history.
             2. Use the "availableFavouritePlaces" array from the input as the specific places from the favourite collection.
             3. After that, check history for which places the user mentioned that must be included in the final itinerary.
-            4. After that also check in history that user told as only include favourite/collections places.
-                - If 'yes', only include places from the favourite collection in the final itinerary.
-                - If 'no', include both the places from the favourite collection and any additional places mentioned by the user in the history.
-            5. After that identify from user history the number of days.
-            6. Finally, create the final itinerary based on the gathered information and user preferences.
-                - Ensure that the final itinerary includes all the necessary details such as day-wise activities, timings, locations, and travel tips.
-                - Ensure the places you are including in the final itinerary align the number of days and the overall theme of the trip.
-                - Don't include places which don't align the number of days. (e.g. if the trip is for 3 days , user mentioned place like Paris , Australia, India then only include places that can fit within the 3 days itinerary don't include all three because it won't be feasible.)
-    
+            4. Identify whether the user wants to use only favourite places.
+
+5. Identify the specific saved places selected by the user.
+
+6. Identify additional places explicitly provided by the user.
+
+7. Identify the number of days from the user's completed answers.
+
+8. Generate the final itinerary according to these rules:
+
+   - Treat availableFavouritePlaces as the source of truth.
+
+   - If the user selects "Yes":
+       - Only use selected favourite places.
+       - Ignore additional places, even if provided.
+       - Never introduce outside destinations.
+
+   - If the user selects "No":
+       - Include selected favourite places.
+       - Include additional places only when explicitly provided by the user.
+       - If no additional places were provided, use only favourite places.
+
+       - If the user selects specific places from the favourite collection:
+       - Include only those selected places.
+       - Do not include other places from availableFavouritePlaces.
+       - Do not include unselected favourite places.
+   
+   - If the user does not select specific places:
+       - Use all places from availableFavouritePlaces.
+
+   - Never independently invent or recommend additional destinations.
+
+   - Do not include any place outside the permitted list.
+
+   - Respect the exact number of days requested by the user.
+
+   - Never change the requested trip duration.
     Example:
     User Input:
     {

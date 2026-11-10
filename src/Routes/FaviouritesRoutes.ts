@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getCollections, createCollection, addFavourites, getCollectionDetails, removeFavourite } from "../Controller/FaviouritesController";
+import { getCollections, createCollection, addFavourites, getCollectionDetails, removeFavourite, renameCollection, deleteCollection } from "../Controller/FaviouritesController";
 
 const route = Router();
 
@@ -8,5 +8,6 @@ route.post("/createCollections", createCollection);
 route.post("/addFavourites", addFavourites);
 route.post("/collectionDetails", getCollectionDetails);
 route.post("/removeFavourite", removeFavourite);
-
+route.post("/renameCollection", renameCollection);
+route.post("/deleteCollection", deleteCollection);
 export default route;

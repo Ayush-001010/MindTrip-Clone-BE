@@ -41,6 +41,37 @@ export const getCollectionDetails = async (req: Request, res: Response) => {
     return res.send(detailsResponse);
   
 }
+export const renameCollection = async (req: Request, res: Response) => {
+    try {
+        const { collectionId, newName, userEmail } = req.body;
+
+        if (!collectionId || !newName?.trim() || !userEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Collection ID, new name, and user email are required"
+            });
+        }
+
+        const favouritesService = new FaviouritesService();
+
+        const response = await favouritesService.renameCollection(
+            Number(collectionId),
+            newName,
+            userEmail
+        );
+
+        return res.send(response);
+
+    } catch (error) {
+        console.error("Error renaming collection:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to rename collection"
+        });
+    }
+};
+
 export const removeFavourite = async (req: Request, res: Response) => {
     try {
         const { collectionId, favouriteId, type, userEmail } = req.body;
@@ -76,6 +107,36 @@ export const removeFavourite = async (req: Request, res: Response) => {
         return res.status(500).json({
             success: false,
             message: "Failed to remove favourite"
+        });
+    }
+};
+
+export const deleteCollection = async (req: Request, res: Response) => {
+    try {
+        const { collectionId, userEmail } = req.body;
+
+        if (!collectionId || !userEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Collection ID and user email are required"
+            });
+        }
+
+        const favouritesService = new FaviouritesService();
+
+        const response = await favouritesService.deleteCollection(
+            Number(collectionId),
+            userEmail
+        );
+
+        return res.send(response);
+
+    } catch (error) {
+        console.error("Error deleting collection:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to delete collection"
         });
     }
 };

@@ -62,4 +62,15 @@ export default interface IFaviouritesService{
         type: "Activity" | "Hotel",
         createdBy: string
     ): Promise<APIResponseInterface<boolean>>;
+
+    renameCollection(
+        collectionId: number,
+        newName: string,
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>>;
+
+    deleteCollection(
+        collectionId: number,
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>>;
 }

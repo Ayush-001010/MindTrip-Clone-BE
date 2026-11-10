@@ -291,7 +291,13 @@ export default class Trip implements ITripInterface {
         const tripID = dbTripDFetchResponse.data?.[0].dataValues.tripID || null;
         const _id = dbTripDFetchResponse.data?.[0].dataValues.id || null;
 
-        const dpTripDetailsResponse = await this.dataBaseServiceInstance.fetchData<any>("TripDetails", 1, 0, { tripID });
+        const dpTripDetailsResponse = await this.dataBaseServiceInstance.fetchData<any>(
+            "TripDetails",
+            1,
+            0,
+            { tripID },
+            [["id", "DESC"]]
+        );
         const countUserOnTrip = await this.dataBaseServiceInstance.countData("UserTripMappingTable",{
             tripDetailsId: _id
         });
@@ -438,30 +444,61 @@ export default class Trip implements ITripInterface {
         }
     };
 
-    createFinalItinerary = async (base62: string, tripName: string, tripItinerary: any): Promise<null> => {
-        const tripDetails = await this.dataBaseServiceInstance.fetchData<any>("TripID", undefined, undefined, {
-            base62
-        });
-
-        const tripID = tripDetails.data?.[0]?.tripID;
-
-        const createItineraryResponse = await this.dataBaseServiceInstance.createData(
-            "TripDetails",
-            {
-                tripID,
-                tripName,
-                tripItinerary : JSON.stringify(tripItinerary)
-            }
+    createFinalItinerary = async (
+        base62: string,
+        tripName: string,
+        tripItinerary: any
+    ): Promise<null> => {
+    
+        console.log("Creating final itinerary...");
+        console.log("Received Base62:", base62);
+    
+        const tripDetails = await this.dataBaseServiceInstance.fetchData<any>(
+            "TripID",
+            undefined,
+            undefined,
+            { base62 }
         );
-        // console.log("Create Itinerary Response: ", createItineraryResponse);
-
-        if (!createItineraryResponse.dataSuccess) {
+    
+        console.log("TripID lookup response:", tripDetails);
+    
+        if (
+            !tripDetails.dataSuccess ||
+            !tripDetails.data ||
+            tripDetails.data.length === 0
+        ) {
+            console.error("No TripID record found for Base62:", base62);
             return null;
         }
-
+    
+        const tripID = tripDetails.data[0].tripID;
+    
+        console.log("Original TripID found:", tripID);
+    
+        const createItineraryResponse =
+            await this.dataBaseServiceInstance.createData(
+                "TripDetails",
+                {
+                    tripID,
+                    tripName,
+                    tripItinerary: JSON.stringify(tripItinerary)
+                }
+            );
+    
+        console.log(
+            "Create TripDetails response:",
+            createItineraryResponse
+        );
+    
+        if (!createItineraryResponse.dataSuccess) {
+            console.error("Failed to save itinerary into TripDetails");
+            return null;
+        }
+    
+        console.log("Final itinerary saved successfully!");
+    
         return null;
     };
-
     searchImportantDates = async (userID: string): Promise<APIResponseInterface<IImportantDateResponse[]>> => {
         try{
             /*
