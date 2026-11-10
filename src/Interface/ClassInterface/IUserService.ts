@@ -28,4 +28,5 @@ export default interface IUserService {
     searchUserProfile(searchName : string , userId : string) : Promise<APIResponseInterface<ISearchUserProfileResult[]>>;
     addFriend(userID: string, friendID: string): Promise<APIResponseInterface<boolean>>;
     takeActionOnFriendRequest(userID: string, friendID: string, action: "Accept" | "Reject"): Promise<APIResponseInterface<boolean>>;
+    countTotalNumberOfMemoriesLeft(userId: string): Promise<APIResponseInterface<number>>;
 }
