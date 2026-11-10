@@ -61,3 +61,51 @@ export const userLikedBlogs = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, data: [] });
   }
 };
+
+export const fetchUserFriendsDetails = async (req: Request, res: Response) => {
+  const { userId } = req.query as { userId: string };
+  try {
+    const userService = new UserService();
+    const response = await userService.fetchUserFriendsDetails(userId);
+    res.json(response);
+  } catch (error) {
+    console.error("Error in fetchUserFriendsDetails controller: ", error);
+    res.status(500).json({ success: false, data: { friendDetails: [], pendingFriendRequests: [] } });
+  }
+};
+
+export const searchUserProfile = async (req: Request, res: Response) => {
+  const { searchName , userId } = req.query as { searchName: string , userId: string };
+  try {
+    const userService = new UserService();
+    const response = await userService.searchUserProfile(searchName, userId);
+    res.json(response);
+  } catch (error) {
+    console.error("Error in searchUserProfile controller: ", error);
+    res.status(500).json({ success: false, data: [] });
+  }
+};
+
+export const addFriend = async (req: Request, res: Response) => {
+  const { userID, friendID } = req.body;
+  try {
+    const userService = new UserService();
+    const response = await userService.addFriend(userID, friendID);
+    res.json(response);
+  } catch (error) {
+    console.error("Error in addFriend controller: ", error);
+    res.status(500).json({ success: false, data: false });
+  }
+};
+
+export const takeActionOnFriendRequest = async (req: Request, res: Response) => {
+  const { userID, friendID, action } = req.body;
+  try {
+    const userService = new UserService();
+    const response = await userService.takeActionOnFriendRequest(userID, friendID, action);
+    res.json(response);
+  } catch (error) {
+    console.error("Error in takeActionOnFriendRequest controller: ", error);
+    res.status(500).json({ success: false, data: false });
+  }
+};

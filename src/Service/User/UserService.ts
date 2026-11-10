@@ -1,8 +1,9 @@
-import IUserService from "../../Interface/ClassInterface/IUserService";
+import IUserService, { ISearchUserProfileResult } from "../../Interface/ClassInterface/IUserService";
 import IImportantDateRange from "../../Interface/DataInterface/IImportantDateRange";
 import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
 import DataBaseService from "../Database/Database";
-import UserActivity from "../UserActivity/UserActivity";
+import FuzzySearch from 'fuzzy-search';
+import { IUserFriend } from "../../Interface/ClassInterface/IUserService";
 
 export default class UserService implements IUserService {
   private dataBaseServiceInstance: DataBaseService;
@@ -144,6 +145,142 @@ export default class UserService implements IUserService {
     } catch (error) {
       console.error("Error fetching user liked blogs: ", error);
       return { success: false, data: [] };
+    }
+  }
+
+  private fetchFriend = async (friendId: any): Promise<IUserFriend["friendDetails"][number]> => {
+    const friendDetails = await this.dataBaseServiceInstance.fetchData<any>("User", undefined, undefined, {
+      id: friendId
+    });
+    if(!friendDetails.dataSuccess){
+      throw new Error(`Failed to fetch details for friend with ID: ${friendId}`);
+    }
+    const friendData = friendDetails.data[0].dataValues;
+    return {
+      id: friendData.id,
+      name: friendData.name,
+      createdAt: friendData.createdAt,
+      status: friendData.status || "",
+      aboutMe: friendData.aboutMe || "",
+      userImage: friendData.userImage || "",
+      numberOfTrips: friendData.numberOfTrips || 0,
+      numberOfBlogs: friendData.numberOfBlogs || 0
+    };
+  };
+
+  async fetchUserFriendsDetails(userId: string): Promise<APIResponseInterface<IUserFriend>> {
+    try {
+      const result : IUserFriend = {
+        friendDetails: [],
+        pendingFriendRequests: []
+      }
+      const userAddedFriends = await this.dataBaseServiceInstance.fetchData<any>("UserFriends",undefined,undefined,{
+        userId: userId
+      });
+      const friendAddedUser = await this.dataBaseServiceInstance.fetchData<any>("UserFriends",undefined,undefined,{
+        friendId: userId
+      });
+      if(!userAddedFriends.dataSuccess || !friendAddedUser.dataSuccess){
+        throw new Error("Failed to fetch user friends details");
+      }
+      console.log("Fetched user added friends: ", userAddedFriends.data);
+      console.log("Fetched friend added user: ", friendAddedUser.data);
+      
+      const friendIds = [
+        ...userAddedFriends.data.map((f: any) => f.dataValues),
+        ...friendAddedUser.data.map((f: any) => f.dataValues)
+      ];
+      result.friendDetails = await Promise.all(friendIds.filter((item) => item.status === "Friend").map((item) => this.fetchFriend(item.friendId || item.userId)));
+      result.pendingFriendRequests = await Promise.all(
+        friendIds
+          .filter((item) => item.status === "Pending" || item.status === "Reject")
+          .map(async (item): Promise<IUserFriend["pendingFriendRequests"][number]> => ({
+            ...(await this.fetchFriend(item.friendId || item.userId)),
+            status: item.status === "Reject" ? "Reject" : "Pending"
+          }))
+      );
+      console.log("Final friend details result: ", result);
+      return {success : true , data: result };
+    } catch(error){
+      console.log("Error" , error);
+      return { success: false, data: { friendDetails: [], pendingFriendRequests: [] } };
+    }
+  }
+
+  async searchUserProfile(searchName: string , userId : string): Promise<APIResponseInterface<ISearchUserProfileResult[]>> {
+    try {
+      const allUsers = await this.dataBaseServiceInstance.fetchData<any>("User");
+      if(!allUsers.dataSuccess){
+        throw new Error("Failed to fetch all users");
+      }
+      const users = allUsers.data.map((user: any) => user.dataValues);
+      const searcher = new FuzzySearch(users, ['name'], {
+        caseSensitive: false,
+      });
+
+      const result = searcher.search(searchName);
+
+      return { success: true, data: result.filter((user:any) => user.id != userId ).map((user: any) => ({
+        id: user.id,
+        name: user.name,
+        createdAt: user.createdAt,
+        aboutMe: user.aboutMe || "",
+        userImage: user.userImage || "",
+        numberOfTrips: user.numberOfTrips || 0,
+        numberOfBlogs: user.numberOfBlogs || 0
+      })) };
+    } catch(error){
+      console.log("Error on searchUserProfile", error);
+      return { success: false, data: [] };
+    }
+  }
+
+  async addFriend(userID: string, friendID: string): Promise<APIResponseInterface<boolean>> {
+    try {
+      console.log("Adding friend with userID:", userID, "and friendID:", friendID);
+      const friendDetails = await this.dataBaseServiceInstance.fetchData<any>("User",undefined , undefined, {
+          id: friendID
+      });
+
+      if(!friendDetails.dataSuccess){
+        throw new Error("Failed to fetch friend details");
+      }
+
+      const friendData = friendDetails.data[0].dataValues;
+
+      const result = await this.dataBaseServiceInstance.createData("UserFriends", {
+        userId: userID,
+        friendId: friendID,
+        status:"Pending",
+        friendName : friendData.name
+      });
+      if(result.dataSuccess){
+        return { success: true, data: true };
+      } else {
+        throw new Error("Failed to add friend");
+      }
+    } catch(error){
+      console.log("Error", error);
+      return { success: false, data: false };
+    }
+  }
+
+  async takeActionOnFriendRequest(userID: string, friendID: string, action: "Accept" | "Reject"): Promise<APIResponseInterface<boolean>> {
+    try {
+      const result = await this.dataBaseServiceInstance.updateData("UserFriends", {
+        status: action === "Accept" ? "Friend" : "Reject"
+      }, {
+          userId: userID,
+          friendId: friendID
+      });
+      if(result.dataSuccess){
+        return { success: true, data: true };
+      } else {
+        throw new Error("Failed to take action on friend request");
+      }
+    } catch(error){
+      console.log("Error", error);
+      return { success: false, data: false };
     }
   }
 }
