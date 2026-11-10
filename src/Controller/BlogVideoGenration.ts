@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import fs from "fs";
+import { uploadDir } from "../Middleware/upload";
 import BlogVideoGenration from "../Service/BlogVideoGenration/BlogVideoGenration";
 import StoryboardService from "../Service/BlogVideoGenration/StoryboardService";
 import InstaStoryService from "../Service/BlogVideoGenration/InstaStoryService";
@@ -129,5 +130,12 @@ export const genrateVideo = async (req: Request, res: Response) => {
             ...preparedVideos.map((v) => v.cleanup()),
             ...[...files.map((f) => f.path), ...tempFiles].map((p) => fs.promises.rm(p, { force: true })),
         ]);
+        // Remove the uploads folder once empty; skipped if another request still has files in it.
+        try {
+            const remaining = await fs.promises.readdir(uploadDir);
+            if (remaining.length === 0) await fs.promises.rmdir(uploadDir);
+        } catch {
+            // folder missing or being used by another request
+        }
     }
 };

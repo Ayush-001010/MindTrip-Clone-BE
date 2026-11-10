@@ -18,6 +18,10 @@ const UserFriends = sequelize.define("UserFriends", {
     friendName : {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    status:{
+        type:DataTypes.ENUM("Friend","Pending","Reject"),
+        allowNull: false
     }
 });
 

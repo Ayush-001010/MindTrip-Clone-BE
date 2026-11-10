@@ -8,23 +8,19 @@ const User = sequelize.define("User",
             autoIncrement: true,
             primaryKey: true,
         },
-
         name: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-
         email: {
             type: DataTypes.STRING,
             allowNull: false,
             unique: true,
         },
-
         password: {
             type: DataTypes.STRING,
             allowNull: true,
         },
-
         googleId: {
             type: DataTypes.STRING,
             allowNull: true,
@@ -40,6 +36,38 @@ const User = sequelize.define("User",
         },
         anniversaryDate:{
             type:DataTypes.DATE,
+            allowNull: true,
+        },
+        userImage:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        numberOfTrips:{
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        numberOfBlogs:{
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        aboutMe:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        interests:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        location:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        notifyNotes:{
+            type: DataTypes.TEXT,
+            allowNull: true,
+        },
+        genralAnswer:{
+            type: DataTypes.STRING,
             allowNull: true,
         }
     },

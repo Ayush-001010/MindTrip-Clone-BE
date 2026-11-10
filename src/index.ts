@@ -15,6 +15,7 @@ import userRoutes from "./Routes/userRoutes";
 import blogRoutes from "./Routes/blogRoutes";
 import blogVideoGenrationRoutes from "./Routes/blogVideoGenration";
 import faviouritesRoutes from "./Routes/FaviouritesRoutes";
+import blogGlobeFeedRoutes from "./Routes/blogGlobeFeed";
 
 import passport from "./config/passport";
 import inviteRoutes from "./Routes/InviteRoutes";
@@ -56,6 +57,7 @@ app.use("/blog", blogRoutes);
 app.use("/blogVideoGenration", blogVideoGenrationRoutes);
 app.use("/faviourites", faviouritesRoutes);
 app.use("/user", userRoutes);
+app.use("/blog-globe-feed", blogGlobeFeedRoutes);
 
 
 app.get("/health", (_req, res) => {
@@ -66,10 +68,9 @@ app.get("/health", (_req, res) => {
 setInterval(() => {
   const blogFeedInstance = new BlogFeed();
   blogFeedInstance.tredingBlog();
-}, 600000 * 5); // Log every 5 minutes
+  // blogFeedInstance.fetchTrendingBlog();
+}, 60000 * 5); // Log every 5 minutes
 
-const blogFeedInstance = new BlogFeed();
-blogFeedInstance.getUserFeedBlogs("3");
 
 
 sequelize.sync().then(() => {

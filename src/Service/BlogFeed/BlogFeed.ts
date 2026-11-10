@@ -148,15 +148,16 @@ export default class BlogFeed implements IBlogFeed {
 
     private fetchBlogDetails = async (blogID: string[]) : Promise<IBlogData[] | null> => {
         if(blogID.length === 0) return [];
-        return await Promise.all(blogID.map(async (id) => {
-            const response = await this.dbInstance.fetchData<any>("Blog" , undefined , undefined , {
-                id : id
-            })
-            return response.data as IBlogData;
-        }));
+        const response = await this.dbInstance.fetchDataWhereIn<any[]>("Blog", "id" as any, blogID);
+        const blogsById = new Map<string, IBlogData>();
+        (response.data ?? []).forEach((blog: any) => blogsById.set(String(blog.id), blog));
+        // Keep the feed order and skip blogs that no longer exist
+        return blogID.map((id) => blogsById.get(id)).filter((blog): blog is IBlogData => blog !== undefined);
     }
 
     tredingBlog = async () : Promise<void> => {
+        const allBlogsResponse = await this.dbInstance.fetchData<any>("Blog");
+        let allBlogs = allBlogsResponse.data.map((blog: any) => blog.dataValues.id) || [];
         const responseSevenDays = await this.dbInstance.specialQuery("mostLikedLastSevenDays");
         const likeDataForLastSevenDays = responseSevenDays.data as Array<{ blogId: string, likeCount: number }> || [];
         const responseTwoHours = await this.dbInstance.specialQuery("mostLikedLastTwoHours");
@@ -180,64 +181,50 @@ export default class BlogFeed implements IBlogFeed {
             blogScoreMap[item.blogId] = (blogScoreMap[item.blogId] || 0) - item.dislikeCount - 3;
         });
 
+        allBlogs = allBlogs.filter((blogId : number) => !blogScoreMap.hasOwnProperty(blogId));
+        console.log("Filtered all blogs:", allBlogs);
+
+
+
         const sortedBlogs = Object.entries(blogScoreMap)
             .sort((a, b) => b[1] - a[1])
             .map(([blogId, score]) => ({ blogId, score }));
         console.log("Sorted blogs by score:", sortedBlogs);
 
+        allBlogs.forEach((blogId: number) => {
+            sortedBlogs.push({ blogId : blogId.toString(), score: 0 });
+        });
+
         await this.redisInstance.createOrUpdate("trendingBlogs", JSON.stringify(sortedBlogs) , "other");
     }
 
+    private parseRedisList = (value: unknown): any[] => {
+        let parsed: any = value;
+        while (typeof parsed === "string") {
+            parsed = JSON.parse(parsed);
+        }
+        return Array.isArray(parsed) ? parsed : [];
+    }
+
+    // Returns the whole feed in one response: friends/followers blogs, then activity-based, then trending
     getUserFeedBlogs = async (userID: string) : Promise<APIResponseInterface<IBlogData[]>> => {
         try {
-            const limit = 10; // Number of blogs per page
-            const fetchUserFeed = await this.redisInstance.get(`UserFeed:${userID}`);
-            if(!fetchUserFeed.redisOptSuccess)
+            const [userFeed, trending] = await Promise.all([
+                this.redisInstance.get(`UserFeed:${userID}`),
+                this.redisInstance.get("trendingBlogs"),
+            ]);
+            if(!userFeed.redisOptSuccess || !trending.redisOptSuccess)
                 return { success: false, data: [] };
-            const userFeedData : string[] = fetchUserFeed.value ? JSON.parse(fetchUserFeed.value as unknown as string) : [];
-            console.log("User feed data:", userFeedData);
-            const paginatedData = userFeedData.slice(0, limit);
-            if(paginatedData.length === limit) {
-                // If this if statement is true, it means we have enough blogs to fill the current page.
-                const blogData = await this.fetchBlogDetails(paginatedData);
-                const updatedUserFeedData = userFeedData.slice(limit);
-                await this.redisInstance.createOrUpdate(`UserFeed:${userID}`, updatedUserFeedData, "other");
-                console.log("Fetched blog data:", blogData);
-                return { success: true, data: blogData ?? [] };
-            } else {
-                // If this else statement is true, it means we don't have enough blogs to fill the current page.
-                const userFeedRemainingAccordingUserActivity = await this.redisInstance.get(`UserFeedAccordingUserActivity:${userID}`);
-                if(!userFeedRemainingAccordingUserActivity.redisOptSuccess)
-                    return { success: false, data: [] };
-                if(!userFeedRemainingAccordingUserActivity.value) {
-                    const newBlogs = await this.fetchBlogsAccordingToScore(userID);
 
-                    const newData = [...paginatedData , ...newBlogs];
-                    const result = await this.fetchBlogDetails(newData.slice(0, limit));
-                    await this.redisInstance.createOrUpdate(`UserFeedAccordingUserActivity:${userID}`, newData, "other");
-                    await this.redisInstance.createOrUpdate(`UserFeed:${userID}`, newData.slice(limit), "other");
-                    console.log("New blogs fetched according to score:", newBlogs);
-                    console.log("Final user feed data after update:", result);
-                    return { success: true, data: result ?? [] };
-                } else {
-                    const fetchTrendingBlogs = await this.redisInstance.get(`trendingBlogs`);
-                    console.log("Fetched trending blogs from Redis:", fetchTrendingBlogs.value);
-                    if(!fetchTrendingBlogs.redisOptSuccess)
-                        return { success: false, data: [] };
-                    let trendingBlogs : any = fetchTrendingBlogs.value ? JSON.parse(fetchTrendingBlogs.value as unknown as string) : [];
-                    trendingBlogs = JSON.parse(trendingBlogs as unknown as string);
-                    console.log("Trending blogs parsed from Redis:", trendingBlogs);
-                    const newData = [...paginatedData, ...trendingBlogs.map((blog:any) => blog.blogId)];
-                    console.log("New data after adding trending blogs:", newData);
-                    const result = await this.fetchBlogDetails(newData.slice(0, limit));
-                    await this.redisInstance.createOrUpdate(`UserFeedAccordingUserActivity:${userID}`, newData, "other");
-                    await this.redisInstance.createOrUpdate(`UserFeed:${userID}`, newData.slice(limit), "other");
-                    console.log("Trending blogs fetched:", trendingBlogs);
-                    console.log("Final user feed data after update:", result);
-                    return { success: true, data: result ?? [] };
-                }
-            }
+            const friendAndFollowerBlogs = userFeed.value ? this.parseRedisList(userFeed.value).map(String) : [];
+            const activityBlogs = (await this.fetchBlogsAccordingToScore(userID)).map(String);
+            const trendingBlogs = trending.value
+                ? this.parseRedisList(trending.value).map((entry: any) => String(entry !== null && typeof entry === "object" ? entry.blogId : entry))
+                : [];
 
+            const allBlogIds = Array.from(new Set([...friendAndFollowerBlogs, ...activityBlogs, ...trendingBlogs]));
+            const result = await this.fetchBlogDetails(allBlogIds);
+            return { success: true, data: result ?? [] };
         } catch (error) {
             console.error("Error fetching user feed blogs: ", error);
             return { success: false, data: [] };
@@ -265,6 +252,38 @@ export default class BlogFeed implements IBlogFeed {
                 followerFeedData.unshift(blogID);
                 await this.redisInstance.createOrUpdate(`UserFeed:${follower.followerID}`, followerFeedData, "other");
             }
+        }
+    }
+
+    fetchTrendingBlog = async (): Promise<APIResponseInterface<IBlogData[]>> => {
+        try {
+            const item = await this.redisInstance.get("trendingBlogs");
+            if (!item.redisOptSuccess || !item.value) {
+                return { success: true, data: [] };
+            }
+
+            // Value is JSON-encoded, possibly twice, and holds [{ blogId, score }]
+            let parsed: any = item.value;
+            while (typeof parsed === "string") {
+                parsed = JSON.parse(parsed);
+            }
+            const blogIds: string[] = (Array.isArray(parsed) ? parsed : [])
+                .map((entry: any) => (entry !== null && typeof entry === "object" ? entry.blogId : entry))
+                .filter((id: any) => id !== undefined && id !== null)
+                .map((id: any) => String(id));
+
+            // Resolve in parallel but keep the trending order
+            const details = await Promise.all(blogIds.map(async (blogId) => {
+                const blogDetails = await this.dbInstance.fetchData<any>("Blog", undefined, undefined, { id: blogId });
+                return blogDetails.dataSuccess && blogDetails.data && blogDetails.data.length > 0 ? blogDetails.data[0] : null;
+            }));
+
+            console.log("Trending blog details: ", details);
+
+            return { success: true, data: details.filter((blog): blog is IBlogData => blog !== null) };
+        } catch (error) {
+            console.log("Error fetching trending blogs:", error);
+            return { success: false, data: [] };
         }
     }
 }

@@ -12,4 +12,5 @@ export default interface IDataBaseService {
         condition?: Partial<T>
     ): Promise<IDatabaseResponse<number>>;
     specialQuery<T>(type : "mostLikedLastSevenDays" | "mostLikedLastTwoHours" | "mostDislikedLastSevenDays" | "mostDislikedLastTwoHours"): Promise<IDatabaseResponse<T>>;
+    groupBy<T>(tableName : keyof Models , column: string[]): Promise<IDatabaseResponse<T>>;
 }
