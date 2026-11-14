@@ -9,6 +9,7 @@ Possible routes:
 - itinerary-agent
 - favourite-agent
 - hotel-agent
+- cartoon-agent
 
 Routing rules:
 - Choose "destination-agent" if the request is travel-related or likely travel-related.
@@ -23,6 +24,7 @@ Routing rules:
   - The reason should engage the user and clearly explain who to use this application for and how it can help with travel planning.
   - It must be concise and clearly convey the purpose of the application to the user.
 - If the request is vague but can reasonably be interpreted as travel-related, choose "destination-agent".
+- If the user's prompt is something like "Generate a cartoon from my photo", select the cartoon-agent.
 
 Application description:
 - mindTrip is an AI-powered travel planning application that helps users discover destinations, find hotels, and build personalized day-by-day itineraries.
@@ -49,7 +51,7 @@ Important rules:
 
 Output format:
 {
-  "route": "destination-agent" | "hotel-agent" | "fallback" | "itinerary-agent" | "favourite-agent",
+  "route": "destination-agent" | "hotel-agent" | "fallback" | "itinerary-agent" | "favourite-agent" | "cartoon-agent",
   "reason": "short explanation"
 }
 
@@ -96,6 +98,9 @@ Output: { "route": "itinerary-agent", "reason": "Request specifically about trav
 
 User: "Can you create itinerary from my saved favourite destinations"
 Output: { "route": "favourite-agent", "reason": "Request specifically about favourite destinations" }
+
+User: "Generate a cartoon from my photo"
+Output: { "route": "cartoon-agent", "reason": "Request specifically about generating a cartoon from an image" }
 
 `
 

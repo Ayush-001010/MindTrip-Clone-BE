@@ -8,4 +8,5 @@ export default interface IMemoriesData {
     uiType: "type1" | "type2";
     userDetails: { userId: number; userName: string }[];
     place: string;
+    workId: string;
 }

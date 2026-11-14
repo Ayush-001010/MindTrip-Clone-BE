@@ -4,7 +4,7 @@ import http from "http";
 import cors from "cors";
 import { Server } from "socket.io";
 import sequelize from "./DB/dbConfig";
-import { initSocket } from "./Socket/socketOpt";
+import { initSocket } from "./Socket/socketTripOpt";
 import homeRoutes from "./Routes/Home";
 import commonRoutes from "./Routes/Common";
 import authRoutes from "./Routes/authRoutes";
@@ -21,6 +21,7 @@ import memoriesRoutes from "./Routes/MemoriesRoutes";
 import passport from "./config/passport";
 import inviteRoutes from "./Routes/InviteRoutes";
 import BlogFeed from "./Service/BlogFeed/BlogFeed";
+import socketMemoriesOpt, { MAX_SOCKET_IMAGE_BYTES } from "./Socket/socketMemoriesOpt";
 
 
 const app = express();
@@ -40,13 +41,20 @@ app.use("/", inviteRoutes);
 const server = http.createServer(app);
 
 export const io = new Server(server, {
+  maxHttpBufferSize: MAX_SOCKET_IMAGE_BYTES + 64 * 1024,
   cors: {
     origin: "http://localhost:5173",
     credentials: true,
   },
 });
 
+const memoriesWorkStation = io.of("/memories");
+
 initSocket(io);
+socketMemoriesOpt(memoriesWorkStation);
+
+
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/explore", hotelRoutes);

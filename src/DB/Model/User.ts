@@ -74,6 +74,10 @@ const User = sequelize.define("User",
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 5,
+        },
+        memoriesMapping: {
+            type: DataTypes.STRING,
+            allowNull: true,
         }
     },
 );

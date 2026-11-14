@@ -1,5 +1,5 @@
 import { Redis } from "ioredis";
-import IRedisService, { IRedisOutput } from "../../Interface/ClassInterface/IRedisService";
+import IRedisService, { IRedisListOutput, IRedisOutput } from "../../Interface/ClassInterface/IRedisService";
 
 export default class RedisService  implements IRedisService{
     private static redisClientInstance: Redis | null = null;
@@ -63,16 +63,20 @@ export default class RedisService  implements IRedisService{
 
     get = async (key: string): Promise<IRedisOutput> => {
         try {
-            const keyType = await this.redisClient.type(key);
-            if (keyType !== "string" && keyType !== "none") {
-                // Stale key written with a different type; drop it so reads/writes work again
-                await this.redisClient.del(key);
-                return { redisOptSuccess: true, value: undefined };
-            }
             const value = await this.redisClient.get(key);
             return { redisOptSuccess: true , value : value || undefined };
         } catch (error) {
             console.error("Socket Redis read failed:", error);
+            return { redisOptSuccess: false };
+        }
+    }
+
+    getList = async (key: string): Promise<IRedisListOutput> => {
+        try {
+            const value = await this.redisClient.lrange(key, 0, -1);
+            return { redisOptSuccess: true, value };
+        } catch (error) {
+            console.error("Socket Redis list read failed:", error);
             return { redisOptSuccess: false };
         }
     }

@@ -29,6 +29,7 @@ import OpinionComment from "./Model/OpinionComment";
 import UserActivity from "./Model/UserActivity";
 import BlogLikeByUser from "./Model/BlogLikeByUser";
 import Activities from "./Model/Activites";
+import MemoriesUserInvite from "./Model/MemoriesUserInvite";
 
 export interface Models {
   ExploreTrip: typeof ExploreTrip;
@@ -62,6 +63,7 @@ export interface Models {
   UserActivity: typeof UserActivity;
   BlogLikeByUser: typeof BlogLikeByUser;
   Memories: typeof Memories;
+  MemoriesUserInvite: typeof MemoriesUserInvite;
 }
 
 const models: Models = {
@@ -95,7 +97,8 @@ const models: Models = {
   UserFriends,
   UserActivity,
   BlogLikeByUser,
-  Memories
+  Memories,
+  MemoriesUserInvite
 };
 
 User.hasMany(UserTripMappingTable, {

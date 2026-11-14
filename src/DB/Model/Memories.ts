@@ -17,7 +17,7 @@ const Memories = sequelize.define("Memories" , {
     },
     place: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     totalCreditLeft: {
         type: DataTypes.INTEGER,
@@ -40,6 +40,10 @@ const Memories = sequelize.define("Memories" , {
     },
     userId : {
         type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    workId : {
+        type: DataTypes.STRING,
         allowNull: false
     }
 });
