@@ -45,4 +45,13 @@ export default class Memories implements IMemories {
     convertImageToCartoon(filePath: string, colorMode?: MascotColorMode): Promise<APIResponseInterface<ICharacterAnalysisResult>> {
         return this.agentOpt.convertImageToCartoon(filePath, colorMode);
     }
+
+    changePlaceInMemory(placeName: string, id: number): Promise<APIResponseInterface<boolean>> {
+        return this.createOpt.changePlaceInMemory(placeName, id);
+    }
+
+    addMediaToMemory(memoryId: number, type: "pic" | "video" | "audio", url: string, tag?: string): Promise<APIResponseInterface<boolean>> {
+        return this.createOpt.addMediaToMemory(memoryId, type, url, tag);
+    }
+    
 }

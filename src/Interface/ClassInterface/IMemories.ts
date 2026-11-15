@@ -12,6 +12,8 @@ export interface IMemoriesCreateOpt {
     createNewMemory: (userId : number , name : string) => Promise<APIResponseInterface<boolean>>;
     inviteUser: (userName: string, workId: string, base62: string) => Promise<APIResponseInterface<boolean>>;
     userAddedToMemory:(userId : string , base62 : string) => Promise<APIResponseInterface<boolean>>;
+    changePlaceInMemory:(placeName:string , id : number) => Promise<APIResponseInterface<boolean>>;
+    addMediaToMemory: (memoryId: number, type: "pic" | "video" | "audio", url: string, tag?: string) => Promise<APIResponseInterface<boolean>>;
 }
 
 export interface IMemoriesAgent {
@@ -26,4 +28,6 @@ export default interface IMemories {
     fetchParticularMemoryDetailsForInvite: (base62 : string) => Promise<APIResponseInterface<IMemoriesData>>;
     userAddedToMemory:(userId : string , base62 : string) => Promise<APIResponseInterface<boolean>>;
     convertImageToCartoon: (filePath: string, colorMode?: MascotColorMode) => Promise<APIResponseInterface<ICharacterAnalysisResult>>;
+    changePlaceInMemory:(placeName:string , id : number) => Promise<APIResponseInterface<boolean>>;
+    addMediaToMemory: (memoryId: number, type: "pic" | "video" | "audio", url: string, tag?: string) => Promise<APIResponseInterface<boolean>>;
 }

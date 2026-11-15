@@ -16,7 +16,7 @@ const Memories = sequelize.define("Memories" , {
         allowNull: false
     },
     place: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true
     },
     totalCreditLeft: {

@@ -85,6 +85,29 @@ const socketMemoriesOpt = (io: any) => {
                 socket.emit("room:convertImageToCartoon:error", "Failed to convert the image to a cartoon.");
             }
         });
+
+        socket.on("room:changePlaceInMemory", async (data: { placeName: string; id: number }) => {
+            const placeName = data.placeName;
+            const id = data.id;
+            console.log("Changing place in memory:", placeName, id);
+
+            const result = await memoriesInstance.changePlaceInMemory(placeName, id);
+            if (!result.success || !result.data) {
+                socket.emit("room:changePlaceInMemory:error", "Failed to change place in memory.");
+                return;
+            }
+            socket.emit("room:changePlaceInMemory:success", true);
+        });
+
+        socket.on("room:addMediaToMemory", async (data: { memoryId: number; type: "pic" | "video" | "audio"; url: string; tag?: string }[]) => {
+            const results = await Promise.all(data.map(item => memoriesInstance.addMediaToMemory(item.memoryId, item.type, item.url, item.tag)));
+            const failed = results.find(result => !result.success || !result.data);
+            if (failed) {
+                socket.emit("room:addMediaToMemory:error", "Failed to add media to memory.");
+                return;
+            }
+            socket.emit("room:addMediaToMemory:success", true);
+        });
     })
 }
 

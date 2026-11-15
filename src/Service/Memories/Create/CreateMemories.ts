@@ -124,5 +124,44 @@ export default class CreateMemories implements IMemoriesCreateOpt {
             console.log("Error updating user invite status:", error);
             return { success: false, data: false };
         }
-    }
+    };
+
+    changePlaceInMemory = async (placeName: string, id: number): Promise<APIResponseInterface<boolean>> => {
+        try {
+            const res = await this.dbInstanse.updateData("Memories", {
+                "place": placeName
+            }, {
+                id: id
+            });
+
+            if(!res.dataSuccess) {
+                throw new Error("Failed to change place in memory");
+            }
+
+            return { success: true, data: true };
+        } catch (error) {
+            console.log("Error changing place in memory:", error);
+            return { success: false, data: false };
+        }
+    };
+
+    addMediaToMemory = async (memoryId: number, type: "pic" | "video" | "audio", url: string, tag?: string): Promise<APIResponseInterface<boolean>> => {
+        try {
+            const res = await this.dbInstanse.createData("MemoriesPicAndAudio", {
+                memoryId: memoryId,
+                type: type,
+                url: url,
+                tag: tag
+            });
+
+            if(!res.dataSuccess) {
+                throw new Error("Failed to add media to memory");
+            }
+
+            return { success: true, data: true };
+        } catch (error) {
+            console.log("Error adding media to memory:", error);
+            return { success: false, data: false };
+        }
+    };
 }
