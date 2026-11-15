@@ -7,7 +7,6 @@ import ITripChat from "../../Interface/DataInterface/ITripChat";
 import {RouteResult,} from "../../Interface/DataInterface/ICopilot";
 import ITripHistory from "../../Interface/DataInterface/ITripHistory";
 import AgentFactory from "./Agent/AgentFactory";
-import type { MascotColorMode } from "../../Interface/DataInterface/ICharacterSpecification";
 
 export default class CopilotService implements ICopilotService {
 
@@ -43,7 +42,7 @@ export default class CopilotService implements ICopilotService {
     }
   }
 
-  coordinatorAgent = async (prompt: string,history: Array<ITripChat> , tripID: string , userID : number, base64Image?: Buffer, colorMode?: MascotColorMode): Promise<APIResponseInterface<any>> => {
+  coordinatorAgent = async (prompt: string,history: Array<ITripChat> , tripID: string , userID : number): Promise<APIResponseInterface<any>> => {
     const coordinatorResponse = await this.getRoute(prompt);
     const { route , reason } = coordinatorResponse;
     console.log("Route determined by coordinator agent:", route);
@@ -93,16 +92,6 @@ export default class CopilotService implements ICopilotService {
         return {
           success: true,
           data: favouriteData,
-        };
-      case "cartoon-agent":
-        const cartoonStrategyInstance = await AgentFactory.createAgent("cartoon-agent");
-        if (!cartoonStrategyInstance) {
-          return { success: false, data: { message: "Failed to create cartoon agent instance." } };
-        }
-        const cartoonData = await cartoonStrategyInstance.executeAgent(prompt, [], base64Image, colorMode);
-        return {
-          success: true,
-          data: cartoonData,
         };
       default:
         return { success: true, data: {

@@ -69,15 +69,6 @@ const User = sequelize.define("User",
         genralAnswer:{
             type: DataTypes.STRING,
             allowNull: true,
-        },
-        totalNumberOfMemoriesLeft : {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 5,
-        },
-        memoriesMapping: {
-            type: DataTypes.STRING,
-            allowNull: true,
         }
     },
 );

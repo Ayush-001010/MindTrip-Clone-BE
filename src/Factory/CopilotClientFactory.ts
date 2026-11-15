@@ -1,5 +1,4 @@
 import { CopilotClient, RuntimeConnection } from "@github/copilot-sdk";
-import path from "node:path";
 
 export default class CopilotClientFactory {
     private static instance:  CopilotClient | undefined;
@@ -7,9 +6,8 @@ export default class CopilotClientFactory {
     public static getInstance() {
         if(!CopilotClientFactory.instance) {
             CopilotClientFactory.instance = new CopilotClient({
-                connection: RuntimeConnection.forStdio(),
+                connection: RuntimeConnection.forUri("localhost:4321"),
                 mode: "empty",
-                baseDirectory: path.resolve(process.cwd(), ".copilot-runtime"),
             });
         }
         return CopilotClientFactory.instance;
