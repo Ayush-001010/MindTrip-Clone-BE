@@ -1,8 +1,6 @@
 
 import { Redis } from "ioredis";
-import IRedisService, {
-    IRedisOutput
-} from "../../Interface/ClassInterface/IRedisService";
+import IRedisService, { IRedisListOutput, IRedisOutput } from "../../Interface/ClassInterface/IRedisService";
 
 export default class RedisService implements IRedisService {
     private static redisClientInstance: Redis | null = null;
@@ -107,5 +105,15 @@ export default class RedisService implements IRedisService {
             console.error("Socket Redis read failed:", error);
             return { redisOptSuccess: false };
         }
-    };
+    }
+
+    getList = async (key: string): Promise<IRedisListOutput> => {
+        try {
+            const value = await this.redisClient.lrange(key, 0, -1);
+            return { redisOptSuccess: true, value };
+        } catch (error) {
+            console.error("Socket Redis list read failed:", error);
+            return { redisOptSuccess: false };
+        }
+    }
 }

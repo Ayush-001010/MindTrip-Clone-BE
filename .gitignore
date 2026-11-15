@@ -4,3 +4,6 @@ dist/
 .DS_Store
 *.log
 uploads/
+.copilot-runtime/
+output/landmark-visualization.png
+output/cartoon-*.svg

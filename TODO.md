@@ -1,17 +1,4 @@
-# Launch TODO
+# TO-DO List
 
-**Target live date: 02 December 2026**
-
-## Pending
-
-- [ ] Bugs: fix launch-blocking bugs.
-- [ ] Testing: test core user journeys and run regression checks.
-- [ ] Reels and Instagram Stories: complete the planned experience.
-- [ ] Hosting: deploy production services and verify the live application.
-- [ ] Globe Feed: complete and test the feed.
-
-## Release Check
-
-- [ ] Complete the pending launch items above.
-- [ ] Run a final smoke test on production.
-- [ ] Go live on 02 December 2026.
+- [ ] Group Video Editing MVP: create a trip project, invite friends, collect photos/videos/voice notes, and generate a reviewable 30-60-second reel. Prioritize a simple mobile-friendly flow, minimal active editing time, and fast previews. See [feature rating and proposed acceptance targets](docs/GROUP_VIDEO_EDITING_RATING.md).
+  - Design and implement the [shared project credit budget](docs/GROUP_VIDEO_EDITING_CREDITS.md): use 100 credits as the initial example, show upfront quotes, enforce limits on the backend, and validate rates against actual costs.
