@@ -164,4 +164,24 @@ export default class CreateMemories implements IMemoriesCreateOpt {
             return { success: false, data: false };
         }
     };
+
+    addChatToMemory = async (memoryId: number, userMessage: string, actionType?: "Start" | "Other", userName?: string): Promise<APIResponseInterface<boolean>> => {
+        try {
+            const res = await this.dbInstanse.createData("MemoriesChats", {
+                memoryId: memoryId,
+                userMessage: userMessage,
+                actionType: actionType || "Other",
+                userName: userName || ""
+            });
+
+            if(!res.dataSuccess) {
+                throw new Error("Failed to add chat to memory");
+            }
+
+            return { success: true, data: true };
+        } catch (error) {
+            console.log("Error adding chat to memory:", error);
+            return { success: false, data: false };
+        }
+    };
 }

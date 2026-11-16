@@ -6,12 +6,14 @@ import { uploadDir } from "../Middleware/upload";
 import Memories from "../Service/Memories/Memories";
 import RedisService from "../Service/RedisService/RedisService";
 import { mascotColorModeSchema } from "../Interface/DataInterface/ICharacterSpecification";
+import BullMQService from "../Service/BullMQService/BullMQService";
 
 export const MAX_SOCKET_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const socketMemoriesOpt = (io: any) => {
     const memoriesInstance = new Memories();
     const redisService = new RedisService();
+    const bullMQInstance = new BullMQService();
     
     io.on("connection", (socket: any) => {
         socket.on("room:join", async (data : { workId: string , userId : string }) => {
@@ -108,6 +110,18 @@ const socketMemoriesOpt = (io: any) => {
             }
             socket.emit("room:addMediaToMemory:success", true);
         });
+
+        socket.on("room:reelGenerationConversation" , async (data: { memoryId: number , userMessage: string , actionType: "Start" | "Other" , userName: string }) => {
+            const chatResult = await memoriesInstance.addChatToMemory(data.memoryId, data.userMessage, data.actionType, data.userName);
+            if(chatResult.success && data.actionType === "Start"){
+                const bullMQResult = await bullMQInstance.addToReelQueue(data.memoryId);
+                if(!bullMQResult){
+                    socket.emit("room:reelGenerationConversation:error", "Failed to add to reel queue.");
+                    return;
+                }
+                socket.emit("room:reelGenerationConversation:success", true);
+            }
+        })
     })
 }
 

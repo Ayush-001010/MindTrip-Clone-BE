@@ -42,6 +42,20 @@ export default class ReadMemories implements IMemoriesReadOpt {
                 return { success: false, data: {} as IMemoriesData };
             }
             const item = memoryResponse.data[0].dataValues;
+            const res1 = await this.dbInstanse.fetchData<any>("MemoriesPicAndAudio" , 1 , undefined, {
+                memoryId: item.id,
+                type:"audio"
+            });
+            const isTripAudioUpload = res1.data.length > 0; 
+            const res2 = await this.dbInstanse.fetchData<any>("MemoriesPicAndAudio" , 1 , undefined, {
+                memoryId: item.id,
+                type:"pic"
+            });
+            const res3 = await this.dbInstanse.fetchData<any>("MemoriesPicAndAudio" , 1 , undefined, {
+                memoryId: item.id,
+                type:"video"
+            });
+            const isTripPhotoAndVideoUpload = res2.data.length > 0 || res3.data.length > 0; 
             return {
                 success: true,
                 data: {
@@ -54,7 +68,9 @@ export default class ReadMemories implements IMemoriesReadOpt {
                     uiType: item.uiType,
                     userDetails: [], // It's pending currently
                     place: item.place,
-                    workId: item.workId
+                    workId: item.workId,
+                    isTripPhotoAndVideoUpload: isTripPhotoAndVideoUpload,
+                    isTripAudioUpload: isTripAudioUpload
                 }
             };
         } catch (error) {

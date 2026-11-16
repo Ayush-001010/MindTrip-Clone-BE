@@ -31,6 +31,7 @@ import BlogLikeByUser from "./Model/BlogLikeByUser";
 import Activities from "./Model/Activites";
 import MemoriesUserInvite from "./Model/MemoriesUserInvite";
 import MemoriesPicAndAudio from "./Model/MemoriesPicAndAudio";
+import MemoriesChats from "./Model/MemoriesChats"; 
 
 export interface Models {
   ExploreTrip: typeof ExploreTrip;
@@ -66,6 +67,7 @@ export interface Models {
   Memories: typeof Memories;
   MemoriesUserInvite: typeof MemoriesUserInvite;
   MemoriesPicAndAudio: typeof MemoriesPicAndAudio;
+  MemoriesChats: typeof MemoriesChats;
 }
 
 const models: Models = {
@@ -101,7 +103,8 @@ const models: Models = {
   BlogLikeByUser,
   Memories,
   MemoriesUserInvite,
-  MemoriesPicAndAudio
+  MemoriesPicAndAudio,
+  MemoriesChats
 };
 
 User.hasMany(UserTripMappingTable, {

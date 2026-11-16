@@ -9,4 +9,6 @@ export default interface IMemoriesData {
     userDetails: { userId: number; userName: string }[];
     place: string;
     workId: string;
+    isTripPhotoAndVideoUpload?: boolean;
+    isTripAudioUpload?: boolean;
 }

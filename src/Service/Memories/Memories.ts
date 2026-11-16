@@ -53,5 +53,9 @@ export default class Memories implements IMemories {
     addMediaToMemory(memoryId: number, type: "pic" | "video" | "audio", url: string, tag?: string): Promise<APIResponseInterface<boolean>> {
         return this.createOpt.addMediaToMemory(memoryId, type, url, tag);
     }
+
+    addChatToMemory(memoryId: number, userMessage: string, actionType?: "Start" | "Other", userName?: string): Promise<APIResponseInterface<boolean>> {
+        return this.createOpt.addChatToMemory(memoryId, userMessage, actionType, userName);
+    }
     
 }
