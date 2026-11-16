@@ -184,4 +184,56 @@ export default class CreateMemories implements IMemoriesCreateOpt {
             return { success: false, data: false };
         }
     };
+
+    createReelAnalysicBatch = async (memoryId: number, tagName: string): Promise<APIResponseInterface<boolean>> => {
+        try {
+            const res = await this.dbInstanse.createData("ReelAnalysicBatch", {
+                memoryId: memoryId,
+                tagName: tagName,
+                status: "pending"
+            });
+
+            if(!res.dataSuccess) {
+                throw new Error("Failed to create reel analysic batch");
+            }
+
+            return { success: true, data: true };
+        } catch (error) {
+            console.log("Error creating reel analysic batch:", error);
+            return { success: false, data: false };
+        }
+    };
+
+    updateReelAnalysicBatchStatus = async (memoryId: number, tagName: string, status: "pending" | "completed" | "failed"): Promise<APIResponseInterface<boolean>> => {
+        try {
+            const res = await this.dbInstanse.updateData("ReelAnalysicBatch", { status }, { memoryId, tagName });
+
+            if(!res.dataSuccess) {
+                throw new Error("Failed to update reel analysic batch status");
+            }
+
+            return { success: true, data: true };
+        } catch (error) {
+            console.log("Error updating reel analysic batch status:", error);
+            return { success: false, data: false };
+        }
+    };
+
+    saveMediaAnalysisResult = async (mediaId: number, analysisResult: object): Promise<APIResponseInterface<boolean>> => {
+        try {
+            const res = await this.dbInstanse.updateData("MemoriesPicAndAudio", {
+                analysisResult: JSON.stringify(analysisResult),
+                isProcessed: true
+            }, { id: mediaId });
+
+            if(!res.dataSuccess) {
+                throw new Error("Failed to save media analysis result");
+            }
+
+            return { success: true, data: true };
+        } catch (error) {
+            console.log("Error saving media analysis result:", error);
+            return { success: false, data: false };
+        }
+    };
 }

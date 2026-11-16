@@ -1,4 +1,4 @@
-import {IMemoriesReadOpt} from "../../../Interface/ClassInterface/IMemories";
+import {IMemoriesReadOpt, IMemoryVisualMedia} from "../../../Interface/ClassInterface/IMemories";
 import APIResponseInterface from "../../../Interface/ResponseInterface/APIResponseInterface";
 import DataBaseService from "../../Database/Database";
 import IMemoriesData from "../../../Interface/DataInterface/IMemoriesData";
@@ -99,5 +99,38 @@ export default class ReadMemories implements IMemoriesReadOpt {
             console.log("Error fetching particular memory details for invite:", error);
             return { success: false, data: {} as IMemoriesData };
         }
+    }
+
+    fetchPlaceInMemory = async (id:number): Promise<APIResponseInterface<string[]>> => {
+        const response = await this.dbInstanse.fetchData<any>("Memories", undefined, undefined, {
+            id: id
+        },["place"]);
+        if(!response.dataSuccess || response.data.length === 0) {
+            return { success: false, data: [] };
+        }
+        const placeInMemory = response.data[0].dataValues.place.split("|");
+        return { success: true, data: placeInMemory };
+    }
+
+    fetchVisualMediaInMemory = async (memoryId: number, tag: string): Promise<APIResponseInterface<IMemoryVisualMedia[]>> => {
+        const response = await this.dbInstanse.fetchData<any>("MemoriesPicAndAudio", undefined, undefined, {
+            memoryId: memoryId,
+            type: ["pic", "video"],
+            tag: tag
+        }, [["id", "ASC"]], ["id", "type", "tag" , "url" , "isProcessed", "analysisResult"]);
+        if (!response.dataSuccess || !response.data) {
+            return { success: false, data: [] };
+        }
+        return {
+            success: true,
+            data: response.data.map((item: any) => ({
+                id: item.dataValues.id,
+                type: item.dataValues.type,
+                tag: item.dataValues.tag,
+                url: item.dataValues.url,
+                isProcessed: item.dataValues.isProcessed,
+                analysisResult: item.dataValues.analysisResult
+            })),
+        };
     }
 }

@@ -1,4 +1,4 @@
-import IMemories, { IMemoriesAgent, IMemoriesCreateOpt, IMemoriesReadOpt } from "../../Interface/ClassInterface/IMemories";
+import IMemories, { IMemoriesAgent, IMemoriesCreateOpt, IMemoriesReadOpt, IMemoryVisualMedia } from "../../Interface/ClassInterface/IMemories";
 import MemoriesAgent from "./Agent/MemoriesAgent";
 import IMemoriesData from "../../Interface/DataInterface/IMemoriesData";
 import { ICharacterAnalysisResult, MascotColorMode } from "../../Interface/DataInterface/ICharacterSpecification";
@@ -57,5 +57,24 @@ export default class Memories implements IMemories {
     addChatToMemory(memoryId: number, userMessage: string, actionType?: "Start" | "Other", userName?: string): Promise<APIResponseInterface<boolean>> {
         return this.createOpt.addChatToMemory(memoryId, userMessage, actionType, userName);
     }
-    
+
+    fetchPlaceInMemory(id: number): Promise<APIResponseInterface<string[]>> {
+        return this.readOpt.fetchPlaceInMemory(id);
+    }
+
+    fetchVisualMediaInMemory(memoryId: number, tag: string): Promise<APIResponseInterface<IMemoryVisualMedia[]>> {
+        return this.readOpt.fetchVisualMediaInMemory(memoryId, tag);
+    }
+
+    createReelAnalysicBatch(memoryId: number, tagName: string): Promise<APIResponseInterface<boolean>> {
+        return this.createOpt.createReelAnalysicBatch(memoryId, tagName);
+    }
+
+    updateReelAnalysicBatchStatus(memoryId: number, tagName: string, status: "pending" | "completed" | "failed"): Promise<APIResponseInterface<boolean>> {
+        return this.createOpt.updateReelAnalysicBatchStatus(memoryId, tagName, status);
+    }
+
+    saveMediaAnalysisResult(mediaId: number, analysisResult: object): Promise<APIResponseInterface<boolean>> {
+        return this.createOpt.saveMediaAnalysisResult(mediaId, analysisResult);
+    }
 }

@@ -22,6 +22,15 @@ const MemoriesPicAndAudio = sequelize.define("MemoriesPicAndAudio", {
     tag:{
         type: DataTypes.STRING,
         allowNull: true
+    },
+    isProcessed: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    analysisResult: {
+        type: DataTypes.TEXT,
+        allowNull: true
     }
 });
 

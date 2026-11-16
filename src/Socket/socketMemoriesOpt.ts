@@ -17,12 +17,9 @@ const socketMemoriesOpt = (io: any) => {
     
     io.on("connection", (socket: any) => {
         socket.on("room:join", async (data : { workId: string , userId : string }) => {
-            console.log(`Received room join request:`, data);
             const { workId : roomId, userId } = data;
-            console.log(`Joining room: ${roomId}`);
             socket.join(roomId);
             const memoryDetails = await memoriesInstance.fetchParticularMemoryDetails(roomId);
-            console.log(`Memory details for room ${roomId}:`, memoryDetails);
             if (memoryDetails.success) {
                 socket.emit("room:memoryDetails", memoryDetails.data);
             } else {
@@ -35,7 +32,6 @@ const socketMemoriesOpt = (io: any) => {
                 return;
             }
             const roomUsers = await redisService.getList(roomId);
-            console.log(`Users in room ${roomId}:`, roomUsers);
             if (roomUsers.redisOptSuccess) {
                 socket.emit("room:users", roomUsers);
                 return;
@@ -112,7 +108,11 @@ const socketMemoriesOpt = (io: any) => {
         });
 
         socket.on("room:reelGenerationConversation" , async (data: { memoryId: number , userMessage: string , actionType: "Start" | "Other" , userName: string }) => {
+            console.log("Reel generation conversation data:", data);
             const chatResult = await memoriesInstance.addChatToMemory(data.memoryId, data.userMessage, data.actionType, data.userName);
+            if(data.actionType === "Start"){
+            socket.emit("room:reelGenrationProcessIsStarted");
+            }
             if(chatResult.success && data.actionType === "Start"){
                 const bullMQResult = await bullMQInstance.addToReelQueue(data.memoryId);
                 if(!bullMQResult){
