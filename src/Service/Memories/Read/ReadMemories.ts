@@ -1,4 +1,4 @@
-import {IMemoriesReadOpt, IMemoryVisualMedia} from "../../../Interface/ClassInterface/IMemories";
+import {IMemoriesReadOpt, IMemoriesReelAnalysisBatch, IMemoryVisualMedia} from "../../../Interface/ClassInterface/IMemories";
 import APIResponseInterface from "../../../Interface/ResponseInterface/APIResponseInterface";
 import DataBaseService from "../../Database/Database";
 import IMemoriesData from "../../../Interface/DataInterface/IMemoriesData";
@@ -130,6 +130,22 @@ export default class ReadMemories implements IMemoriesReadOpt {
                 url: item.dataValues.url,
                 isProcessed: item.dataValues.isProcessed,
                 analysisResult: item.dataValues.analysisResult
+            })),
+        };
+    }
+
+    fetchBatchReelAnalysis = async (memoryId: number): Promise<APIResponseInterface<IMemoriesReelAnalysisBatch[]>> => {
+        const response = await this.dbInstanse.fetchData<any>("ReelAnalysicBatch", undefined, undefined, {
+            memoryId: memoryId
+        }, [["id", "ASC"]], ["tagName", "status"]);
+        if (!response.dataSuccess || !response.data) {
+            return { success: false, data: [] };
+        }
+        return {
+            success: true,
+            data: response.data.map((item: any) => ({
+                tagName: item.dataValues.tagName,
+                status: item.dataValues.status
             })),
         };
     }

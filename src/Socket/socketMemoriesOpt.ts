@@ -120,6 +120,30 @@ const socketMemoriesOpt = (io: any) => {
                     return;
                 }
                 socket.emit("room:reelGenerationConversation:success", true);
+
+                const intervalId = setInterval(async () => {
+                    console.log("Fetching batch reel analysis for memoryId:", data.memoryId);
+                    const batchResult = await memoriesInstance.fetchBatchReelAnalysis(data.memoryId);
+                    if(!batchResult.success){
+                        clearInterval(intervalId);
+                        return;
+                    }
+                    if(batchResult.data && batchResult.data.length>0){
+                        const allCompleted = batchResult.data.every(batch => batch.status === "completed");
+                        // Return unique tagName values with status of latest batch
+                        const uniqueTagNames = Array.from(new Set(batchResult.data.map(batch => batch.tagName)));
+                        const latestBatchStatus = uniqueTagNames.map(tagName => {
+                            const latestBatch = (batchResult?.data || []).filter(batch => batch.tagName === tagName).pop();
+                            return { tagName, status: latestBatch?.status };
+                        });
+                        socket.emit("room:analysisBatchStatus", latestBatchStatus);
+                        if(allCompleted){
+                            socket.emit("room:reelGenerationConversation:completed", true);
+                            clearInterval(intervalId);
+                        }
+                    }
+                },1000*10);
+                socket.on("disconnect", () => clearInterval(intervalId));
             }
         })
     })

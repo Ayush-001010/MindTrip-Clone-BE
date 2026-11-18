@@ -11,12 +11,18 @@ export interface IMemoryVisualMedia {
     analysisResult: string | null;
 }
 
+export interface IMemoriesReelAnalysisBatch {
+    tagName: string;
+    status: "pending" | "completed" | "failed";
+}
+
 export interface IMemoriesReadOpt {
     fetchMemory: (userId : number) => Promise<APIResponseInterface<IMemoriesData[]>>;
     fetchParticularMemoryDetails: (workId : string) => Promise<APIResponseInterface<IMemoriesData>>;
     fetchParticularMemoryDetailsForInvite : (base62 : string) => Promise<APIResponseInterface<IMemoriesData>>;
     fetchPlaceInMemory: (id: number) => Promise<APIResponseInterface<string[]>>;
     fetchVisualMediaInMemory: (memoryId: number , tag : string) => Promise<APIResponseInterface<IMemoryVisualMedia[]>>;
+    fetchBatchReelAnalysis: (memoryId: number) => Promise<APIResponseInterface<IMemoriesReelAnalysisBatch[]>>;
 }
 
 export interface IMemoriesCreateOpt {
@@ -51,4 +57,5 @@ export default interface IMemories {
     createReelAnalysicBatch: (memoryId: number, tagName: string) => Promise<APIResponseInterface<boolean>>;
     updateReelAnalysicBatchStatus: (memoryId: number, tagName: string, status: "pending" | "completed" | "failed") => Promise<APIResponseInterface<boolean>>;
     saveMediaAnalysisResult: (mediaId: number, analysisResult: object) => Promise<APIResponseInterface<boolean>>;
+    fetchBatchReelAnalysis: (memoryId: number) => Promise<APIResponseInterface<IMemoriesReelAnalysisBatch[]>>;
 }

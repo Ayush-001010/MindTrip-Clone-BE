@@ -1,4 +1,4 @@
-import IMemories, { IMemoriesAgent, IMemoriesCreateOpt, IMemoriesReadOpt, IMemoryVisualMedia } from "../../Interface/ClassInterface/IMemories";
+import IMemories, { IMemoriesAgent, IMemoriesCreateOpt, IMemoriesReadOpt, IMemoriesReelAnalysisBatch, IMemoryVisualMedia } from "../../Interface/ClassInterface/IMemories";
 import MemoriesAgent from "./Agent/MemoriesAgent";
 import IMemoriesData from "../../Interface/DataInterface/IMemoriesData";
 import { ICharacterAnalysisResult, MascotColorMode } from "../../Interface/DataInterface/ICharacterSpecification";
@@ -76,5 +76,9 @@ export default class Memories implements IMemories {
 
     saveMediaAnalysisResult(mediaId: number, analysisResult: object): Promise<APIResponseInterface<boolean>> {
         return this.createOpt.saveMediaAnalysisResult(mediaId, analysisResult);
+    }
+
+    fetchBatchReelAnalysis(memoryId: number): Promise<APIResponseInterface<IMemoriesReelAnalysisBatch[]>> {
+        return this.readOpt.fetchBatchReelAnalysis(memoryId);
     }
 }
