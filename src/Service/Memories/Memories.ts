@@ -1,4 +1,5 @@
-import IMemories, { IMemoriesAgent, IMemoriesCreateOpt, IMemoriesReadOpt, IMemoriesReelAnalysisBatch, IMemoryVisualMedia } from "../../Interface/ClassInterface/IMemories";
+import IMemories, { IMemoriesAgent, IMemoriesCreateOpt, IMemoriesReadOpt, IMemoriesReelAnalysisBatch, IMemoriesReelCreation, IMemoryVisualMedia, IReelPipelineResult } from "../../Interface/ClassInterface/IMemories";
+import { IReelScript } from "../../Interface/DataInterface/IReelPlan";
 import MemoriesAgent from "./Agent/MemoriesAgent";
 import IMemoriesData from "../../Interface/DataInterface/IMemoriesData";
 import { ICharacterAnalysisResult, MascotColorMode } from "../../Interface/DataInterface/ICharacterSpecification";
@@ -59,6 +60,14 @@ export default class Memories implements IMemories {
         return this.createOpt.addChatToMemory(memoryId, userMessage, actionType, userName);
     }
 
+    createReelChat(request: IMemoriesReelCreation): Promise<APIResponseInterface<number>> {
+        return this.createOpt.createReelChat(request);
+    }
+
+    updateReelChatResponse(chatId: number, script: IReelScript): Promise<APIResponseInterface<boolean>> {
+        return this.createOpt.updateReelChatResponse(chatId, script);
+    }
+
     fetchPlaceInMemory(id: number): Promise<APIResponseInterface<string[]>> {
         return this.readOpt.fetchPlaceInMemory(id);
     }
@@ -93,5 +102,9 @@ export default class Memories implements IMemories {
     
     fetchAudioInMemory(memoryId: number): Promise<APIResponseInterface<IMemoryVisualMedia[]>> {
         return this.readOpt.fetchAudioInMemory(memoryId);
+    }
+
+    createReelPipeLine(reelCreationData: IMemoriesReelCreation): Promise<APIResponseInterface<IReelPipelineResult>> {
+        return this.agentOpt.createReelPipeLine(reelCreationData);
     }
 }

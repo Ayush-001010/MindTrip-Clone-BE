@@ -7,6 +7,7 @@ import Memories from "../Service/Memories/Memories";
 import RedisService from "../Service/RedisService/RedisService";
 import { mascotColorModeSchema } from "../Interface/DataInterface/ICharacterSpecification";
 import BullMQService from "../Service/BullMQService/BullMQService";
+import { IMemoriesReelCreation } from "../Interface/ClassInterface/IMemories";
 
 export const MAX_SOCKET_IMAGE_BYTES = 5 * 1024 * 1024;
 
@@ -145,6 +146,40 @@ const socketMemoriesOpt = (io: any) => {
                 },1000*10);
                 socket.on("disconnect", () => clearInterval(intervalId));
             }
+        });
+
+        socket.on("room:createReel", async (data: IMemoriesReelCreation) => {
+            console.log("Create reel request:", { memoryId: data?.memoryId, template: data?.template });
+            if (!data || !data.memoryId || !Array.isArray(data.place) || data.place.length === 0) {
+                socket.emit("room:createReel:error", "memoryId and at least one place are required.");
+                return;
+            }
+            if ((data.roomId !== undefined && (!Number.isSafeInteger(data.roomId) || data.roomId <= 0)) ||
+                (data.userName !== undefined && typeof data.userName !== "string") ||
+                (data.userSuggestion !== undefined && typeof data.userSuggestion !== "string")) {
+                socket.emit("room:createReel:error", "Invalid roomId, userName, or userSuggestion.");
+                return;
+            }
+            const chat = await memoriesInstance.createReelChat(data);
+            if (!chat.success || chat.data === undefined) {
+                socket.emit("room:createReel:error", chat.error || "Failed to save the user message.");
+                return;
+            }
+            console.log("Creating reel with data:", { memoryId: data?.memoryId, template: data?.template });
+            socket.emit("room:createReel:started");
+            const result = await memoriesInstance.createReelPipeLine(data);
+            if (!result.success || !result.data) {
+                console.error("Failed to create reel:", result.error);
+                socket.emit("room:createReel:error", result.error || "Failed to create reel.");
+                return;
+            }
+            const saved = await memoriesInstance.updateReelChatResponse(chat.data, result.data.script);
+            if (!saved.success || !saved.data) {
+                socket.emit("room:createReel:error", saved.error || "Failed to save the reel response.");
+                return;
+            }
+            console.log("Reel created successfully:", { memoryId: data?.memoryId, template: data?.template });
+            socket.emit("room:createReel:success", result.data);
         });
 
         socket.on("room:createMemoriesRoom", async (data: { memoryId: number, name: string }) => {

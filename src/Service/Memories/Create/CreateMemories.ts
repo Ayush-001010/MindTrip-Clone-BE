@@ -1,4 +1,5 @@
-import {IMemoriesCreateOpt} from "../../../Interface/ClassInterface/IMemories";
+import {IMemoriesCreateOpt, IMemoriesReelCreation} from "../../../Interface/ClassInterface/IMemories";
+import { IReelScript } from "../../../Interface/DataInterface/IReelPlan";
 import APIResponseInterface from "../../../Interface/ResponseInterface/APIResponseInterface";
 import DataBaseService from "../../Database/Database";
 import { v4 as uuidv4 } from 'uuid';
@@ -182,6 +183,53 @@ export default class CreateMemories implements IMemoriesCreateOpt {
         } catch (error) {
             console.log("Error adding chat to memory:", error);
             return { success: false, data: false };
+        }
+    };
+
+    createReelChat = async (request: IMemoriesReelCreation): Promise<APIResponseInterface<number>> => {
+        try {
+            if (request.roomId !== undefined) {
+                const room = await this.dbInstanse.fetchData<{ id: number }[]>(
+                    "MemoriesRoom", undefined, undefined,
+                    { id: request.roomId, memoryId: request.memoryId }, undefined, ["id"],
+                );
+                if (!room.dataSuccess) throw new Error("Failed to verify the memory room");
+                if (!room.data?.length) throw new Error("Room does not belong to this memory");
+            }
+            const res = await this.dbInstanse.createData<{
+                id?: number;
+                memoryId: number;
+                roomId?: number;
+                userMessage: string;
+                userName: string;
+                actionType: "Other";
+            }>("MemoriesChats", {
+                memoryId: request.memoryId,
+                roomId: request.roomId,
+                userMessage: request.userSuggestion ?? "",
+                userName: request.userName ?? "",
+                actionType: "Other",
+            });
+            if (!res.dataSuccess || !res.data?.id) throw new Error("Failed to create reel chat");
+            return { success: true, data: res.data.id };
+        } catch (error) {
+            console.error("Error creating reel chat:", error);
+            return { success: false, error: error instanceof Error ? error.message : "Failed to create reel chat" };
+        }
+    };
+
+    updateReelChatResponse = async (chatId: number, script: IReelScript): Promise<APIResponseInterface<boolean>> => {
+        try {
+            const res = await this.dbInstanse.updateData("MemoriesChats", {
+                botMessage: JSON.stringify(script),
+            }, { id: chatId }, false);
+            if (!res.dataSuccess || !Array.isArray(res.data) || res.data[0] !== 1) {
+                throw new Error("Failed to update reel chat response");
+            }
+            return { success: true, data: true };
+        } catch (error) {
+            console.error("Error updating reel chat response:", error);
+            return { success: false, error: error instanceof Error ? error.message : "Failed to update reel chat response" };
         }
     };
 
