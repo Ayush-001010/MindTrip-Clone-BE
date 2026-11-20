@@ -236,4 +236,22 @@ export default class CreateMemories implements IMemoriesCreateOpt {
             return { success: false, data: false };
         }
     };
+
+    createMemoriesRoom = async (memoryId: number, name: string): Promise<APIResponseInterface<boolean>> => {
+        try {
+            const res = await this.dbInstanse.createData("MemoriesRoom", {
+                memoryId: memoryId,
+                name: name
+            });
+
+            if(!res.dataSuccess) {
+                throw new Error("Failed to create memories room");
+            }
+
+            return { success: true, data: true };
+        } catch (error) {
+            console.log("Error creating memories room:", error);
+            return { success: false, data: false };
+        }
+    };
 }

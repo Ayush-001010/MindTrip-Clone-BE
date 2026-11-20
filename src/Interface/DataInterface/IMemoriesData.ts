@@ -11,4 +11,5 @@ export default interface IMemoriesData {
     workId: string;
     isTripPhotoAndVideoUpload?: boolean;
     isTripAudioUpload?: boolean;
+    rooms?:{name : string , id: number }[]
 }

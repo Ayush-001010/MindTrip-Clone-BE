@@ -2,6 +2,7 @@ import {IMemoriesReadOpt, IMemoriesReelAnalysisBatch, IMemoryVisualMedia} from "
 import APIResponseInterface from "../../../Interface/ResponseInterface/APIResponseInterface";
 import DataBaseService from "../../Database/Database";
 import IMemoriesData from "../../../Interface/DataInterface/IMemoriesData";
+import IMemoriesChat from "../../../Interface/DataInterface/IMemoriesChat";
 
 export default class ReadMemories implements IMemoriesReadOpt {
     private dbInstanse : DataBaseService;
@@ -56,6 +57,10 @@ export default class ReadMemories implements IMemoriesReadOpt {
                 type:"video"
             });
             const isTripPhotoAndVideoUpload = res2.data.length > 0 || res3.data.length > 0; 
+            const res4 = await this.dbInstanse.fetchData<any>("MemoriesRoom", undefined, undefined, {
+                memoryId: item.id
+            });
+            const rooms = res4.data.map((room: any) => ({ name: room.dataValues.name, id: room.dataValues.id })); 
             return {
                 success: true,
                 data: {
@@ -70,7 +75,8 @@ export default class ReadMemories implements IMemoriesReadOpt {
                     place: item.place,
                     workId: item.workId,
                     isTripPhotoAndVideoUpload: isTripPhotoAndVideoUpload,
-                    isTripAudioUpload: isTripAudioUpload
+                    isTripAudioUpload: isTripAudioUpload,
+                    rooms: rooms
                 }
             };
         } catch (error) {
@@ -146,6 +152,50 @@ export default class ReadMemories implements IMemoriesReadOpt {
             data: response.data.map((item: any) => ({
                 tagName: item.dataValues.tagName,
                 status: item.dataValues.status
+            })),
+        };
+    }
+
+    fetchRoomChats = async (roomId: number): Promise<APIResponseInterface<IMemoriesChat[]>> => {
+        const response = await this.dbInstanse.fetchData<any>("MemoriesChats", undefined, undefined, {
+            roomId: roomId,
+        }, [["id", "ASC"]]);
+        if (!response.dataSuccess || !response.data) {
+            return { success: false, data: [] };
+        }
+        return {
+            success: true,
+            data: response.data.map((item: any) => ({
+                id: item.dataValues.id,
+                roomId: item.dataValues.roomId,
+                memoryId: item.dataValues.memoryId,
+                userMessage: item.dataValues.userMessage,
+                botMessage: item.dataValues.botMessage,
+                userName: item.dataValues.userName,
+                actionType: item.dataValues.actionType,
+                createdAt: item.dataValues.createdAt,
+                updatedAt: item.dataValues.updatedAt,
+            })),
+        };
+    }
+
+    fetchAudioInMemory = async (memoryId: number): Promise<APIResponseInterface<IMemoryVisualMedia[]>> => {
+        const response = await this.dbInstanse.fetchData<any>("MemoriesPicAndAudio", undefined, undefined, {
+            memoryId: memoryId,
+            type: ["audio"]
+        }, [["id", "ASC"]], ["id", "type", "tag" , "url" , "isProcessed", "analysisResult"]);
+        if (!response.dataSuccess || !response.data) {
+            return { success: false, data: [] };
+        }
+        return {
+            success: true,
+            data: response.data.map((item: any) => ({
+                id: item.dataValues.id,
+                type: item.dataValues.type,
+                tag: item.dataValues.tag,
+                url: item.dataValues.url,
+                isProcessed: item.dataValues.isProcessed,
+                analysisResult: item.dataValues.analysisResult
             })),
         };
     }

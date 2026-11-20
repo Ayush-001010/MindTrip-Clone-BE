@@ -145,7 +145,34 @@ const socketMemoriesOpt = (io: any) => {
                 },1000*10);
                 socket.on("disconnect", () => clearInterval(intervalId));
             }
-        })
+        });
+
+        socket.on("room:createMemoriesRoom", async (data: { memoryId: number, name: string }) => {
+            const result = await memoriesInstance.createMemoriesRoom(data.memoryId, data.name);
+            if(result.success){
+                socket.emit("room:createMemoriesRoom:success", { name: data.name });
+            } else {
+                socket.emit("room:createMemoriesRoom:error", "Failed to create memories room.");
+            }
+        });
+
+        socket.on("room:fetchRoomChats", async (data: { roomId: number }) => {
+            const result = await memoriesInstance.fetchRoomChats(data.roomId);
+            if(result.success){
+                socket.emit("room:fetchRoomChats:success", result.data);
+            } else {
+                socket.emit("room:fetchRoomChats:error", "Failed to fetch room chats.");
+            }
+        });
+
+        socket.on("room:fetchAudioInMemory", async (data: { memoryId: number }) => {
+            const result = await memoriesInstance.fetchAudioInMemory(data.memoryId);
+            if(result.success){
+                socket.emit("room:fetchAudioInMemory:success", result.data);
+            } else {
+                socket.emit("room:fetchAudioInMemory:error", "Failed to fetch audio in memory.");
+            }
+        });
     })
 }
 

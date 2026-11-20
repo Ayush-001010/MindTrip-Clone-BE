@@ -5,6 +5,7 @@ import { ICharacterAnalysisResult, MascotColorMode } from "../../Interface/DataI
 import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseInterface";
 import CreateMemories from "./Create/CreateMemories";
 import ReadMemories from "./Read/ReadMemories";
+import IMemoriesChat from "../../Interface/DataInterface/IMemoriesChat";
 
 export default class Memories implements IMemories {
     createOpt : IMemoriesCreateOpt;
@@ -80,5 +81,17 @@ export default class Memories implements IMemories {
 
     fetchBatchReelAnalysis(memoryId: number): Promise<APIResponseInterface<IMemoriesReelAnalysisBatch[]>> {
         return this.readOpt.fetchBatchReelAnalysis(memoryId);
+    }
+
+    createMemoriesRoom(memoryId: number, name: string): Promise<APIResponseInterface<boolean>> {
+        return this.createOpt.createMemoriesRoom(memoryId, name);
+    }
+
+    fetchRoomChats(roomId: number): Promise<APIResponseInterface<IMemoriesChat[]>> {
+        return this.readOpt.fetchRoomChats(roomId);
+    }
+    
+    fetchAudioInMemory(memoryId: number): Promise<APIResponseInterface<IMemoryVisualMedia[]>> {
+        return this.readOpt.fetchAudioInMemory(memoryId);
     }
 }

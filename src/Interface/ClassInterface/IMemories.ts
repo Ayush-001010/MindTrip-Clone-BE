@@ -1,5 +1,6 @@
 import APIResponseInterface from "../ResponseInterface/APIResponseInterface";
-import IMemoriesData from "../DataInterface/IMemoriesData";
+import IMemoriesData from "../../Interface/DataInterface/IMemoriesData";
+import IMemoriesChat from "../../Interface/DataInterface/IMemoriesChat";
 import { ICharacterAnalysisResult, MascotColorMode } from "../DataInterface/ICharacterSpecification";
 
 export interface IMemoryVisualMedia {
@@ -23,6 +24,8 @@ export interface IMemoriesReadOpt {
     fetchPlaceInMemory: (id: number) => Promise<APIResponseInterface<string[]>>;
     fetchVisualMediaInMemory: (memoryId: number , tag : string) => Promise<APIResponseInterface<IMemoryVisualMedia[]>>;
     fetchBatchReelAnalysis: (memoryId: number) => Promise<APIResponseInterface<IMemoriesReelAnalysisBatch[]>>;
+    fetchRoomChats: (roomId: number) => Promise<APIResponseInterface<IMemoriesChat[]>>;
+    fetchAudioInMemory: (memoryId: number) => Promise<APIResponseInterface<IMemoryVisualMedia[]>>;
 }
 
 export interface IMemoriesCreateOpt {
@@ -34,6 +37,7 @@ export interface IMemoriesCreateOpt {
     addChatToMemory: (memoryId: number, userMessage: string, actionType?: "Start" | "Other", userName?: string) => Promise<APIResponseInterface<boolean>>;
     createReelAnalysicBatch: (memoryId: number, tagName: string) => Promise<APIResponseInterface<boolean>>;
     updateReelAnalysicBatchStatus: (memoryId: number, tagName: string, status: "pending" | "completed" | "failed") => Promise<APIResponseInterface<boolean>>;
+    createMemoriesRoom: (memoryId: number, name: string) => Promise<APIResponseInterface<boolean>>;
     saveMediaAnalysisResult: (mediaId: number, analysisResult: object) => Promise<APIResponseInterface<boolean>>;
 }
 
@@ -56,6 +60,9 @@ export default interface IMemories {
     fetchVisualMediaInMemory: (memoryId: number, tag: string) => Promise<APIResponseInterface<IMemoryVisualMedia[]>>;
     createReelAnalysicBatch: (memoryId: number, tagName: string) => Promise<APIResponseInterface<boolean>>;
     updateReelAnalysicBatchStatus: (memoryId: number, tagName: string, status: "pending" | "completed" | "failed") => Promise<APIResponseInterface<boolean>>;
+    createMemoriesRoom: (memoryId: number, name: string) => Promise<APIResponseInterface<boolean>>;
     saveMediaAnalysisResult: (mediaId: number, analysisResult: object) => Promise<APIResponseInterface<boolean>>;
     fetchBatchReelAnalysis: (memoryId: number) => Promise<APIResponseInterface<IMemoriesReelAnalysisBatch[]>>;
+    fetchRoomChats: (roomId: number) => Promise<APIResponseInterface<IMemoriesChat[]>>;
+    fetchAudioInMemory: (memoryId: number) => Promise<APIResponseInterface<IMemoryVisualMedia[]>>;
 }

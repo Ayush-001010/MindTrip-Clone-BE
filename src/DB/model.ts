@@ -33,6 +33,7 @@ import MemoriesUserInvite from "./Model/MemoriesUserInvite";
 import MemoriesPicAndAudio from "./Model/MemoriesPicAndAudio";
 import MemoriesChats from "./Model/MemoriesChats"; 
 import ReelAnalysicBatch from "./Model/ReelAnalysicBatch";
+import MemoriesRoom from "./Model/MemoriesRoom";
 
 export interface Models {
   ExploreTrip: typeof ExploreTrip;
@@ -70,6 +71,7 @@ export interface Models {
   MemoriesPicAndAudio: typeof MemoriesPicAndAudio;
   MemoriesChats: typeof MemoriesChats;
   ReelAnalysicBatch: typeof ReelAnalysicBatch;
+  MemoriesRoom: typeof MemoriesRoom;
 }
 
 const models: Models = {
@@ -107,7 +109,8 @@ const models: Models = {
   MemoriesUserInvite,
   MemoriesPicAndAudio,
   MemoriesChats,
-  ReelAnalysicBatch
+  ReelAnalysicBatch,
+  MemoriesRoom
 };
 
 User.hasMany(UserTripMappingTable, {

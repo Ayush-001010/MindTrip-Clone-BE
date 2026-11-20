@@ -27,6 +27,10 @@ const MemoriesChats = sequelize.define("MemoriesChats" , {
     userName : {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    roomId: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
 });
 
