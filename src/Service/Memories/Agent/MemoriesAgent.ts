@@ -13,12 +13,13 @@ import {
 import AWS from "../../Cloud/AWS/AWS";
 import { execFile } from "node:child_process";
 import ReadMemories from "../Read/ReadMemories";
-import { beatGrid, buildReelScript, chooseMusicStart, DEFAULT_TARGET_SECONDS } from "../../ReelPlan/ReelScriptBuilder";
+import { beatGrid, buildReelScript, candidateMusicStarts, DEFAULT_TARGET_SECONDS } from "../../ReelPlan/ReelScriptBuilder";
 import { IMusicAnalysis, IReelClip } from "../../../Interface/DataInterface/IReelPlan";
+import { IReelMusicWindow, ReelDirectorResponse } from "../../../Interface/DataInterface/IReelDirection";
 import ReelDirectorAgent from "../../Copilot/Agent/ReelDirectorAgent/ReelDirectorAgent";
 import { downloadMusic, resolveMusicUrl } from "./MusicDownload";
-
-const MAX_CLIPS_FOR_AI = 60;
+import { transcribeMusic } from "./MusicTranscript";
+import { reelVisualPreviews } from "../../ReelPlan/ReelVisualPreviews";
 
 export default class MemoriesAgent implements IMemoriesAgent {
   convertImageToCartoon = async (
@@ -232,13 +233,15 @@ export default class MemoriesAgent implements IMemoriesAgent {
   private loadClips = async (memoryId: number, places: string[]) => {
     const clips: IReelClip[] = [];
     const reader = new ReadMemories();
+    const seenMedia = new Set<number>();
     for (const place of places) {
       const tag = place.split(",")[0];
       const response = await reader.fetchVisualMediaInMemory(memoryId, tag);
       if (!response.success) continue;
 
       for (const media of response.data ?? []) {
-        if (!media.analysisResult) continue;
+        if (!media.analysisResult || seenMedia.has(media.id)) continue;
+        seenMedia.add(media.id);
         let result: any;
         try {
           result = JSON.parse(media.analysisResult);
@@ -247,14 +250,13 @@ export default class MemoriesAgent implements IMemoriesAgent {
         }
 
         if (media.type === "pic" && result?.ai) {
-          if ((result.ai.reelScore ?? 0) < 4) continue;
           clips.push({
             id: `p${media.id}`,
             mediaId: media.id,
             kind: "photo",
             place,
             url: this.toCdnUrl(media.url),
-            score: result.ai.reelScore,
+            score: result.ai.reelScore ?? 0,
             storyRoles: result.ai.storyRoles ?? [],
             description: result.ai.description ?? "",
             focalPoint: result.ai.focalPoint,
@@ -284,13 +286,6 @@ export default class MemoriesAgent implements IMemoriesAgent {
     return clips;
   };
 
-  // Keeps the AI prompt small: when there are too many clips, drop the lowest scores
-  private limitClips = (clips: IReelClip[]) => {
-    if (clips.length <= MAX_CLIPS_FOR_AI) return clips;
-    const keep = new Set([...clips].sort((a, b) => b.score - a.score).slice(0, MAX_CLIPS_FOR_AI));
-    return clips.filter((clip) => keep.has(clip));
-  };
-
   // The song name helps the AI recall the song's feel; random upload names (uuid, numbers) are ignored
   private songTitle = (data: IMemoriesReelCreation, audioUrl?: string) => {
     const given = data.soundtrackTitle?.trim();
@@ -303,30 +298,22 @@ export default class MemoriesAgent implements IMemoriesAgent {
 
   // Compact view of the song for the AI: a few energy sections instead of every bar
   private summariseMusic = (
+    id: string,
     music: IMusicAnalysis | undefined,
     grid: { times: number[]; beatSec: number; musicStart: number },
-    title: string | null,
-  ) => {
+    transcript: IReelMusicWindow["transcript"],
+  ): IReelMusicWindow => {
     const usableSeconds = grid.times.length ? grid.times[grid.times.length - 1] : 0;
-    if (!music) {
-      return {
-        title,
-        songSeconds: 0,
-        reelStartsAtSec: 0,
-        bpm: 120,
-        beatSeconds: grid.beatSec,
-        usableSeconds,
-        sections: [],
-        peak: null,
-      };
-    }
-    const bars = music.bars
+    const relative = (startSec: number, endSec: number) => ({
+      startSec: Math.max(0, startSec - grid.musicStart),
+      endSec: Math.min(usableSeconds, endSec - grid.musicStart),
+    });
+    const bars = (music?.bars ?? [])
       .map((bar) => ({
-        startSec: bar.startSec - grid.musicStart,
-        endSec: bar.endSec - grid.musicStart,
+        ...relative(bar.startSec, bar.endSec),
         energy: bar.energy,
       }))
-      .filter((bar) => bar.endSec <= usableSeconds + 0.001);
+      .filter((bar) => bar.endSec > bar.startSec);
     const size = Math.max(1, Math.ceil(bars.length / 8));
     const sections: { startSec: number; endSec: number; energy: number }[] = [];
     for (let i = 0; i < bars.length; i += size) {
@@ -337,23 +324,20 @@ export default class MemoriesAgent implements IMemoriesAgent {
         energy: Number((chunk.reduce((sum, bar) => sum + bar.energy, 0) / chunk.length).toFixed(2)),
       });
     }
-    const peakStart = music.peak.startSec - grid.musicStart;
-    const peak =
-      peakStart >= 0 && peakStart < usableSeconds
-        ? {
-            startSec: Number(peakStart.toFixed(1)),
-            endSec: Number(Math.min(music.peak.endSec - grid.musicStart, usableSeconds).toFixed(1)),
-          }
-        : null;
+    const peak = music && music.peak.avg >= 0
+      ? relative(music.peak.startSec, music.peak.endSec)
+      : null;
     return {
-      title,
-      songSeconds: Number(music.durationSec.toFixed(1)),
-      reelStartsAtSec: Number(grid.musicStart.toFixed(1)),
-      bpm: music.bpm,
-      beatSeconds: Number(grid.beatSec.toFixed(3)),
-      usableSeconds: Number(usableSeconds.toFixed(1)),
+      id,
+      reelStartsAtSec: grid.musicStart,
+      beatTimes: grid.times,
+      usableSeconds,
       sections,
-      peak,
+      peak: peak && peak.endSec > peak.startSec ? peak : null,
+      transcript: transcript
+        .map(segment => ({ ...relative(segment.startSec, segment.endSec), text: segment.text }))
+        .filter(segment => segment.endSec > segment.startSec)
+        .slice(0, 20),
     };
   };
 
@@ -368,6 +352,7 @@ export default class MemoriesAgent implements IMemoriesAgent {
       // 1. Music: beats, BPM and energy
       let music: IMusicAnalysis | undefined;
       let audioUrl: string | undefined;
+      let transcript: IReelMusicWindow["transcript"] = [];
       if (reelCreationData.soundtrack) {
         audioUrl = resolveMusicUrl(reelCreationData.soundtrack);
         const dir = await mkdtemp(path.join(os.tmpdir(), "reel-music-"));
@@ -376,6 +361,14 @@ export default class MemoriesAgent implements IMemoriesAgent {
           console.log("[Music] Downloading soundtrack from configured CDN");
           await downloadMusic(audioUrl, musicPath);
           music = await this.analyseMusic(musicPath);
+          try {
+            transcript = await transcribeMusic(musicPath, dir, music.durationSec);
+            if (!transcript.length) warnings.push("No usable song transcript; the director used music analysis only.");
+          } catch (error) {
+            const reason = error instanceof Error ? error.name : "UnknownError";
+            console.warn("[Music] Transcription unavailable:", { reason, configured: Boolean(process.env.WHISPER_URL) });
+            warnings.push("Song transcription unavailable; the director used music analysis only.");
+          }
         } finally {
           await rm(dir, { recursive: true, force: true });
         }
@@ -384,27 +377,26 @@ export default class MemoriesAgent implements IMemoriesAgent {
       }
 
       // 2. Photos and videos with their saved analysis
-      const clips = this.limitClips(await this.loadClips(reelCreationData.memoryId, reelCreationData.place));
+      const clips = await this.loadClips(reelCreationData.memoryId, reelCreationData.place);
       const targetSeconds = reelCreationData.targetSeconds ?? DEFAULT_TARGET_SECONDS;
-      // A 3-minute song and a 40s reel: choose which part of the song the reel uses
-      const musicStartSec = music
-        ? chooseMusicStart(music, targetSeconds.max, reelCreationData.musicStartSec)
-        : 0;
-      const grid = beatGrid(music, targetSeconds.max, musicStartSec);
+      const requested = reelCreationData.musicStartSec;
+      if (music && requested !== undefined && (!Number.isFinite(requested) || requested < 0 ||
+        !music.beats.some((beat, index) => index < music.beats.length - 1 && beat >= requested))) {
+        throw new Error("musicStartSec must leave at least one full beat in the soundtrack.");
+      }
+      const grids = candidateMusicStarts(music, targetSeconds.max, requested)
+        .map(start => beatGrid(music, targetSeconds.max, start));
+      const windows = grids
+        .filter(grid => grid.times.length >= 2)
+        .map((grid, index) => this.summariseMusic(`window-${index + 1}`, music, grid, transcript));
+      if (!windows.length) throw new Error("The reel duration is too short for the available beat grid.");
+      let musicStartSec = windows[0].reelStartsAtSec;
       const songTitle = this.songTitle(reelCreationData, audioUrl);
-      console.log("[Reel pipeline] Beat grid:", {
-        songTitle,
-        songSeconds: music?.durationSec,
-        musicStartSec,
-        reelStartsAt: grid.musicStart,
-        beats: grid.times.length,
-        beatSec: grid.beatSec,
-        targetSeconds,
-      });
 
       // 3. AI reads the music + photo + video analysis and picks the best moments;
       //    if it fails, code picks instead
-      let direction;
+      let direction: ReelDirectorResponse | undefined;
+      const unavailablePreviews: string[] = [];
       if (clips.length > 0) {
         try {
           direction = await new ReelDirectorAgent().direct({
@@ -414,7 +406,13 @@ export default class MemoriesAgent implements IMemoriesAgent {
             places: reelCreationData.place,
             userSuggestion: reelCreationData.userSuggestion,
             targetSeconds,
-            music: this.summariseMusic(music, grid, songTitle),
+            music: {
+              title: songTitle,
+              songSeconds: music?.durationSec ?? 0,
+              bpm: music?.bpm ?? 120,
+              beatSeconds: grids[0].beatSec,
+              windows,
+            },
             clips: clips.map((clip) => ({
               id: clip.id,
               place: clip.place,
@@ -424,13 +422,19 @@ export default class MemoriesAgent implements IMemoriesAgent {
               description: clip.description,
               segmentSeconds:
                 clip.sourceStart !== undefined && clip.sourceEnd !== undefined
-                  ? Number((clip.sourceEnd - clip.sourceStart).toFixed(1))
+                  ? clip.sourceEnd - clip.sourceStart
                   : undefined,
             })),
-          });
+          }, reelVisualPreviews(clips, clipId => unavailablePreviews.push(clipId)));
+          musicStartSec = windows.find(window => window.id === direction?.musicWindowId)?.reelStartsAtSec
+            ?? musicStartSec;
         } catch (error) {
           console.error("[Reel pipeline] AI direction failed, using fallback picker:", error);
           warnings.push("AI selection failed; clips were picked by score instead.");
+        }
+        if (unavailablePreviews.length) {
+          console.warn("[Reel pipeline] Visual previews unavailable:", unavailablePreviews);
+          warnings.push(`Visual previews unavailable for ${unavailablePreviews.length} clip(s); their saved analysis was still available.`);
         }
       }
 

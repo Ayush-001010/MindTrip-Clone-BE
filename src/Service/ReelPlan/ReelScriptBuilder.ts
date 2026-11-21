@@ -46,6 +46,18 @@ export function chooseMusicStart(music: IMusicAnalysis, windowSec: number, reque
   return best.start;
 }
 
+export function candidateMusicStarts(music: IMusicAnalysis | undefined, windowSec: number, requested?: number) {
+  if (!music) return [0];
+  if (requested !== undefined) return [requested];
+  const fallback = chooseMusicStart(music, windowSec);
+  const lastBeat = music.beats[music.beats.length - 1] ?? 0;
+  const starts = music.bars.filter(bar => bar.startSec + windowSec <= lastBeat).map(bar => bar.startSec);
+  if (!starts.length) return [fallback];
+  // Sample across the song so the director can compare quiet and energetic passages.
+  const sampled = Array.from({ length: 5 }, (_, i) => starts[Math.round(i * (starts.length - 1) / 4)]);
+  return [...new Set([fallback, ...sampled])];
+}
+
 // Equal-length slots on the beat grid for the code-only picker
 export function buildSlots(pace: Pace, times: number[], beatSec: number) {
   const beatsPerScene = Math.max(1, Math.ceil(MIN_SCENE_SEC[pace] / beatSec));

@@ -18,6 +18,22 @@ export const reelDirectionSchema = z.object({
 
 export type ReelDirection = z.infer<typeof reelDirectionSchema>;
 
+export const reelDirectorResponseSchema = reelDirectionSchema.extend({
+  musicWindowId: z.string().min(1),
+});
+
+export type ReelDirectorResponse = z.infer<typeof reelDirectorResponseSchema>;
+
+export interface IReelMusicWindow {
+  id: string;
+  reelStartsAtSec: number;
+  beatTimes: number[];
+  usableSeconds: number;
+  sections: { startSec: number; endSec: number; energy: number }[];
+  peak: { startSec: number; endSec: number } | null;
+  transcript: { startSec: number; endSec: number; text: string }[];
+}
+
 export interface IReelDirectorInput {
   template: string;
   mood: string;
@@ -29,14 +45,9 @@ export interface IReelDirectorInput {
     // Name of the song, so the model can use what it knows about its feel; null when unknown
     title: string | null;
     songSeconds: number;
-    // Where in the song the reel starts; 0 means the very beginning
-    reelStartsAtSec: number;
     bpm: number;
     beatSeconds: number;
-    // The part of the song the reel will use, in seconds from the reel start
-    usableSeconds: number;
-    sections: { startSec: number; endSec: number; energy: number }[];
-    peak: { startSec: number; endSec: number } | null;
+    windows: IReelMusicWindow[];
   };
   clips: {
     id: string;

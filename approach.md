@@ -41,7 +41,14 @@ type MusicAnalysis = {
 Steps: FFmpeg to mono PCM -> frames (1024 samples, hop 512) -> RMS per frame -> onset envelope -> autocorrelation for BPM -> beat grid -> energy per bar (normalised).
 Libraries: `essentia.js` or Python `librosa` as a child process.
 
+### Current uploaded-song window selection
+
+The backend uses FFmpeg to analyse the upload and `WHISPER_URL` (`/asr`) to transcribe vocals. Copilot compares beat-aligned excerpts with their energy, timestamped transcript snippets, available clips, and the user's suggestion. It picks a window ID and a shot sequence; the backend validates the choice against that window's beat grid. An explicit `musicStartSec` limits the director to that starting window. If transcription is unavailable, the director uses the audio measurements without text. If AI direction fails, the existing code picker and energy-based music start are used.
+
 ## Matching clips to the song
+
+The reel director reviews all candidates with saved visual analysis for the selected places, with no photo score cutoff or 60-clip cap. It receives one labeled contact sheet per preview request: thumbnails for photos and timestamped stills from analysed video segments, not full videos. The final request carries the full candidate list and music analysis; the director uses the earlier visual reviews to select a subset. Failed previews are reported, and their saved analysis remains eligible.
+
 - Each clip gets a **motion** value 0..1 (many scene changes = high; photos = low).
 - Each song slot has **energy** 0..1 and a section (intro, build, peak, outro).
 - Fill highest-energy slots first. Score = `reelScore/10 - |motion - energy|`, with a bonus for the best clip on the peak, `opener` roles in the intro and `ending` roles in the outro.

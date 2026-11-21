@@ -20,6 +20,10 @@ export function resolveMusicUrl(value: string): string {
 }
 
 export async function downloadMusic(url: string, filePath: string): Promise<void> {
+  await downloadMediaFile(url, filePath, MAX_MUSIC_BYTES, "Music");
+}
+
+export async function downloadMediaFile(url: string, filePath: string, maxBytes: number, label: string): Promise<void> {
   const signal = AbortSignal.timeout(5 * 60 * 1000);
   const response = await axios.get<Readable>(url, {
     responseType: "stream",
@@ -27,17 +31,18 @@ export async function downloadMusic(url: string, filePath: string): Promise<void
     signal,
     maxRedirects: 0,
   });
-  if (Number(response.headers["content-length"]) > MAX_MUSIC_BYTES) {
+  const limitError = `${label} exceeds the ${maxBytes / 1024 / 1024} MB download limit`;
+  if (Number(response.headers["content-length"]) > maxBytes) {
     response.data.destroy();
-    throw new Error("Music exceeds the 200 MB download limit");
+    throw new Error(limitError);
   }
   let bytes = 0;
   const limiter = new Transform({
     transform(chunk: Buffer, _encoding, callback) {
       bytes += chunk.length;
-      callback(bytes > MAX_MUSIC_BYTES ? new Error("Music exceeds the 200 MB download limit") : null, chunk);
+      callback(bytes > maxBytes ? new Error(limitError) : null, chunk);
     },
   });
   await pipeline(response.data, limiter, createWriteStream(filePath, { flags: "wx" }), { signal });
-  if (!bytes) throw new Error("Downloaded music is empty");
+  if (!bytes) throw new Error(`Downloaded ${label.toLowerCase()} is empty`);
 }
