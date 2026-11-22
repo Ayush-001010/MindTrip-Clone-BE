@@ -2,6 +2,7 @@ export interface IBlogPlace {
     placeName: string;
     longitude: number;
     latitude: number;
+    count: number;
 }
 
 

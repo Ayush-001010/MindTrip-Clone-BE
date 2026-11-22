@@ -10,9 +10,9 @@ export default class BlogGlobeFeedService implements IBlogGlobeFeedService {
 
     fetchBlogUniquePlaces = async () : Promise<IBlogPlace[]> => {
         try {
-            const response = await this.dbInstance.groupBy("BlogActivity", ["placeName", "longitude", "latitude"]);
+            const response = await this.dbInstance.groupBy<IBlogPlace[]>("BlogActivity", ["placeName", "longitude", "latitude"], true);
             if(response.dataSuccess && response.data){
-                return response.data as IBlogPlace[];
+                return response.data;
             }
             return [];
         } catch (error) {

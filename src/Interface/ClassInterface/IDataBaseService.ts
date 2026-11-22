@@ -8,6 +8,6 @@ export default interface IDataBaseService {
     updateData<T>(tableName : keyof Models , data: Partial<T>, filter?: Partial<T>, returning?: boolean): Promise<IDatabaseResponse<T>>;
     countData<T>(tableName : keyof Models , filter?: Partial<T>): Promise<IDatabaseResponse<number>>;
     deleteData<T>(tableName : keyof Models , filter?: Partial<T>): Promise<IDatabaseResponse<T>>;
-    specialQuery<T>(type : "mostLikedLastSevenDays" | "mostLikedLastTwoHours" | "mostDislikedLastSevenDays" | "mostDislikedLastTwoHours"): Promise<IDatabaseResponse<T>>;
-    groupBy<T>(tableName : keyof Models , column: string[]): Promise<IDatabaseResponse<T>>;
+    specialQuery<T>(type : "mostLikedLastSevenDays" | "mostLikedLastTwoHours" | "mostDislikedLastSevenDays" | "mostDislikedLastTwoHours" | "fetchReelsByPlaceName" , placeName?: string): Promise<IDatabaseResponse<T>>;
+    groupBy<T>(tableName : keyof Models , column: string[], includeCount?: boolean): Promise<IDatabaseResponse<T>>;
 }

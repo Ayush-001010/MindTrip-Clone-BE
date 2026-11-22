@@ -71,7 +71,7 @@ export default class DataBaseService implements IDataBaseService {
     }
   };
 
-  specialQuery = async<T>(type: "mostLikedLastSevenDays" | "mostLikedLastTwoHours" | "mostDislikedLastSevenDays" | "mostDislikedLastTwoHours"): Promise<IDatabaseResponse<T>> => {
+  specialQuery = async<T>(type: "mostLikedLastSevenDays" | "mostLikedLastTwoHours" | "mostDislikedLastSevenDays" | "mostDislikedLastTwoHours" | "fetchReelsByPlaceName", placeName?: string): Promise<IDatabaseResponse<T>> => {
     try{
       switch(type){
         case "mostLikedLastSevenDays":
@@ -141,6 +141,15 @@ export default class DataBaseService implements IDataBaseService {
               return { dataSuccess: true, data: [] as unknown as T };
             }
             return { dataSuccess: true, data: dislikesTwoHours as unknown as T };
+          case "fetchReelsByPlaceName":
+            const reels = await models["Reel"].findAll({
+              where:{
+                placeNames:{
+                  [Op.like]: `%${placeName}%`
+                }
+              }
+            })
+            return { dataSuccess: true, data: reels as unknown as T };
         }
     } catch (error) {
         console.log(`Error executing special query: ${type}`, error);
@@ -148,11 +157,11 @@ export default class DataBaseService implements IDataBaseService {
     }
   };
 
-  groupBy = async <T>(tableName : keyof Models , column: string[]) : Promise<IDatabaseResponse<T>> => {
+  groupBy = async <T>(tableName : keyof Models , column: string[], includeCount = false) : Promise<IDatabaseResponse<T>> => {
     try {
         const response = await models[tableName].findAll({
-            attributes: column as any,
-            group: column as any,
+            attributes: includeCount ? [...column, [fn("COUNT", col("*")), "count"]] : column,
+            group: column,
             raw: true,
         });
         return { dataSuccess: true, data: response as unknown as T };

@@ -1,3 +1,5 @@
+import { IReelScript } from "./IReelPlan";
+
 export default interface IMemoriesData {
     id: number;
     name: string;
@@ -11,5 +13,6 @@ export default interface IMemoriesData {
     workId: string;
     isTripPhotoAndVideoUpload?: boolean;
     isTripAudioUpload?: boolean;
-    rooms?:{name : string , id: number }[]
+    rooms?:{name : string , id: number , script?: IReelScript }[];
+    isAllAnalysisCompleted?: boolean;
 }

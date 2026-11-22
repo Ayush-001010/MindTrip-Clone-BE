@@ -60,7 +60,19 @@ export default class ReadMemories implements IMemoriesReadOpt {
             const res4 = await this.dbInstanse.fetchData<any>("MemoriesRoom", undefined, undefined, {
                 memoryId: item.id
             });
-            const rooms = res4.data.map((room: any) => ({ name: room.dataValues.name, id: room.dataValues.id })); 
+            // const rooms = res4.data.map((room: any) => ({ name: room.dataValues.name, id: room.dataValues.id }));
+            await Promise.all(res4.data.map(async (room: any) => {
+                const resScript = await this.dbInstanse.fetchData<any>("MemoriesChats", 1, undefined, {
+                    roomId: room.dataValues.id
+                });
+                console.log("Fetched script for room:", resScript);
+                room.dataValues.script = resScript.data.length > 0 ? JSON.parse(resScript.data[0].dataValues.botMessage) : undefined;
+            }));
+            const rooms = res4.data.map((room: any) => ({ name: room.dataValues.name, id: room.dataValues.id, script: room.dataValues.script }));
+            const res5 = await this.dbInstanse.fetchData<any>("ReelAnalysicBatch", undefined, undefined, {
+                memoryId: item.id
+            });
+            const isAllAnalysisCompleted = res5.data.every((batch: any) => batch.dataValues.status === "completed");
             return {
                 success: true,
                 data: {
@@ -76,7 +88,8 @@ export default class ReadMemories implements IMemoriesReadOpt {
                     workId: item.workId,
                     isTripPhotoAndVideoUpload: isTripPhotoAndVideoUpload,
                     isTripAudioUpload: isTripAudioUpload,
-                    rooms: rooms
+                    rooms: rooms,
+                    isAllAnalysisCompleted: isAllAnalysisCompleted
                 }
             };
         } catch (error) {

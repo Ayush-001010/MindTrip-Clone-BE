@@ -196,6 +196,20 @@ export default class CreateMemories implements IMemoriesCreateOpt {
                 if (!room.dataSuccess) throw new Error("Failed to verify the memory room");
                 if (!room.data?.length) throw new Error("Room does not belong to this memory");
             }
+            const isRoomIdAlreadyExist = await this.dbInstanse.fetchData<any>("MemoriesChats", undefined, undefined, {
+                roomId: request.roomId
+            });
+            if(isRoomIdAlreadyExist.dataSuccess && isRoomIdAlreadyExist.data?.length > 0) {
+                // Update the existing chat for the room
+                const resUpdate = await this.dbInstanse.updateData<any>("MemoriesChats", {
+                    userMessage: request.userSuggestion ?? "",
+                    userName: request.userName ?? "",
+                    actionType: "Other",
+                }, { roomId: request.roomId }, false);
+                // res.data.id
+                console.log("Updated chat response:", resUpdate);
+                return { success: true, data: resUpdate.data?.id };
+            }
             const res = await this.dbInstanse.createData<{
                 id?: number;
                 memoryId: number;
@@ -220,8 +234,15 @@ export default class CreateMemories implements IMemoriesCreateOpt {
 
     updateReelChatResponse = async (chatId: number, script: IReelScript): Promise<APIResponseInterface<boolean>> => {
         try {
+            const fetchRes = await this.dbInstanse.fetchData<any>("MemoriesChats", undefined, undefined, {
+                id: chatId
+            });
+            console.log("Fetched chat for update:", fetchRes);
             const res = await this.dbInstanse.updateData("MemoriesChats", {
                 botMessage: JSON.stringify(script),
+                userMessage: fetchRes.data?.[0]?.dataValues?.userMessage ?? "",
+                userName: fetchRes.data?.[0]?.dataValues?.userName ?? "",
+                roomId: fetchRes.data?.[0]?.dataValues?.roomId ?? undefined
             }, { id: chatId }, false);
             if (!res.dataSuccess || !Array.isArray(res.data) || res.data[0] !== 1) {
                 throw new Error("Failed to update reel chat response");

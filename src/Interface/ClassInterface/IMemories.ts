@@ -23,11 +23,8 @@ export interface IMemoriesReelCreation {
     roomId?: number;
     userName?: string;
     template : "Journey" | "Mistory" | "Key Moment" | "Fast Clip";
-    // HTTPS URL on the configured CDN, or an S3 key; empty string means no soundtrack.
     soundtrack: string;
-    // Song name (e.g. "Yellow - Coldplay"); when missing it is guessed from the file name
     soundtrackTitle?: string;
-    // Where in the song the reel starts; when missing the most energetic stretch is used
     musicStartSec?: number;
     mood : "Happy" | "Fun" | "Relaxing"| "Romantic";
     pace : "Slow" | "Medium" | "Fast";

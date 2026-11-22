@@ -9,6 +9,7 @@ import UserInvite from "./Model/UserInvite";
 import TripExpense from "./Model/TripExpense";
 import TripExpenseShare from "./Model/TripExpenseShare";
 import TripSettlement from "./Model/TripSettlement";
+import Reel from "./Model/Reel";
 import TripDetails from "./Model/TripDetails";
 import ExploreTrip from "./Model/ExploreTrip";
 import TripChat from "./Model/TripChat";
@@ -72,6 +73,7 @@ export interface Models {
   MemoriesChats: typeof MemoriesChats;
   ReelAnalysicBatch: typeof ReelAnalysicBatch;
   MemoriesRoom: typeof MemoriesRoom;
+  Reel: typeof Reel;
 }
 
 const models: Models = {
@@ -110,7 +112,8 @@ const models: Models = {
   MemoriesPicAndAudio,
   MemoriesChats,
   ReelAnalysicBatch,
-  MemoriesRoom
+  MemoriesRoom,
+  Reel
 };
 
 User.hasMany(UserTripMappingTable, {
