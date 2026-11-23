@@ -56,8 +56,11 @@ export default class Trip implements ITripInterface {
                     userId: userID,
                     tripDetailsId:dbResponse.data?.dataValues.id
                 });
-                if(!userMappingDbResponse.dataSuccess){
-                    return { success: false, error: "Failed to create user-trip mapping" };
+                const tripDetailsDbResponse = await this.dataBaseServiceInstance.createData("TripDetails", {
+                    tripID: tripID
+                });
+                if(!userMappingDbResponse.dataSuccess || !tripDetailsDbResponse.dataSuccess){
+                    return { success: false, error: "Failed to create user-trip mapping or trip details" };
                 }
 
                 return { success: true, data: { "url": base62 } };
@@ -93,6 +96,7 @@ export default class Trip implements ITripInterface {
         "userId": string;
         "userName": string;
         "userEmail": string;
+        "userImage"?: string;
     }>|null>> => {
         const dbTripIDFetchResponse = await this.dataBaseServiceInstance.fetchData<any>("TripID", 1, 0, { base62 });
         if(!dbTripIDFetchResponse.dataSuccess){
@@ -107,6 +111,7 @@ export default class Trip implements ITripInterface {
             "userId": string;
             "userName": string;
             "userEmail": string;
+            "userImage"?: string;
         }> = [];
         if(dbFetchTripMemberDetailsResponse.dataSuccess){
             for(const member of dbFetchTripMemberDetailsResponse.data || []){
@@ -114,6 +119,7 @@ export default class Trip implements ITripInterface {
                     "id": string;
                     "name": string;
                     "email": string;
+                    "userImage"?: string;
                 }[]>("User", 1, 0, { id: member.userId || "" });
                 if(dpFetchUserDetailsResponse.dataSuccess){
                     const user = dpFetchUserDetailsResponse.data?.[0];
@@ -121,7 +127,8 @@ export default class Trip implements ITripInterface {
                         result.push({
                             "userId": user.id || "",
                             "userName": user.name || "",
-                            "userEmail": user.email || ""
+                            "userEmail": user.email || "",
+                            "userImage": user.userImage || ""
                         });
                     }
                 }
@@ -708,7 +715,7 @@ export default class Trip implements ITripInterface {
                 return {success: true, data: {isAlreadyExist: false, startDate: firstBookedHotel.dataValues.fromDate, endDate: lastBookedHotel.dataValues.toDate}};
             }
         } catch(error){
-            console.log("Error checking and suggesting trip dates: ", error);
+            // console.log("Error checking and suggesting trip dates: ", error);
             return {success: false, error: "FAILED_TO_CHECK_AND_SUGGEST_TRIP_DATES"};
         }
     };
