@@ -9,23 +9,23 @@ const BlogHotel = sequelize.define("BlogHotel", {
     },
     hotelName: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     checkInDate: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     checkOutDate: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     amountSpent: {
         type: DataTypes.FLOAT,
-        allowNull: false
+        allowNull: true
     },
     description: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true
     }
 });
 

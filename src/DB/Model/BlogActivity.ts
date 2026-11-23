@@ -9,51 +9,51 @@ const BlogActivity = sequelize.define("BlogActivity", {
     },
     day: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     placeName: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     activityType: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     time: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     description: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true
     },
     tips: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true
     },
     coordinates: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     images: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true
     },
     sideActivities: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true
     },
     amountSpent: {
         type: DataTypes.FLOAT,
-        allowNull: false
+        allowNull: true
     },
     longitude: {
         type: DataTypes.FLOAT,
-        allowNull: false
+        allowNull: true
     },
     latitude: {
         type: DataTypes.FLOAT,
-        allowNull: false
+        allowNull: true
     }
 });
 

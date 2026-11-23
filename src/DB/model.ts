@@ -35,6 +35,7 @@ import MemoriesPicAndAudio from "./Model/MemoriesPicAndAudio";
 import MemoriesChats from "./Model/MemoriesChats"; 
 import ReelAnalysicBatch from "./Model/ReelAnalysicBatch";
 import MemoriesRoom from "./Model/MemoriesRoom";
+import BlogWork from "./Model/BlogWork";
 
 export interface Models {
   ExploreTrip: typeof ExploreTrip;
@@ -74,6 +75,7 @@ export interface Models {
   ReelAnalysicBatch: typeof ReelAnalysicBatch;
   MemoriesRoom: typeof MemoriesRoom;
   Reel: typeof Reel;
+  BlogWork: typeof BlogWork;
 }
 
 const models: Models = {
@@ -113,7 +115,8 @@ const models: Models = {
   MemoriesChats,
   ReelAnalysicBatch,
   MemoriesRoom,
-  Reel
+  Reel,
+  BlogWork
 };
 
 User.hasMany(UserTripMappingTable, {

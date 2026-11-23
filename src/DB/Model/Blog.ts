@@ -9,47 +9,47 @@ const Blog = sequelize.define("Blog", {
     },
     tripTitle: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     tripOverview: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true
     },
     totalSpent: {
         type: DataTypes.FLOAT,
-        allowNull: false
+        allowNull: true
     },
     tripDuration: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     noOfPlaces: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     noOfActivities: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     bookingURL: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     profileImages: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     profileTitle: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     profileIcon: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     metaData: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     numberOfLikes: {
         type: DataTypes.INTEGER,
@@ -59,6 +59,11 @@ const Blog = sequelize.define("Blog", {
     userID: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    isPublished: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
     }
 });
 

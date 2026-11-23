@@ -14,6 +14,7 @@ export default interface IBlogData {
     profileTitle: string;
     profileIcon: string;
     numberOfLikes: number;
+    id?: string;
 }
 
 export interface IBlogActivite {
