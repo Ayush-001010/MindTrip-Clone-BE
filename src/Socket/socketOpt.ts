@@ -102,6 +102,34 @@ export const initSocket = (io: Server) => {
       io.to(tripID).emit("room:hotelRequest-response", { ...response });
     });
 
+
+socket.on("room:createTripFlight", async (data) => {
+  const { tripFlightData, userId, userName } = data;
+
+  console.log("Create Trip Flight request:", {
+      tripFlightData,
+      userId,
+      userName
+  });
+
+  const tripServiceInstance = new Trip();
+
+  const response = await tripServiceInstance.createTripFlight(
+      tripFlightData,
+      "booked"
+  );
+
+  console.log("Create Trip Flight Response:", response);
+
+  io.to(tripFlightData.base62).emit(
+      "room:createTripFlight-response",
+      {
+          success: response.success,
+          data: response.data
+      }
+  );
+});
+
     socket.on("room:editTripName", async (data) => {
         const { tripID, newTripName } = data;
         const tripServiceInstance = new Trip();

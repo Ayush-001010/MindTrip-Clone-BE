@@ -12,6 +12,7 @@ import UserService from "../User/UserService";
 import ITripHotelData from "../../Interface/DataInterface/ITripHotelData";
 import { IMessage } from "../../Interface/ClassInterface/IGroupHub";
 import GroupHub from "../GroupHub/GroupHub";
+import ITripFlightData from "../../Interface/ClassInterface/IFlightInterface";
 
 export default class Trip implements ITripInterface {
     dataBaseServiceInstance : DataBaseService;
@@ -662,6 +663,79 @@ export default class Trip implements ITripInterface {
             return {success : false};
         }
     };
+    
+
+
+    createTripFlight = async (
+        tripFlightData: ITripFlightData,
+        type: "booked" | "wishlist"
+    ): Promise<APIResponseInterface<"booked" | "wishlist">> => {
+        try {
+            const bookingGroupId =
+                tripFlightData.bookingGroupId ||
+                `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    
+            const { returnLeg, ...outboundData } = tripFlightData;
+    
+            const commonData = {
+                base62: tripFlightData.base62,
+                bookedBy: tripFlightData.bookedBy,
+                isBooked: type === "booked",
+                bookingGroupId,
+                tripType: returnLeg ? "Round-trip" : "One-way",
+            };
+    
+            // Save outbound flight
+            const outboundResponse =
+                await this.dataBaseServiceInstance.createData("TripFlight", {
+                    ...outboundData,
+                    ...commonData,
+                    segments: JSON.stringify(outboundData.segments || []),
+                    price: tripFlightData.price,
+                    formattedPrice: tripFlightData.formattedPrice,
+                });
+    
+            if (!outboundResponse.dataSuccess) {
+                return { success: false };
+            }
+    
+            // Save return flight if this is a round trip
+            if (returnLeg) {
+                const returnResponse =
+                    await this.dataBaseServiceInstance.createData("TripFlight", {
+                        flightId: `${tripFlightData.flightId}-RETURN`,
+                        airline: returnLeg.airline,
+                        airlineLogo: returnLeg.airlineLogo,
+                        flightNumber: returnLeg.flightNumber,
+                        origin: returnLeg.origin,
+                        originCode: returnLeg.originCode,
+                        destination: returnLeg.destination,
+                        destinationCode: returnLeg.destinationCode,
+                        departure: returnLeg.departure,
+                        arrival: returnLeg.arrival,
+                        durationMinutes: returnLeg.durationMinutes,
+                        stops: returnLeg.stops,
+                        price: 0,
+                        formattedPrice: "Included in round-trip fare",
+                        segments: JSON.stringify(returnLeg.segments || []),
+                        isRefundable: tripFlightData.isRefundable,
+                        emissionsKg: 0,
+                        ...commonData,
+                    });
+    
+                if (!returnResponse.dataSuccess) {
+                    return { success: false };
+                }
+            }
+    
+            return { success: true, data: type };
+    
+        } catch (error) {
+            console.log("Error creating trip flight:", error);
+            return { success: false };
+        }
+    };
+    
 
     fetchTripHotelDetails = async (base62: string): Promise<APIResponseInterface<ITripHotelData[] | null>> => {
         try{
@@ -674,6 +748,46 @@ export default class Trip implements ITripInterface {
             return {success: false, error: "FAILED_TO_FETCH_TRIP_HOTEL_DETAILS", data: null};
         }
     };
+    
+
+
+    fetchTripFlightDetails = async (
+        base62: string
+    ): Promise<APIResponseInterface<ITripFlightData[] | null>> => {
+        try {
+            const response = await this.dataBaseServiceInstance.fetchData<any>(
+                "TripFlight",
+                undefined,
+                undefined,
+                { base62 }
+            );
+    
+            
+            const flights: ITripFlightData[] = response.data ?? [];
+
+            const uniqueFlights: ITripFlightData[] = Array.from(
+                new Map<string, ITripFlightData>(
+                    flights.map((flight): [string, ITripFlightData] => [
+                        `${flight.base62}_${flight.flightId}`,
+                        flight
+                    ])
+                ).values()
+            );
+            return {
+                success: true,
+                data: uniqueFlights
+            };
+        } catch (error) {
+            console.log("Error fetching trip flight details:", error);
+    
+            return {
+                success: false,
+                error: "FAILED_TO_FETCH_TRIP_FLIGHT_DETAILS",
+                data: null
+            };
+        }
+    };
+    
 
     isUserTripAdmin = async (base62: string, userID: string): Promise<APIResponseInterface<boolean>> => {
         try {

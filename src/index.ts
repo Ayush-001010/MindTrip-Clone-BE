@@ -20,6 +20,7 @@ import blogGlobeFeedRoutes from "./Routes/blogGlobeFeed";
 import passport from "./config/passport";
 import inviteRoutes from "./Routes/InviteRoutes";
 import BlogFeed from "./Service/BlogFeed/BlogFeed";
+import flightRoutes from "./Routes/flightRoutes";
 
 
 const app = express();
@@ -58,8 +59,7 @@ app.use("/blogVideoGenration", blogVideoGenrationRoutes);
 app.use("/faviourites", faviouritesRoutes);
 app.use("/user", userRoutes);
 app.use("/blog-globe-feed", blogGlobeFeedRoutes);
-
-
+app.use("/api/flights", flightRoutes);
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });

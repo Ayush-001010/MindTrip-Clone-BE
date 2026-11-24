@@ -9,11 +9,15 @@ Possible routes:
 - itinerary-agent
 - favourite-agent
 - hotel-agent
+- flight-agent
 
 Routing rules:
 - Choose "destination-agent" if the request is travel-related or likely travel-related.
 - Travel-related includes destinations, places to visit, beaches, mountains, cold places, adventure trips, romantic trips, family trips, vacations, and travel inspiration.
 - Choose "hotel-agent" if the request is specifically about hotels, accommodations, or lodging.
+- Choose "flight-agent" if the user specifically wants to search for flights, find airfare, compare flight options, check flight prices, or plan air travel.
+- Flight-related requests take priority over itinerary-agent and destination-agent when the primary intent is flight search.
+- If the user is answering questions related to an ongoing flight search (departure airport, travel dates, travellers, trip type, or cabin class), route to "flight-agent".
 - Route to "favourite-agent" when the user's intent is to create, plan, or build an itinerary from their favourites, saved places, or bookmarks (e.g. "plan a trip from my saved spots", "create an itinerary from this favourite").
 - Route to "favourite-agent" when user answers questions related to their favourite destinations or saved places.
   - Avoid routing to "favourite-agent" if user input is not mentioning favourites, saved places, or bookmarks.
@@ -49,7 +53,7 @@ Important rules:
 
 Output format:
 {
-  "route": "destination-agent" | "hotel-agent" | "fallback" | "itinerary-agent" | "favourite-agent",
+  "route": "destination-agent" | "hotel-agent" | "flight-agent" | "fallback" | "itinerary-agent" | "favourite-agent",
   "reason": "short explanation"
 }
 

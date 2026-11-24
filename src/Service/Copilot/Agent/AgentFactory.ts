@@ -2,9 +2,10 @@ import DestinationAgentStrategy from "./DestinationAgent/DestinationAgentStrateg
 import ItineraryAgentStrategy from "./ItineraryAgent/ItineraryAgentStrategy";
 import HotelAgentStrategy from "./HotelAgent/HotelAgentStrategy";
 import FavouriteAgentStrategy from "./FavouriteAgent/FavouriteAgent"; 
+import FlightAgentStrategy from "./FlightAgent/FlightAgentStrategy";
 
 export default class AgentFactory {
-    public static async createAgent(agentType:"destination" | "itinerary" | "hotel" | "favourite" | null , tripID?: string , userID?: number) {
+    public static async createAgent(agentType:"destination" | "itinerary" | "hotel" | "flight"|"favourite" | null , tripID?: string , userID?: number) {
         switch(agentType) {
             case "destination":
                 return new DestinationAgentStrategy();

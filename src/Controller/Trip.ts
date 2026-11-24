@@ -239,6 +239,19 @@ export const fetchTripHotelDetails = async (req: Request, res: Response) => {
     }
 };
 
+export const fetchTripFlightDetails = async (
+    req: Request,
+    res: Response
+) => {
+    const { base62 } = req.query;
+
+    const tripServiceInstance = new Trip();
+
+    const fetchTripFlightDetailsResponse =
+        await tripServiceInstance.fetchTripFlightDetails(base62 as string);
+
+    return res.send(fetchTripFlightDetailsResponse);
+};
 
 export const isUserTripAdmin = async (req: Request, res: Response) => {
     try {

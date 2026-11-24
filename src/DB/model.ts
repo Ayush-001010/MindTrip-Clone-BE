@@ -28,6 +28,7 @@ import GroupPost from "./Model/GroupPost";
 import OpinionComment from "./Model/OpinionComment";
 import UserActivity from "./Model/UserActivity";
 import BlogLikeByUser from "./Model/BlogLikeByUser";
+import TripFlight from "./Model/TripFlight";
 
 export interface Models {
   ExploreTrip: typeof ExploreTrip;
@@ -51,6 +52,7 @@ export interface Models {
   FavouritesHotel: typeof FavouritesHotel;
   FavouritesBlog: typeof FavouritesBlog;
   TripHotel : typeof TripHotel;
+  TripFlight : typeof TripFlight;
   GroupPost: typeof GroupPost;
   Opinion: typeof Opinion;
   OpinionComment: typeof OpinionComment;
@@ -84,6 +86,7 @@ const models: Models = {
   FavouritesHotel,
   FavouritesBlog,
   TripHotel,
+  TripFlight,
   GroupPost,
   Opinion,
   OpinionComment,

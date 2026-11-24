@@ -7,6 +7,7 @@ import ITripChat from "../../Interface/DataInterface/ITripChat";
 import {RouteResult,} from "../../Interface/DataInterface/ICopilot";
 import ITripHistory from "../../Interface/DataInterface/ITripHistory";
 import AgentFactory from "./Agent/AgentFactory";
+import FlightAgentStrategy from "./Agent/FlightAgent/FlightAgentStrategy";
 
 export default class CopilotService implements ICopilotService {
 
@@ -19,7 +20,14 @@ export default class CopilotService implements ICopilotService {
 
   private async getRoute(prompt: string): Promise<RouteResult> {
     const copilotClientInstance = CopilotClientFactory.getInstance();
+    await copilotClientInstance.start();
 
+const availableModels = await copilotClientInstance.listModels();
+
+console.log(
+    "Available Model IDs:",
+    availableModels.map(model => model.id)
+);
     const session = await copilotClientInstance.createSession({
       sessionId: `route-${Date.now()}`,
       model: HEAVY_MODEL,
@@ -83,7 +91,27 @@ export default class CopilotService implements ICopilotService {
           return { success : false, data: { message: "Failed to create itinerary agent instance." } }
         }
         return {success : true , data : await itinerayStrategyInstance.executeAgent(prompt, this.genrateTripHistory(history))};
-      case "favourite-agent":
+        case "flight-agent": {
+          const flightAgent = await FlightAgentStrategy.getInstance(tripID);
+        
+          if (!flightAgent) {
+            return {
+              success: false,
+              data: null,
+            };
+          }
+        
+          const flightResponse = await flightAgent.executeAgent(
+            prompt,
+            this.genrateTripHistory(history)
+          );
+        
+          return {
+            success: true,
+            data: flightResponse,
+          };
+        }
+        case "favourite-agent":
         const favouriteStrategyInstance = await AgentFactory.createAgent("favourite", tripID, userID);
         if (!favouriteStrategyInstance) {
           return { success: false, data: { message: "Failed to create favourite agent instance." } };
