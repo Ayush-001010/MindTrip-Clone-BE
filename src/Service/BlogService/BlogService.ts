@@ -57,7 +57,7 @@ export default class BlogService implements IBlogService {
                 if(!dbResponseDraft.dataSuccess){
                     return { success: false, data: "" };
                 }
-                const blogId = dbResponseDraft.data[1];
+                const blogId = blogData?.id;
                 console.log("DB Response Draft: ", blogId);
                 console.log("Blog ID: ", blogId);
                 blogData.activities.sort((a, b) => (a.index || 0) - (b.index || 0));
@@ -338,7 +338,7 @@ export default class BlogService implements IBlogService {
                     description: plainActivity.description,
                     tips: (plainActivity.tips as string)?.split(",").filter(Boolean) || [],
                     coordinates: plainActivity.coordinates ? JSON.parse(plainActivity.coordinates) : { latitude: 0, longitude: 0 },
-                    images: (plainActivity.images as string)?.split(",").filter(Boolean) || [],
+                    images: (plainActivity.images as string)?.split(",").map((img: string) => `https://${process.env.AWS_CloudFront_Domain}/` + img.trim()).filter(Boolean) || [],
                     sideActivities: plainActivity.sideActivities ? JSON.parse(plainActivity.sideActivities) : [],
                     amountSpent: plainActivity.amountSpent,
                 };
@@ -382,7 +382,7 @@ export default class BlogService implements IBlogService {
                 bookingURL: plainBlog.bookingURL,
                 travel,
                 metaData: (plainBlog.metaData as string)?.split(",").filter(Boolean) || [],
-                profileImages: (plainBlog.profileImages as string)?.split(",") || [],
+                profileImages: (plainBlog.profileImages as string)?.split(",").map((img: string) => `https://${process.env.AWS_CloudFront_Domain}/` + img.trim()) || [],
                 profileTitle: plainBlog.profileTitle,
                 profileIcon: plainBlog.profileIcon,
                 numberOfLikes: plainBlog.numberOfLikes || 0,
