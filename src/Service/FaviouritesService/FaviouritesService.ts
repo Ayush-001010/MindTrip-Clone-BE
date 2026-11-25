@@ -63,6 +63,26 @@ export default class FaviouritesService implements IFaviouritesService {
             switch(type) {
                 case "activity":
                     const activityData = data as IFaviouritesActivity;
+                    const existingActivity = await this.dbInstance.fetchData<IFaviouritesActivity[]>(
+                        "FavouritesActivity",
+                        1,
+                        undefined,
+                        {
+                            collectionId,
+                            activityName: activityData.activityName,
+                            placeName: activityData.placeName,
+        
+                        }
+                    );
+                    
+                    if (!existingActivity.dataSuccess) {
+                        return { success: false, data: false };
+                    }
+                    
+                    if (existingActivity.data && existingActivity.data.length > 0) {
+                        console.log("Activity already exists in this collection.");
+                        return { success: true, data: true };
+                    }
                     const dbOpt = await this.dbInstance.createData<IFaviouritesActivity>("FavouritesActivity", {
                         collectionId,
                         placeName: activityData.placeName,
@@ -85,6 +105,25 @@ export default class FaviouritesService implements IFaviouritesService {
                     }
                 case "hotel": {
                     const hotelData = data as IFaviouritesHotel;
+                    const existingHotel = await this.dbInstance.fetchData<IFaviouritesHotel[]>(
+                        "FavouritesHotel",
+                        1,
+                        undefined,
+                        {
+                            collectionId,
+                            hotelName: hotelData.hotelName,
+                            placeName: hotelData.placeName
+                        }
+                    );
+                    
+                    if (!existingHotel.dataSuccess) {
+                        return { success: false, data: false };
+                    }
+                    
+                    if (existingHotel.data && existingHotel.data.length > 0) {
+                        console.log("Hotel already exists in this collection.");
+                        return { success: true, data: true };
+                    }
                     const dbOptHotel = await this.dbInstance.createData<IFaviouritesHotel>("FavouritesHotel", {
                         collectionId,
                         placeName: hotelData.placeName,
@@ -167,4 +206,208 @@ export default class FaviouritesService implements IFaviouritesService {
             return { success: false, data: [] };
         }
     }
+    
+    async renameCollection(
+        collectionId: number,
+        newName: string,
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>> {
+        try {
+            const trimmedName = newName.trim();
+    
+            if (!trimmedName) {
+                return {
+                    success: false,
+                    error: "Collection name cannot be empty",
+                    data: false
+                };
+            }
+    
+            // Verify that the collection belongs to this user.
+            const collection = await this.dbInstance.fetchData<IFaviouritesCollection[]>(
+                "Collections",
+                1,
+                undefined,
+                {
+                    id: collectionId,
+                    createdBy
+                }
+            );
+    
+            if (!collection.dataSuccess || !collection.data?.length) {
+                return {
+                    success: false,
+                    error: "Collection not found",
+                    data: false
+                };
+            }
+    
+            // Update the collection name.
+            const updateResponse = await this.dbInstance.updateData(
+                "Collections",
+                { name: trimmedName },
+                { id: collectionId, createdBy }
+            );
+    
+            if (!updateResponse.dataSuccess) {
+                return {
+                    success: false,
+                    error: "Failed to rename collection",
+                    data: false
+                };
+            }
+    
+            return {
+                success: true,
+                data: true
+            };
+    
+        } catch (error) {
+            console.log("Error renaming collection:", error);
+    
+            return {
+                success: false,
+                error: "Failed to rename collection",
+                data: false
+            };
+        }
+    }
+
+    async removeFavourite(
+        collectionId: number,
+        favouriteId: number,
+        type: "Activity" | "Hotel",
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>> {
+        try {
+            // First verify that the collection belongs to this user.
+            const collection = await this.dbInstance.fetchData<IFaviouritesCollection[]>(
+                "Collections",
+                1,
+                undefined,
+                { id: collectionId, createdBy }
+            );
+    
+            if (!collection.dataSuccess || !collection.data?.length) {
+                return { success: false, data: false };
+            }
+    
+            let deleteResponse;
+    
+            if (type === "Activity") {
+                deleteResponse = await this.dbInstance.deleteData<IFaviouritesActivity>(
+                    "FavouritesActivity",
+                    {
+                        id: favouriteId,
+                        collectionId
+                    }
+                );
+            } else {
+                deleteResponse = await this.dbInstance.deleteData<IFaviouritesHotel>(
+                    "FavouritesHotel",
+                    {
+                        id: favouriteId,
+                        collectionId
+                    }
+                );
+            }
+    
+            if (!deleteResponse.dataSuccess || !deleteResponse.data) {
+                return { success: false, data: false };
+            }
+    
+            return {
+                success: true,
+                data: deleteResponse.data > 0
+            };
+    
+        } catch (error) {
+            console.log("Error removing favourite:", error);
+            return { success: false, data: false };
+        }
+    }
+
+    async deleteCollection(
+        collectionId: number,
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>> {
+        try {
+            // First verify that the collection belongs to this user.
+            const collection = await this.dbInstance.fetchData<IFaviouritesCollection[]>(
+                "Collections",
+                1,
+                undefined,
+                {
+                    id: collectionId,
+                    createdBy
+                }
+            );
+    
+            if (!collection.dataSuccess || !collection.data?.length) {
+                return {
+                    success: false,
+                    error: "Collection not found",
+                    data: false
+                };
+            }
+    
+            // Delete all favourite activities.
+            const deleteActivities = await this.dbInstance.deleteData<IFaviouritesActivity>(
+                "FavouritesActivity",
+                { collectionId }
+            );
+    
+            if (!deleteActivities.dataSuccess) {
+                throw new Error("Failed to delete favourite activities");
+            }
+    
+            // Delete all favourite hotels.
+            const deleteHotels = await this.dbInstance.deleteData<IFaviouritesHotel>(
+                "FavouritesHotel",
+                { collectionId }
+            );
+    
+            if (!deleteHotels.dataSuccess) {
+                throw new Error("Failed to delete favourite hotels");
+            }
+    
+            // Delete all favourite blogs.
+            const deleteBlogs = await this.dbInstance.deleteData<IFaviouritesBlog>(
+                "FavouritesBlog",
+                { collectionId }
+            );
+    
+            if (!deleteBlogs.dataSuccess) {
+                throw new Error("Failed to delete favourite blogs");
+            }
+    
+            // Finally delete the collection itself.
+            const deleteCollection = await this.dbInstance.deleteData<IFaviouritesCollection>(
+                "Collections",
+                {
+                    id: collectionId,
+                    createdBy
+                }
+            );
+    
+            if (!deleteCollection.dataSuccess || !deleteCollection.data) {
+                throw new Error("Failed to delete collection");
+            }
+    
+            return {
+                success: true,
+                data: true
+            };
+    
+        } catch (error) {
+            console.error("Error deleting collection:", error);
+    
+            return {
+                success: false,
+                error: "Failed to delete collection",
+                data: false
+            };
+        }
+    }
+
 }

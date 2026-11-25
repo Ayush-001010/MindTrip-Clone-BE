@@ -55,4 +55,22 @@ export default interface IFaviouritesService{
     createCollection(name: string, createdBy: string): Promise<APIResponseInterface<IFaviouritesCollection | null>>;
     addFavourites(collectionId: number, type : "activity"| "hotel" | "blog" , data : IFaviouritesActivity | IFaviouritesHotel | IFaviouritesBlog): Promise<APIResponseInterface<boolean>>;
     getCollectionDetails(collectionId:number , type : "Activity"| "Hotel" | "Blog" ): Promise<APIResponseInterface<IFaviouritesActivity[] | IFaviouritesHotel[] | IFaviouritesBlog[]>>;
+
+    removeFavourite(
+        collectionId: number,
+        favouriteId: number,
+        type: "Activity" | "Hotel",
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>>;
+
+    renameCollection(
+        collectionId: number,
+        newName: string,
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>>;
+
+    deleteCollection(
+        collectionId: number,
+        createdBy: string
+    ): Promise<APIResponseInterface<boolean>>;
 }

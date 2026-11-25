@@ -2,11 +2,10 @@ import DestinationAgentStrategy from "./DestinationAgent/DestinationAgentStrateg
 import ItineraryAgentStrategy from "./ItineraryAgent/ItineraryAgentStrategy";
 import HotelAgentStrategy from "./HotelAgent/HotelAgentStrategy";
 import FavouriteAgentStrategy from "./FavouriteAgent/FavouriteAgent"; 
-import CartoonAgentStrategy from "./CartoonAgent/CartoonAgent";
-import IAgentStrategy from "../../../Interface/ClassInterface/IAgentStrategy";
+import FlightAgentStrategy from "./FlightAgent/FlightAgentStrategy";
 
 export default class AgentFactory {
-    public static async createAgent(agentType:"destination" | "itinerary" | "hotel" | "favourite" | "cartoon-agent" | null , tripID?: string , userID?: number): Promise<IAgentStrategy | null | undefined> {
+    public static async createAgent(agentType:"destination" | "itinerary" | "hotel" | "flight"|"favourite" | null , tripID?: string , userID?: number) {
         switch(agentType) {
             case "destination":
                 return new DestinationAgentStrategy();
@@ -15,9 +14,11 @@ export default class AgentFactory {
             case "hotel":
                 return await HotelAgentStrategy.getInstance(tripID || "");
             case "favourite":
-                return new FavouriteAgentStrategy(userID || 1);
-            case "cartoon-agent":
-                return new CartoonAgentStrategy();
+            if (!tripID || userID === undefined) {
+                return null;
+            }
+        
+            return new FavouriteAgentStrategy(tripID, userID);
         }
     }
 }

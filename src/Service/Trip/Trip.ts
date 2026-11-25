@@ -12,6 +12,7 @@ import UserService from "../User/UserService";
 import ITripHotelData from "../../Interface/DataInterface/ITripHotelData";
 import { IMessage } from "../../Interface/ClassInterface/IGroupHub";
 import GroupHub from "../GroupHub/GroupHub";
+import ITripFlightData from "../../Interface/ClassInterface/IFlightInterface";
 
 export default class Trip implements ITripInterface {
     dataBaseServiceInstance : DataBaseService;
@@ -298,7 +299,13 @@ export default class Trip implements ITripInterface {
         const tripID = dbTripDFetchResponse.data?.[0].dataValues.tripID || null;
         const _id = dbTripDFetchResponse.data?.[0].dataValues.id || null;
 
-        const dpTripDetailsResponse = await this.dataBaseServiceInstance.fetchData<any>("TripDetails", 1, 0, { tripID });
+        const dpTripDetailsResponse = await this.dataBaseServiceInstance.fetchData<any>(
+            "TripDetails",
+            1,
+            0,
+            { tripID },
+            [["id", "DESC"]]
+        );
         const countUserOnTrip = await this.dataBaseServiceInstance.countData("UserTripMappingTable",{
             tripDetailsId: _id
         });
@@ -445,30 +452,61 @@ export default class Trip implements ITripInterface {
         }
     };
 
-    createFinalItinerary = async (base62: string, tripName: string, tripItinerary: any): Promise<null> => {
-        const tripDetails = await this.dataBaseServiceInstance.fetchData<any>("TripID", undefined, undefined, {
-            base62
-        });
-
-        const tripID = tripDetails.data?.[0]?.tripID;
-
-        const createItineraryResponse = await this.dataBaseServiceInstance.createData(
-            "TripDetails",
-            {
-                tripID,
-                tripName,
-                tripItinerary : JSON.stringify(tripItinerary)
-            }
+    createFinalItinerary = async (
+        base62: string,
+        tripName: string,
+        tripItinerary: any
+    ): Promise<null> => {
+    
+        console.log("Creating final itinerary...");
+        console.log("Received Base62:", base62);
+    
+        const tripDetails = await this.dataBaseServiceInstance.fetchData<any>(
+            "TripID",
+            undefined,
+            undefined,
+            { base62 }
         );
-        // console.log("Create Itinerary Response: ", createItineraryResponse);
-
-        if (!createItineraryResponse.dataSuccess) {
+    
+        console.log("TripID lookup response:", tripDetails);
+    
+        if (
+            !tripDetails.dataSuccess ||
+            !tripDetails.data ||
+            tripDetails.data.length === 0
+        ) {
+            console.error("No TripID record found for Base62:", base62);
             return null;
         }
-
+    
+        const tripID = tripDetails.data[0].tripID;
+    
+        console.log("Original TripID found:", tripID);
+    
+        const createItineraryResponse =
+            await this.dataBaseServiceInstance.createData(
+                "TripDetails",
+                {
+                    tripID,
+                    tripName,
+                    tripItinerary: JSON.stringify(tripItinerary)
+                }
+            );
+    
+        console.log(
+            "Create TripDetails response:",
+            createItineraryResponse
+        );
+    
+        if (!createItineraryResponse.dataSuccess) {
+            console.error("Failed to save itinerary into TripDetails");
+            return null;
+        }
+    
+        console.log("Final itinerary saved successfully!");
+    
         return null;
     };
-
     searchImportantDates = async (userID: string): Promise<APIResponseInterface<IImportantDateResponse[]>> => {
         try{
             /*
@@ -554,35 +592,44 @@ export default class Trip implements ITripInterface {
                     }
                     index++;
                 }
-                if(startDate && endDate){
-                    let type : "long-weekend" | "long-birthday-weekend" | "long-anniversary-weekend" = "long-weekend";
-                    if(birthdayDate && startDate <= birthdayDate && birthdayDate <= endDate){
+                if (startDate && endDate) {
+                    let type: "long-weekend" | "long-birthday-weekend" | "long-anniversary-weekend" = "long-weekend";
+                
+                    if (
+                        birthdayDate &&
+                        startDate <= birthdayDate &&
+                        birthdayDate <= endDate
+                    ) {
                         type = "long-birthday-weekend";
                         isBirthDayOccurMiddleOfLongWeekend = true;
-                    } else if(anniversaryDate && startDate <= anniversaryDate && anniversaryDate <= endDate){
+                    } else if (
+                        anniversaryDate &&
+                        startDate <= anniversaryDate &&
+                        anniversaryDate <= endDate
+                    ) {
                         type = "long-anniversary-weekend";
                         isAnniversaryOccurMiddleOfLongWeekend = true;
                     }
-                    if(startDate && endDate) {
-                        response.push({
-                            to:startDate,
-                            from:endDate,
-                            type:type
-                        });
-                    }
+                
+                    response.push({
+                        to: startDate,
+                        from: endDate,
+                        type: type
+                    });
                 }
                 console.log("Start Date: ", startDate, "End Date: ", endDate);  
                 console.log("Current Response: ", response);
             }
-            console.log("Response: ", response , "Birthday Date: ", birthdayDate, "Anniversary Date: ", anniversaryDate);
-            if(!isBirthDayOccurMiddleOfLongWeekend && birthdayDate){
+            console.log("Response: ", response);
+            if (birthdayDate && !isBirthDayOccurMiddleOfLongWeekend) {
                 response.push({
                     to: birthdayDate,
                     from: birthdayDate,
                     type: "birthday"
                 });
             }
-            if(!isAnniversaryOccurMiddleOfLongWeekend && anniversaryDate){
+            
+            if (anniversaryDate && !isAnniversaryOccurMiddleOfLongWeekend) {
                 response.push({
                     to: anniversaryDate,
                     from: anniversaryDate,
@@ -623,6 +670,79 @@ export default class Trip implements ITripInterface {
             return {success : false};
         }
     };
+    
+
+
+    createTripFlight = async (
+        tripFlightData: ITripFlightData,
+        type: "booked" | "wishlist"
+    ): Promise<APIResponseInterface<"booked" | "wishlist">> => {
+        try {
+            const bookingGroupId =
+                tripFlightData.bookingGroupId ||
+                `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    
+            const { returnLeg, ...outboundData } = tripFlightData;
+    
+            const commonData = {
+                base62: tripFlightData.base62,
+                bookedBy: tripFlightData.bookedBy,
+                isBooked: type === "booked",
+                bookingGroupId,
+                tripType: returnLeg ? "Round-trip" : "One-way",
+            };
+    
+            // Save outbound flight
+            const outboundResponse =
+                await this.dataBaseServiceInstance.createData("TripFlight", {
+                    ...outboundData,
+                    ...commonData,
+                    segments: JSON.stringify(outboundData.segments || []),
+                    price: tripFlightData.price,
+                    formattedPrice: tripFlightData.formattedPrice,
+                });
+    
+            if (!outboundResponse.dataSuccess) {
+                return { success: false };
+            }
+    
+            // Save return flight if this is a round trip
+            if (returnLeg) {
+                const returnResponse =
+                    await this.dataBaseServiceInstance.createData("TripFlight", {
+                        flightId: `${tripFlightData.flightId}-RETURN`,
+                        airline: returnLeg.airline,
+                        airlineLogo: returnLeg.airlineLogo,
+                        flightNumber: returnLeg.flightNumber,
+                        origin: returnLeg.origin,
+                        originCode: returnLeg.originCode,
+                        destination: returnLeg.destination,
+                        destinationCode: returnLeg.destinationCode,
+                        departure: returnLeg.departure,
+                        arrival: returnLeg.arrival,
+                        durationMinutes: returnLeg.durationMinutes,
+                        stops: returnLeg.stops,
+                        price: 0,
+                        formattedPrice: "Included in round-trip fare",
+                        segments: JSON.stringify(returnLeg.segments || []),
+                        isRefundable: tripFlightData.isRefundable,
+                        emissionsKg: 0,
+                        ...commonData,
+                    });
+    
+                if (!returnResponse.dataSuccess) {
+                    return { success: false };
+                }
+            }
+    
+            return { success: true, data: type };
+    
+        } catch (error) {
+            console.log("Error creating trip flight:", error);
+            return { success: false };
+        }
+    };
+    
 
     fetchTripHotelDetails = async (base62: string): Promise<APIResponseInterface<ITripHotelData[] | null>> => {
         try{
@@ -635,6 +755,46 @@ export default class Trip implements ITripInterface {
             return {success: false, error: "FAILED_TO_FETCH_TRIP_HOTEL_DETAILS", data: null};
         }
     };
+    
+
+
+    fetchTripFlightDetails = async (
+        base62: string
+    ): Promise<APIResponseInterface<ITripFlightData[] | null>> => {
+        try {
+            const response = await this.dataBaseServiceInstance.fetchData<any>(
+                "TripFlight",
+                undefined,
+                undefined,
+                { base62 }
+            );
+    
+            
+            const flights: ITripFlightData[] = response.data ?? [];
+
+            const uniqueFlights: ITripFlightData[] = Array.from(
+                new Map<string, ITripFlightData>(
+                    flights.map((flight): [string, ITripFlightData] => [
+                        `${flight.base62}_${flight.flightId}`,
+                        flight
+                    ])
+                ).values()
+            );
+            return {
+                success: true,
+                data: uniqueFlights
+            };
+        } catch (error) {
+            console.log("Error fetching trip flight details:", error);
+    
+            return {
+                success: false,
+                error: "FAILED_TO_FETCH_TRIP_FLIGHT_DETAILS",
+                data: null
+            };
+        }
+    };
+    
 
     isUserTripAdmin = async (base62: string, userID: string): Promise<APIResponseInterface<boolean>> => {
         try {

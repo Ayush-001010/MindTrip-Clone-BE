@@ -21,7 +21,7 @@ const TripChat = sequelize.define("TripChat", {
         allowNull : false
     },
     response : {
-        type : DataTypes.STRING,
+        type : DataTypes.TEXT('long'),
         allowNull : false
     },
     messageDate : {

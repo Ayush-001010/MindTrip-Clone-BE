@@ -4,7 +4,7 @@ import http from "http";
 import cors from "cors";
 import { Server } from "socket.io";
 import sequelize from "./DB/dbConfig";
-import { initSocket } from "./Socket/socketTripOpt";
+import { initSocket } from "./Socket/socketOpt";
 import homeRoutes from "./Routes/Home";
 import commonRoutes from "./Routes/Common";
 import authRoutes from "./Routes/authRoutes";
@@ -22,6 +22,7 @@ import reelRoutes from "./Routes/ReelRoutes";
 import passport from "./config/passport";
 import inviteRoutes from "./Routes/InviteRoutes";
 import BlogFeed from "./Service/BlogFeed/BlogFeed";
+import flightRoutes from "./Routes/flightRoutes";
 import socketMemoriesOpt, { MAX_SOCKET_IMAGE_BYTES } from "./Socket/socketMemoriesOpt";
 
 
@@ -49,13 +50,8 @@ export const io = new Server(server, {
   },
 });
 
-const memoriesWorkStation = io.of("/memories");
-
 initSocket(io);
-socketMemoriesOpt(memoriesWorkStation);
-
-
-
+socketMemoriesOpt(io.of("/memories"));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/explore", hotelRoutes);
@@ -68,10 +64,9 @@ app.use("/blogVideoGenration", blogVideoGenrationRoutes);
 app.use("/faviourites", faviouritesRoutes);
 app.use("/user", userRoutes);
 app.use("/blog-globe-feed", blogGlobeFeedRoutes);
+app.use("/api/flights", flightRoutes);
 app.use("/memories", memoriesRoutes);
 app.use("/reel", reelRoutes);
-
-
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });

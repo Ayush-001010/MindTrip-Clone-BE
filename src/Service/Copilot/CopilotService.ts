@@ -7,6 +7,8 @@ import ITripChat from "../../Interface/DataInterface/ITripChat";
 import {RouteResult,} from "../../Interface/DataInterface/ICopilot";
 import ITripHistory from "../../Interface/DataInterface/ITripHistory";
 import AgentFactory from "./Agent/AgentFactory";
+import FlightAgentStrategy from "./Agent/FlightAgent/FlightAgentStrategy";
+import CartoonAgentStrategy from "./Agent/CartoonAgent/CartoonAgent";
 import type { MascotColorMode } from "../../Interface/DataInterface/ICharacterSpecification";
 
 export default class CopilotService implements ICopilotService {
@@ -20,7 +22,14 @@ export default class CopilotService implements ICopilotService {
 
   private async getRoute(prompt: string): Promise<RouteResult> {
     const copilotClientInstance = CopilotClientFactory.getInstance();
+    await copilotClientInstance.start();
 
+const availableModels = await copilotClientInstance.listModels();
+
+console.log(
+    "Available Model IDs:",
+    availableModels.map(model => model.id)
+);
     const session = await copilotClientInstance.createSession({
       sessionId: `route-${Date.now()}`,
       model: HEAVY_MODEL,
@@ -84,7 +93,27 @@ export default class CopilotService implements ICopilotService {
           return { success : false, data: { message: "Failed to create itinerary agent instance." } }
         }
         return {success : true , data : await itinerayStrategyInstance.executeAgent(prompt, this.genrateTripHistory(history))};
-      case "favourite-agent":
+        case "flight-agent": {
+          const flightAgent = await FlightAgentStrategy.getInstance(tripID);
+        
+          if (!flightAgent) {
+            return {
+              success: false,
+              data: null,
+            };
+          }
+        
+          const flightResponse = await flightAgent.executeAgent(
+            prompt,
+            this.genrateTripHistory(history)
+          );
+        
+          return {
+            success: true,
+            data: flightResponse,
+          };
+        }
+        case "favourite-agent":
         const favouriteStrategyInstance = await AgentFactory.createAgent("favourite", tripID, userID);
         if (!favouriteStrategyInstance) {
           return { success: false, data: { message: "Failed to create favourite agent instance." } };
@@ -94,16 +123,11 @@ export default class CopilotService implements ICopilotService {
           success: true,
           data: favouriteData,
         };
-      case "cartoon-agent":
-        const cartoonStrategyInstance = await AgentFactory.createAgent("cartoon-agent");
-        if (!cartoonStrategyInstance) {
-          return { success: false, data: { message: "Failed to create cartoon agent instance." } };
-        }
+      case "cartoon-agent": {
+        const cartoonStrategyInstance = new CartoonAgentStrategy();
         const cartoonData = await cartoonStrategyInstance.executeAgent(prompt, [], base64Image, colorMode);
-        return {
-          success: true,
-          data: cartoonData,
-        };
+        return { success: true, data: cartoonData };
+      }
       default:
         return { success: true, data: {
             message: reason,

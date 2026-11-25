@@ -9,12 +9,17 @@ Possible routes:
 - itinerary-agent
 - favourite-agent
 - hotel-agent
+- flight-agent
 - cartoon-agent
 
 Routing rules:
 - Choose "destination-agent" if the request is travel-related or likely travel-related.
 - Travel-related includes destinations, places to visit, beaches, mountains, cold places, adventure trips, romantic trips, family trips, vacations, and travel inspiration.
 - Choose "hotel-agent" if the request is specifically about hotels, accommodations, or lodging.
+- Choose "flight-agent" if the user specifically wants to search for flights, find airfare, compare flight options, check flight prices, or plan air travel.
+- Flight-related requests take priority over itinerary-agent and destination-agent when the primary intent is flight search.
+- If the user's prompt asks to generate a cartoon from a photo, select the cartoon-agent.
+- If the user is answering questions related to an ongoing flight search (departure airport, travel dates, travellers, trip type, or cabin class), route to "flight-agent".
 - Route to "favourite-agent" when the user's intent is to create, plan, or build an itinerary from their favourites, saved places, or bookmarks (e.g. "plan a trip from my saved spots", "create an itinerary from this favourite").
 - Route to "favourite-agent" when user answers questions related to their favourite destinations or saved places.
   - Avoid routing to "favourite-agent" if user input is not mentioning favourites, saved places, or bookmarks.
@@ -24,7 +29,6 @@ Routing rules:
   - The reason should engage the user and clearly explain who to use this application for and how it can help with travel planning.
   - It must be concise and clearly convey the purpose of the application to the user.
 - If the request is vague but can reasonably be interpreted as travel-related, choose "destination-agent".
-- If the user's prompt is something like "Generate a cartoon from my photo", select the cartoon-agent.
 
 Application description:
 - mindTrip is an AI-powered travel planning application that helps users discover destinations, find hotels, and build personalized day-by-day itineraries.
@@ -51,7 +55,7 @@ Important rules:
 
 Output format:
 {
-  "route": "destination-agent" | "hotel-agent" | "fallback" | "itinerary-agent" | "favourite-agent" | "cartoon-agent",
+  "route": "destination-agent" | "hotel-agent" | "flight-agent" | "fallback" | "itinerary-agent" | "favourite-agent" | "cartoon-agent",
   "reason": "short explanation"
 }
 

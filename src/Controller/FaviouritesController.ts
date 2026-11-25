@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import FaviouritesService from "../Service/FaviouritesService/FaviouritesService";
-
+import UserService from "../Service/User/UserService";
 export const getCollections = async (req: Request, res: Response) => {
     const {userEmail} = req.query;
     if(!userEmail) {
@@ -39,4 +39,104 @@ export const getCollectionDetails = async (req: Request, res: Response) => {
     const faviouritesService = new FaviouritesService();
     const detailsResponse = await faviouritesService.getCollectionDetails(Number(collectionId), type as "Activity" | "Hotel" | "Blog");
     return res.send(detailsResponse);
+  
 }
+export const renameCollection = async (req: Request, res: Response) => {
+    try {
+        const { collectionId, newName, userEmail } = req.body;
+
+        if (!collectionId || !newName?.trim() || !userEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Collection ID, new name, and user email are required"
+            });
+        }
+
+        const favouritesService = new FaviouritesService();
+
+        const response = await favouritesService.renameCollection(
+            Number(collectionId),
+            newName,
+            userEmail
+        );
+
+        return res.send(response);
+
+    } catch (error) {
+        console.error("Error renaming collection:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to rename collection"
+        });
+    }
+};
+
+export const removeFavourite = async (req: Request, res: Response) => {
+    try {
+        const { collectionId, favouriteId, type, userEmail } = req.body;
+
+        if (!collectionId || !favouriteId || !type || !userEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Required fields are missing"
+            });
+        }
+
+        if (!["Activity", "Hotel"].includes(type)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid favourite type"
+            });
+        }
+
+        const favouritesService = new FaviouritesService();
+
+        const response = await favouritesService.removeFavourite(
+            Number(collectionId),
+            Number(favouriteId),
+            type as "Activity" | "Hotel",
+            userEmail
+        );
+
+        return res.send(response);
+
+    } catch (error) {
+        console.error("Error removing favourite:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to remove favourite"
+        });
+    }
+};
+
+export const deleteCollection = async (req: Request, res: Response) => {
+    try {
+        const { collectionId, userEmail } = req.body;
+
+        if (!collectionId || !userEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Collection ID and user email are required"
+            });
+        }
+
+        const favouritesService = new FaviouritesService();
+
+        const response = await favouritesService.deleteCollection(
+            Number(collectionId),
+            userEmail
+        );
+
+        return res.send(response);
+
+    } catch (error) {
+        console.error("Error deleting collection:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to delete collection"
+        });
+    }
+};

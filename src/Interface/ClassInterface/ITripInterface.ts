@@ -5,6 +5,8 @@ import IFinalItinerary from "../DataInterface/IFinalItinerary";
 import IImportantDateResponse from "../DataInterface/IImportantDateResponse";
 import ITripHotelData from "../DataInterface/ITripHotelData";
 import { IMessage } from "./IGroupHub";
+import ITripFlightData from "./IFlightInterface";
+
 
 export default interface ITripInterface {
   exploreTrip(pageNo: number,): Promise<APIResponseInterface<IExploreTrip[] | null>>;
@@ -30,4 +32,11 @@ export default interface ITripInterface {
   updateBookingDate : (tripHotelData: ITripHotelData) => Promise<APIResponseInterface<"booked">>;
   checkAndSuggestTripDates : (base62:string) => Promise<APIResponseInterface<{isAlreadyExist:boolean , startDate?: Date , endDate?: Date }>>;
   checkInUpdate : (id: string, status: "Reached" | "Not Reached Yet", reachWhen?: string) => Promise<APIResponseInterface<boolean>>;
+  createTripFlight: (
+    tripFlightData: ITripFlightData,
+    type: "booked" | "wishlist"
+) => Promise<APIResponseInterface<"booked" | "wishlist">>;
+fetchTripFlightDetails: (
+  base62: string
+) => Promise<APIResponseInterface<ITripFlightData[] | null>>;
 }

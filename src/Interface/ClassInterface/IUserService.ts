@@ -18,7 +18,11 @@ export interface ISearchUserProfileResult {
 }
 
 export default interface IUserService {
-    fetchImportantDates(userID: string): Promise<{dateRange : IImportantDateRange[] , birthdayDate: Date | null, anniversaryDate: Date | null} | null>;
+    fetchImportantDates(userID: string): Promise<{
+        dateRange: IImportantDateRange[];
+        birthdayDate: Date | null;
+        anniversaryDate: Date | null;
+    } | null>;
     fetchUserDetails(userID: string): Promise<{name: string, email: string} | null>;
     followUser(UserID : string , followingUserID: string): Promise<APIResponseInterface<boolean>>;
     likeBlog(userID: string, blogID: string): Promise<APIResponseInterface<boolean>>;

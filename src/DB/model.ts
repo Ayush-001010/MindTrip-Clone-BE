@@ -1,3 +1,4 @@
+import Activities from "./Model/Activites";
 import Memories from "./Model/Memories";
 import UserFriends from "./Model/UserFriends";
 import UserFollowing from "./Model/UserFollowing";
@@ -29,7 +30,7 @@ import GroupPost from "./Model/GroupPost";
 import OpinionComment from "./Model/OpinionComment";
 import UserActivity from "./Model/UserActivity";
 import BlogLikeByUser from "./Model/BlogLikeByUser";
-import Activities from "./Model/Activites";
+import TripFlight from "./Model/TripFlight";
 import MemoriesUserInvite from "./Model/MemoriesUserInvite";
 import MemoriesPicAndAudio from "./Model/MemoriesPicAndAudio";
 import MemoriesChats from "./Model/MemoriesChats"; 
@@ -59,6 +60,7 @@ export interface Models {
   FavouritesHotel: typeof FavouritesHotel;
   FavouritesBlog: typeof FavouritesBlog;
   TripHotel : typeof TripHotel;
+  TripFlight : typeof TripFlight;
   GroupPost: typeof GroupPost;
   Opinion: typeof Opinion;
   OpinionComment: typeof OpinionComment;
@@ -100,6 +102,7 @@ const models: Models = {
   FavouritesHotel,
   FavouritesBlog,
   TripHotel,
+  TripFlight,
   GroupPost,
   Opinion,
   OpinionComment,
