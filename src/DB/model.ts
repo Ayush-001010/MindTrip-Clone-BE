@@ -1,4 +1,5 @@
 import Activities from "./Model/Activites";
+import Memories from "./Model/Memories";
 import UserFriends from "./Model/UserFriends";
 import UserFollowing from "./Model/UserFollowing";
 import CheckIns from "./Model/CheckIns";
@@ -9,6 +10,7 @@ import UserInvite from "./Model/UserInvite";
 import TripExpense from "./Model/TripExpense";
 import TripExpenseShare from "./Model/TripExpenseShare";
 import TripSettlement from "./Model/TripSettlement";
+import Reel from "./Model/Reel";
 import TripDetails from "./Model/TripDetails";
 import ExploreTrip from "./Model/ExploreTrip";
 import TripChat from "./Model/TripChat";
@@ -29,6 +31,12 @@ import OpinionComment from "./Model/OpinionComment";
 import UserActivity from "./Model/UserActivity";
 import BlogLikeByUser from "./Model/BlogLikeByUser";
 import TripFlight from "./Model/TripFlight";
+import MemoriesUserInvite from "./Model/MemoriesUserInvite";
+import MemoriesPicAndAudio from "./Model/MemoriesPicAndAudio";
+import MemoriesChats from "./Model/MemoriesChats"; 
+import ReelAnalysicBatch from "./Model/ReelAnalysicBatch";
+import MemoriesRoom from "./Model/MemoriesRoom";
+import BlogWork from "./Model/BlogWork";
 
 export interface Models {
   ExploreTrip: typeof ExploreTrip;
@@ -62,6 +70,14 @@ export interface Models {
   UserFriends: typeof UserFriends;
   UserActivity: typeof UserActivity;
   BlogLikeByUser: typeof BlogLikeByUser;
+  Memories: typeof Memories;
+  MemoriesUserInvite: typeof MemoriesUserInvite;
+  MemoriesPicAndAudio: typeof MemoriesPicAndAudio;
+  MemoriesChats: typeof MemoriesChats;
+  ReelAnalysicBatch: typeof ReelAnalysicBatch;
+  MemoriesRoom: typeof MemoriesRoom;
+  Reel: typeof Reel;
+  BlogWork: typeof BlogWork;
 }
 
 const models: Models = {
@@ -95,7 +111,15 @@ const models: Models = {
   UserFollowing,
   UserFriends,
   UserActivity,
-  BlogLikeByUser
+  BlogLikeByUser,
+  Memories,
+  MemoriesUserInvite,
+  MemoriesPicAndAudio,
+  MemoriesChats,
+  ReelAnalysicBatch,
+  MemoriesRoom,
+  Reel,
+  BlogWork
 };
 
 User.hasMany(UserTripMappingTable, {

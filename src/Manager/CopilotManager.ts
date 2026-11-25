@@ -2,12 +2,27 @@ import APIResponseInterface from "../Interface/ResponseInterface/APIResponseInte
 import CopilotService from "../Service/Copilot/CopilotService";
 import CommonService from "../Service/Common/CommonService";
 import DataBaseService from "../Service/Database/Database";
+import type { MascotColorMode } from "../Interface/DataInterface/ICharacterSpecification";
 
 export default class CopilotManager {
   private databaseInstance: DataBaseService;
 
   constructor() {
     this.databaseInstance = new DataBaseService();
+  }
+  genrateCartoon = async (userPrompt: string, base64Image?: Buffer, colorMode?: MascotColorMode) => {
+      try {
+        const copilotInstance = new CopilotService();
+        return await copilotInstance.coordinatorAgent(userPrompt, [], "", -1, base64Image, colorMode);
+      } catch (error) {
+        console.log("Error in genrateCartoon:", error);
+        return {
+          success: false,
+          error: error instanceof Error
+            ? `Cartoon generation failed: ${error.message}`
+            : "Cartoon generation failed. Check the Copilot runtime connection and authentication.",
+        };
+    };
   }
   private fetchBookedFlights = async (tripID: string) => {
     const response = await this.databaseInstance.fetchData<any>(

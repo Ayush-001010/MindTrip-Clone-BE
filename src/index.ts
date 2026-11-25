@@ -16,11 +16,14 @@ import blogRoutes from "./Routes/blogRoutes";
 import blogVideoGenrationRoutes from "./Routes/blogVideoGenration";
 import faviouritesRoutes from "./Routes/FaviouritesRoutes";
 import blogGlobeFeedRoutes from "./Routes/blogGlobeFeed";
+import memoriesRoutes from "./Routes/MemoriesRoutes";
+import reelRoutes from "./Routes/ReelRoutes";
 
 import passport from "./config/passport";
 import inviteRoutes from "./Routes/InviteRoutes";
 import BlogFeed from "./Service/BlogFeed/BlogFeed";
 import flightRoutes from "./Routes/flightRoutes";
+import socketMemoriesOpt, { MAX_SOCKET_IMAGE_BYTES } from "./Socket/socketMemoriesOpt";
 
 
 const app = express();
@@ -40,6 +43,7 @@ app.use("/", inviteRoutes);
 const server = http.createServer(app);
 
 export const io = new Server(server, {
+  maxHttpBufferSize: MAX_SOCKET_IMAGE_BYTES + 64 * 1024,
   cors: {
     origin: "http://localhost:5173",
     credentials: true,
@@ -47,6 +51,7 @@ export const io = new Server(server, {
 });
 
 initSocket(io);
+socketMemoriesOpt(io.of("/memories"));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/explore", hotelRoutes);
@@ -60,6 +65,8 @@ app.use("/faviourites", faviouritesRoutes);
 app.use("/user", userRoutes);
 app.use("/blog-globe-feed", blogGlobeFeedRoutes);
 app.use("/api/flights", flightRoutes);
+app.use("/memories", memoriesRoutes);
+app.use("/reel", reelRoutes);
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });

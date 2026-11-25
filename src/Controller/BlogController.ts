@@ -5,10 +5,10 @@ import BlogFeed from "../Service/BlogFeed/BlogFeed";
 
 export const createNewBlog = async (req : Request, res: Response) => {
     try{
-        const { blogData , userID } = req.body;
+        const { blogData , userID , isDraft } = req.body;
 
         const blogService = new BlogService();
-        const response = await blogService.createNewBlog(blogData, userID);
+        const response = await blogService.createNewBlog(blogData, userID, isDraft);
         res.send(response);
     } catch (error) {
         console.error("Error creating new blog: ", error);
@@ -94,5 +94,29 @@ export const fetchBlogActivityName = async (req: Request, res: Response) => {
     } catch (error) {
         console.error("Error fetching blog activity names: ", error);
         res.send({ success: false, data: [] });
+    }
+};
+
+export const fetchBlogWorkByUserId = async (req: Request, res: Response) => {
+    try{
+        const { userId } = req.query;
+        const blogService = new BlogService();
+        const response = await blogService.fetchBlogWorkByUserId(userId as string);
+        res.send(response);
+    } catch (error) {
+        console.error("Error fetching blog work by user id: ", error);
+        res.send({ success: false, data: [] });
+    }
+};
+
+export const createInProgressBlog = async (req: Request, res: Response) => {
+    try{
+        const { userId } = req.query;
+        const blogService = new BlogService();
+        const response = await blogService.createInProgressBlog(userId as string);
+        res.send(response);
+    } catch (error) {
+        console.error("Error creating in-progress blog: ", error);
+        res.send({ success: false, data: 0 });
     }
 };

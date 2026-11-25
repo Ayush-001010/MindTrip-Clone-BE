@@ -40,10 +40,10 @@ export default class DataBaseService implements IDataBaseService {
     }
   };
 
-  updateData = async<T>(tableName: keyof Models, data: Partial<T>, condition: object): Promise<IDatabaseResponse<T>> => {
+  updateData = async<T>(tableName: keyof Models, data: Partial<T>, condition: object, returning = true): Promise<IDatabaseResponse<T>> => {
     try {
       // console.log(`Updating data in table: ${tableName} with condition: ${JSON.stringify(condition)}`);
-      const response = await models[tableName].update(data as any, { where: condition as any, returning: true });
+      const response = await models[tableName].update(data as any, { where: condition as any, returning });
       return { dataSuccess: true, data: response as T };
     } catch (error) {
         console.log(`Error updating data in table: ${tableName}`, error);
@@ -83,7 +83,7 @@ export default class DataBaseService implements IDataBaseService {
         };
     }
 };
-  specialQuery = async<T>(type: "mostLikedLastSevenDays" | "mostLikedLastTwoHours" | "mostDislikedLastSevenDays" | "mostDislikedLastTwoHours"): Promise<IDatabaseResponse<T>> => {
+  specialQuery = async<T>(type: "mostLikedLastSevenDays" | "mostLikedLastTwoHours" | "mostDislikedLastSevenDays" | "mostDislikedLastTwoHours" | "fetchReelsByPlaceName", placeName?: string): Promise<IDatabaseResponse<T>> => {
     try{
       switch(type){
         case "mostLikedLastSevenDays":
@@ -153,6 +153,15 @@ export default class DataBaseService implements IDataBaseService {
               return { dataSuccess: true, data: [] as unknown as T };
             }
             return { dataSuccess: true, data: dislikesTwoHours as unknown as T };
+          case "fetchReelsByPlaceName":
+            const reels = await models["Reel"].findAll({
+              where:{
+                placeNames:{
+                  [Op.like]: `%${placeName}%`
+                }
+              }
+            })
+            return { dataSuccess: true, data: reels as unknown as T };
         }
     } catch (error) {
         console.log(`Error executing special query: ${type}`, error);
@@ -160,11 +169,11 @@ export default class DataBaseService implements IDataBaseService {
     }
   };
 
-  groupBy = async <T>(tableName : keyof Models , column: string[]) : Promise<IDatabaseResponse<T>> => {
+  groupBy = async <T>(tableName : keyof Models , column: string[], includeCount = false) : Promise<IDatabaseResponse<T>> => {
     try {
         const response = await models[tableName].findAll({
-            attributes: column as any,
-            group: column as any,
+            attributes: includeCount ? [...column, [fn("COUNT", col("*")), "count"]] : column,
+            group: column,
             raw: true,
         });
         return { dataSuccess: true, data: response as unknown as T };

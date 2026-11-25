@@ -4,6 +4,7 @@ import APIResponseInterface from "../../Interface/ResponseInterface/APIResponseI
 import IBlogData, { IBlogActivite, IBlogHotel, IBlogTravel } from "../../Interface/DataInterface/IBlogData";
 import DataBaseService from "../Database/Database";
 import BlogFeed from "../BlogFeed/BlogFeed";
+import { IBlogWorkData } from "../../Interface/ClassInterface/IBlogService";
 
 export default class BlogService implements IBlogService { 
     private dbInstance: DataBaseService;
@@ -31,8 +32,89 @@ export default class BlogService implements IBlogService {
         }
     }
 
-    createNewBlog = async (blogData: IBlogData , userID: string): Promise<APIResponseInterface<string>> => {
+    createNewBlog = async (blogData: IBlogData , userID: string , isSaveAsDraft?: boolean): Promise<APIResponseInterface<string>> => {
         try {
+            if(isSaveAsDraft){
+                console.log("Saving as draft: ", blogData.id);
+                const dbResponseDraft = await this.dbInstance.updateData<any>("Blog",{
+                    tripTitle : blogData?.tripTitle,
+                    tripOverview : blogData?.tripOverview,
+                    totalSpent : blogData?.totalSpent,
+                    tripDuration : blogData?.tripDuration,
+                    noOfPlaces : blogData?.noOfPlaces,
+                    noOfActivities : blogData?.noOfActivities,
+                    bookingURL : blogData?.bookingURL,
+                    metaData: blogData?.metaData?.join(","),
+                    profileImages: (blogData?.profileImages as string[]).join(","),
+                    profileTitle: blogData?.profileTitle,
+                    profileIcon: blogData?.profileIcon,
+                    numberOfLikes: blogData?.numberOfLikes || 0,
+                    userID: userID,
+                },{
+                    id : blogData?.id || 0
+                });
+                console.log("DB Response Draft: ", dbResponseDraft);
+                if(!dbResponseDraft.dataSuccess){
+                    return { success: false, data: "" };
+                }
+                const blogId = blogData?.id;
+                console.log("DB Response Draft: ", blogId);
+                console.log("Blog ID: ", blogId);
+                blogData.activities.sort((a, b) => (a.index || 0) - (b.index || 0));
+                console.log("Sorted Activities: ", blogData.activities);
+                // Delete existing activities for the draft blog
+                await this.dbInstance.deleteData("BlogActivity", { blogId: blogId });
+                // Add new activities for the draft blog
+                await Promise.all(blogData.activities.map(async (activity) => {
+                console.log("Adding activity: ", activity);
+                const dbResponseActivity = await this.dbInstance.createData<any>("BlogActivity",{
+                    day: activity.day,
+                    placeName: activity.placeName,
+                    activityType: activity.activityType,
+                    blogId: blogId,
+                    time: activity.time,
+                    description: activity.description,
+                    tips: activity.tips?.join(","),
+                    coordinates: JSON.stringify(activity.coordinates),
+                    images: activity.images?.join(","),
+                    sideActivities: JSON.stringify(activity.sideActivities),
+                    amountSpent: activity.amountSpent,
+                    });
+                    return dbResponseActivity;
+                }));
+                // Delete blog hotel entries for the draft blog
+                await this.dbInstance.deleteData("BlogHotel", { blogId: blogId });
+                // Add new hotel entries for the draft blog
+                await Promise.all(blogData.hotel.map(async (hotel) => {
+                    const dbResponseHotel = await this.dbInstance.createData<any>("BlogHotel",{
+                        name: hotel.name,
+                        address: hotel.address,
+                        checkInDate: hotel.checkInDate,
+                        checkOutDate: hotel.checkOutDate,
+                        amountSpent: hotel.amountSpent,
+                        description: hotel.description,
+                        images: hotel.images,
+                        blogId: blogId,
+                    });
+                    return dbResponseHotel;
+                }));
+                // Delete existing travel entries for the draft blog
+                await this.dbInstance.deleteData("BlogTravel", { blogId: blogId });
+                // Add new travel entries for the draft blog
+                await Promise.all(blogData.travel.map(async (travel) => {
+                    const dbResponseTravel = await this.dbInstance.createData<any>("BlogTravel",{
+                        time: travel.time,
+                        activityNumber: travel.activityNumber,
+                        day: travel.day,
+                        travelType: travel.travelType,
+                        amountSpent: travel.amountSpent,
+                        description: travel.description,
+                        blogId: blogId,
+                    });
+                    return dbResponseTravel;
+                }));
+                return { success: true, data: "" };
+            }
             
             // Adding Blog
             const dbResponseBlog = await this.dbInstance.createData<any>("Blog",{
@@ -256,7 +338,7 @@ export default class BlogService implements IBlogService {
                     description: plainActivity.description,
                     tips: (plainActivity.tips as string)?.split(",").filter(Boolean) || [],
                     coordinates: plainActivity.coordinates ? JSON.parse(plainActivity.coordinates) : { latitude: 0, longitude: 0 },
-                    images: (plainActivity.images as string)?.split(",").filter(Boolean) || [],
+                    images: (plainActivity.images as string)?.split(",").map((img: string) => `https://${process.env.AWS_CloudFront_Domain}/` + img.trim()).filter(Boolean) || [],
                     sideActivities: plainActivity.sideActivities ? JSON.parse(plainActivity.sideActivities) : [],
                     amountSpent: plainActivity.amountSpent,
                 };
@@ -300,7 +382,7 @@ export default class BlogService implements IBlogService {
                 bookingURL: plainBlog.bookingURL,
                 travel,
                 metaData: (plainBlog.metaData as string)?.split(",").filter(Boolean) || [],
-                profileImages: (plainBlog.profileImages as string)?.split(",") || [],
+                profileImages: (plainBlog.profileImages as string)?.split(",").map((img: string) => `https://${process.env.AWS_CloudFront_Domain}/` + img.trim()) || [],
                 profileTitle: plainBlog.profileTitle,
                 profileIcon: plainBlog.profileIcon,
                 numberOfLikes: plainBlog.numberOfLikes || 0,
@@ -351,5 +433,44 @@ export default class BlogService implements IBlogService {
             console.log("Error fetching blog activity names: ", error);
             return { success: false, data: [] };
         }
+    }
+
+    fetchBlogWorkByUserId = async (userId: string) : Promise<APIResponseInterface<IBlogWorkData[]>> => {
+        try {
+            const dbResponse = await this.dbInstance.fetchData<any[]>("BlogWork",undefined,undefined,{
+                userId
+            },[["createdAt", "DESC"]]);
+            if(dbResponse.dataSuccess && dbResponse.data){
+                const blogWorkData = dbResponse.data.map(work => ({
+                    id: work.id,
+                    userId: work.userId,
+                    blogId: work.blogId,
+                    title: work.title || ""
+                }));
+                return { success: true, data: blogWorkData };
+            }
+            return { success: false, data: [] };
+        } catch (error) {
+            console.log("Error fetching blog work by user id: ", error);
+            return { success: false, data: [] };
+        }
+    }
+
+    createInProgressBlog = async (userId: string) : Promise<APIResponseInterface<number>> => {
+        const dbResponse = await this.dbInstance.createData<any>("Blog", {
+            "userID" : userId
+        });
+        if(dbResponse.dataSuccess && dbResponse.data){
+            const blogId = dbResponse.data.id;
+            const workResponse = await this.dbInstance.createData<any>("BlogWork", {
+                userId,
+                blogId,
+                title: ""
+            });
+            if(workResponse.dataSuccess && workResponse.data){
+                return { success: true, data: blogId };
+            }
+        }
+        return { success: false, data: 0 };
     }
 }

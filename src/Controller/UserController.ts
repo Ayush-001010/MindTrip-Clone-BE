@@ -109,3 +109,15 @@ export const takeActionOnFriendRequest = async (req: Request, res: Response) => 
     res.status(500).json({ success: false, data: false });
   }
 };
+
+export const countTotalNumberOfMemoriesLeft = async (req: Request, res: Response) => {
+  const { userId } = req.query as { userId: string };
+  try {
+    const userService = new UserService();
+    const response = await userService.countTotalNumberOfMemoriesLeft(userId);
+    res.json(response);
+  } catch (error) {
+    console.error("Error in countTotalNumberOfMemoriesLeft controller: ", error);
+    res.status(500).json({ success: false, data: 0 });
+  }
+};

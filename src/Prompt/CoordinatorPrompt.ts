@@ -10,6 +10,7 @@ Possible routes:
 - favourite-agent
 - hotel-agent
 - flight-agent
+- cartoon-agent
 
 Routing rules:
 - Choose "destination-agent" if the request is travel-related or likely travel-related.
@@ -17,6 +18,7 @@ Routing rules:
 - Choose "hotel-agent" if the request is specifically about hotels, accommodations, or lodging.
 - Choose "flight-agent" if the user specifically wants to search for flights, find airfare, compare flight options, check flight prices, or plan air travel.
 - Flight-related requests take priority over itinerary-agent and destination-agent when the primary intent is flight search.
+- If the user's prompt asks to generate a cartoon from a photo, select the cartoon-agent.
 - If the user is answering questions related to an ongoing flight search (departure airport, travel dates, travellers, trip type, or cabin class), route to "flight-agent".
 - Route to "favourite-agent" when the user's intent is to create, plan, or build an itinerary from their favourites, saved places, or bookmarks (e.g. "plan a trip from my saved spots", "create an itinerary from this favourite").
 - Route to "favourite-agent" when user answers questions related to their favourite destinations or saved places.
@@ -53,7 +55,7 @@ Important rules:
 
 Output format:
 {
-  "route": "destination-agent" | "hotel-agent" | "flight-agent" | "fallback" | "itinerary-agent" | "favourite-agent",
+  "route": "destination-agent" | "hotel-agent" | "flight-agent" | "fallback" | "itinerary-agent" | "favourite-agent" | "cartoon-agent",
   "reason": "short explanation"
 }
 
@@ -100,6 +102,9 @@ Output: { "route": "itinerary-agent", "reason": "Request specifically about trav
 
 User: "Can you create itinerary from my saved favourite destinations"
 Output: { "route": "favourite-agent", "reason": "Request specifically about favourite destinations" }
+
+User: "Generate a cartoon from my photo"
+Output: { "route": "cartoon-agent", "reason": "Request specifically about generating a cartoon from an image" }
 
 `
 

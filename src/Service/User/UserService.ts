@@ -11,6 +11,21 @@ export default class UserService implements IUserService {
   constructor() {
     this.dataBaseServiceInstance = new DataBaseService();
   }
+  async countTotalNumberOfMemoriesLeft(userId: string): Promise<APIResponseInterface<number>> {
+      try {
+        const userDetails = await this.dataBaseServiceInstance.fetchData<any>("User", undefined, undefined, {
+          id: userId
+        }, ["totalNumberOfMemoriesLeft"]);
+        if (!userDetails.dataSuccess) {
+          throw new Error("Failed to fetch user details");
+        }
+        const userData = userDetails.data[0].dataValues;
+        return { success: true, data: userData.totalNumberOfMemoriesLeft || 0 };
+      } catch (error) {
+        console.log("Error", error);
+        return { success: false, data: 0 };
+      }
+  }
   private parseDate(value: unknown): { day: number; month: number } | null {
     if (!value) return null;
   

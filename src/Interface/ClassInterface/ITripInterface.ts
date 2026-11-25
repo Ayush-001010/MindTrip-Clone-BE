@@ -13,7 +13,7 @@ export default interface ITripInterface {
   createNewTrip: (userID: string) => Promise<APIResponseInterface<{url: string}>>;
   fetchTripIDs: (userID: string) => Promise<APIResponseInterface<Array<{tripID: string,name: string}> | null>>;
   fetchTripDetails(tripID: string , base62?: string): Promise<APIResponseInterface<ITripDetails | null>>;
-  fetchTripMemberDetails(tripID: string): Promise<APIResponseInterface<Array<{userId: string,userName: string,userEmail: string}> | null>>;
+  fetchTripMemberDetails(tripID: string): Promise<APIResponseInterface<Array<{userId: string,userName: string,userEmail: string,userImage?: string}> | null>>;
   createUserInvite(tripID: string,inviteUserBy: string): Promise<APIResponseInterface<{url: string}>>;
   fetchFinalItinerary(tripID: string): Promise<APIResponseInterface<(ITripDetails & { countUserOnTrip: number }) | null>>;
   setTripStartAndEnd(base62: string,startDate: string,endDate: string): Promise<APIResponseInterface<null>>;
