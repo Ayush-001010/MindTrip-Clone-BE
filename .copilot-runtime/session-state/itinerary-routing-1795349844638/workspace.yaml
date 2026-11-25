@@ -1,0 +1,9 @@
+id: itinerary-routing-1795349844638
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: '{"history":[{"userPrompt":"Can you create a travel itinerary for Himachal Pradesh from December 20–25? I’d love to experience paragliding, enjoy snowfall, and explore beautiful mountain destinations and cafes.","agentResponse":"{\"type\":\"itinerary-options\",\"generatedBy\":\"itinerary-planning-agent\",\"description\":\"Three six-day Himachal Pradesh itineraries for December 20-25, 2026, combining weather-dependent paragliding, possible snow experiences, mountain scenery, winter drives, and caf...'
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-22T12:17:24.643Z
+updated_at: 2026-11-22T12:17:24.665Z

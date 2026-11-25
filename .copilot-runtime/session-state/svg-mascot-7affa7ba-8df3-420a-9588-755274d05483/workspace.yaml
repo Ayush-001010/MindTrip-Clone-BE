@@ -1,0 +1,11 @@
+id: svg-mascot-7affa7ba-8df3-420a-9588-755274d05483
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: |-
+  Generate the mascot using both images and this character specification JSON:
+  {"version":"1.0","appearance":{"faceShape":{"type":"oval-oblong","description":"Longer than wide, with gently rounded sides and a softly tapered lower face.","confidence":0.84},"faceProportions":{"forehead":"moderately broad and partly covered by side-parted hair","cheekbones":"gently defined, with moderate width","jawline":"softly curved and gradually narrowing","chin":"rounded and slightly tapered"},"eyes":{"shape":"a...
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-12T16:46:30.157Z
+updated_at: 2026-11-12T16:46:30.478Z

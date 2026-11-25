@@ -1,0 +1,9 @@
+id: video-analysis-6ac394c3-79ea-4336-ab93-23ac22497fbc
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: '{"videoId":33,"tag":"Manali","duration":18.543333,"transcript":[{"start":11.120000000000001,"end":16.080000000000002,"text":"Is there anything you would suggest or not?"}],"pass":"confirmation","start":12.2,"end":18.543333,"frameLayout":"contact sheet; read left-to-right, top-to-bottom","frames":[{"frameNumber":1,"timestamp":12.5964583125},{"frameNumber":2,"timestamp":13.3893749375},{"frameNumber":3,"timestamp":14.1822915625},{"frameNumber":4,"timestamp":14.9752081875},{"frameNumber":5,"timestam...'
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-16T19:04:38.477Z
+updated_at: 2026-11-16T19:04:38.504Z

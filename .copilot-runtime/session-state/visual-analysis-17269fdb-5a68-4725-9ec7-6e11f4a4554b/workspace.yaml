@@ -1,0 +1,13 @@
+id: visual-analysis-17269fdb-5a68-4725-9ec7-6e11f4a4554b
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: |-
+  Describe the detected person's visible facial appearance in the attached photo.
+  The image is 2316 by 3088 pixels.
+  The detected face box is x=781.9720947302355 to 1780.965376927787, y=1245.014490055595 to 2405.32401526537, measured from the top-left.
+  Use that box to identify the person; do not describe other people.
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-12T17:09:12.831Z
+updated_at: 2026-11-12T17:09:12.910Z

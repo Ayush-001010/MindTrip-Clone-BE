@@ -1,0 +1,9 @@
+id: video-analysis-9a0aa710-f1d3-4b7d-ac37-7d3c3e6de5cf
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: '{"videoId":32,"tag":"Jibhi","duration":21.881667,"transcript":[],"pass":"confirmation","start":14.4,"end":21.4,"frameLayout":"contact sheet; read left-to-right, top-to-bottom","frames":[{"frameNumber":1,"timestamp":14.8375},{"frameNumber":2,"timestamp":15.7125},{"frameNumber":3,"timestamp":16.5875},{"frameNumber":4,"timestamp":17.4625},{"frameNumber":5,"timestamp":18.3375},{"frameNumber":6,"timestamp":19.2125},{"frameNumber":7,"timestamp":20.0875},{"frameNumber":8,"timestamp":20.9625}]}'
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-16T19:08:49.955Z
+updated_at: 2026-11-16T19:08:49.974Z

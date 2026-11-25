@@ -1,0 +1,14 @@
+id: cartoon-session-1794479744159
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: |-
+  Attachment 1 (user-photo.png): PHOTO = LIKENESS. Draw this person only.
+  Attachment 2 (expression-style-crop.png): PRIMARY REFERENCE = SIMPLE EYE AND MOUTH STYLE ONLY.
+  Attachment 3 (mascot-style-crop.png): SECONDARY REFERENCE = CONTOUR STYLE ONLY.
+  Do not copy the reference characters' identities or add their accessories to the person.
+  Genrate cartoon for the attached image
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-12T10:35:44.161Z
+updated_at: 2026-11-12T10:35:44.250Z

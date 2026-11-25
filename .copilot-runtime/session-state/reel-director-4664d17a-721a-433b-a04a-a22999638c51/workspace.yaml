@@ -1,0 +1,9 @@
+id: reel-director-4664d17a-721a-433b-a04a-a22999638c51
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: '{"template":"Journey","mood":"Relaxing","pace":"Medium","places":["Manali","Jibhi"],"userSuggestion":"end with the sunset","maxScenes":6,"sceneSeconds":2,"clips":[{"id":"p1","place":"Manali","kind":"photo","score":8,"storyRoles":["opening"],"description":"Wide view of snowy mountains above Manali town"},{"id":"v2-0","place":"Manali","kind":"video","score":6,"storyRoles":["journey"],"description":"Walking through a pine forest path","segmentSeconds":6},{"id":"p3","place":"Jibhi","kind":"photo","s...'
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-20T10:29:04.326Z
+updated_at: 2026-11-20T10:29:05.575Z

@@ -1,0 +1,9 @@
+id: video-analysis-e52ddf3f-a0e8-4a47-a6d6-5baa7cff8e31
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: '{"videoId":34,"tag":"Jibhi","duration":16.501667,"transcript":[{"start":0.68,"end":2,"text":"वई्र का हगर बinformrelated prominent"},{"start":2.12,"end":3.3200000000000003,"text":"वई्र का की लीगी है"},{"start":4.32,"end":5.96,"text":"रही तूमसे बी्ऱे रही है"}],"pass":"coarse","start":0,"end":16.501667,"frameLayout":"contact sheet; read left-to-right, top-to-bottom","frames":[{"frameNumber":1,"timestamp":1.0313541875},{"frameNumber":2,"timestamp":3.0940625625000004},{"frameNumber":3,"timestamp":5....'
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-16T19:09:37.490Z
+updated_at: 2026-11-16T19:09:37.531Z

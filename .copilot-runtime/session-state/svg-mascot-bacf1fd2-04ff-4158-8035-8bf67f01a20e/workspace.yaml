@@ -1,0 +1,13 @@
+id: svg-mascot-bacf1fd2-04ff-4158-8035-8bf67f01a20e
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: |-
+  Generate the mascot using the photo for identity, the landmark map for geometry, and the style reference only for visual style.
+  Color mode: monochrome.
+  Character specification JSON:
+  {"version":"1.0","appearance":{"faceShape":{"type":"oval","description":"Gently elongated face with softly rounded cheeks and a tapered lower face","confidence":0.88},"faceProportions":{"forehead":"medium height, partly obscured by hair and hand","cheekbones":"moderately prominent with soft contours","jawline":"narro...
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-12T17:01:05.171Z
+updated_at: 2026-11-12T17:01:05.476Z

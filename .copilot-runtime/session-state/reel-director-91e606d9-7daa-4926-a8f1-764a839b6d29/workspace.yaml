@@ -1,0 +1,9 @@
+id: reel-director-91e606d9-7daa-4926-a8f1-764a839b6d29
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: '{"template":"Journey","mood":"Romantic","pace":"Slow","places":["Manali","Jibhi"],"targetSeconds":{"min":30,"max":40},"music":{"title":"Yellow - Coldplay","songSeconds":269,"reelStartsAtSec":80.2,"bpm":87,"beatSeconds":0.69,"usableSeconds":40,"sections":[{"startSec":0,"endSec":12,"energy":0.6},{"startSec":12,"endSec":28,"energy":1},{"startSec":28,"endSec":40,"energy":0.5}],"peak":{"startSec":12,"endSec":28}},"clips":[{"id":"p1","place":"Manali","kind":"photo","score":8,"storyRoles":["opening"],"...'
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-20T10:58:23.455Z
+updated_at: 2026-11-20T10:58:25.021Z

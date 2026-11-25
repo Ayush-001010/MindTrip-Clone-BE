@@ -1,0 +1,9 @@
+id: reel-director-c934e4e9-8a08-4035-85ea-8a8b938dfe22
+cwd: /Users/ayushchakraborty/Desktop/Journey/MindTrip-AI/BE
+client_name: sdk
+name: '{"template":"Journey","mood":"happy","pace":"slow","places":["Manali, Manali, Himachal Pradesh, India","Jibhi, Banjar, Himachal Pradesh, India"],"targetSeconds":{"min":20,"max":50},"music":{"title":"Yellow","songSeconds":268.3,"reelStartsAtSec":199.3,"bpm":170,"beatSeconds":0.353,"usableSeconds":49.8,"sections":[{"startSec":-199.1,"endSec":-168,"energy":0.52},{"startSec":-168,"endSec":-136.9,"energy":0.59},{"startSec":-136.9,"endSec":-105.9,"energy":0.63},{"startSec":-105.9,"endSec":-74.8,"energ...'
+user_named: false
+summary_count: 0
+fork_count: 0
+created_at: 2026-11-20T11:29:06.107Z
+updated_at: 2026-11-20T11:29:06.132Z
