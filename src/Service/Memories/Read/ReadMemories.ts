@@ -72,7 +72,7 @@ export default class ReadMemories implements IMemoriesReadOpt {
             const res5 = await this.dbInstanse.fetchData<any>("ReelAnalysicBatch", undefined, undefined, {
                 memoryId: item.id
             });
-            const isAllAnalysisCompleted = res5.data.every((batch: any) => batch.dataValues.status === "completed");
+            const isAllAnalysisCompleted = res5.data.length > 0 && res5.data.every((batch: any) => batch.dataValues.status === "completed");
             return {
                 success: true,
                 data: {

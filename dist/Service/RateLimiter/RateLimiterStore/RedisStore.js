@@ -11,6 +11,13 @@ class RedisStore {
             if (this.redisClient) {
                 return this.redisClient;
             }
+            if (process.env.REDIS_URL) {
+                this.redisClient = new ioredis_1.default(process.env.REDIS_URL, { maxRetriesPerRequest: 1 });
+                this.redisClient.on("error", (error) => {
+                    console.error("Redis connection error:", error.message);
+                });
+                return this.redisClient;
+            }
             const useDockerNetwork = process.env.REDIS_USE_DOCKER_NETWORK === "true";
             const sentinels = useDockerNetwork
                 ? [

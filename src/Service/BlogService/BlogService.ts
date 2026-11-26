@@ -79,6 +79,8 @@ export default class BlogService implements IBlogService {
                     images: activity.images?.join(","),
                     sideActivities: JSON.stringify(activity.sideActivities),
                     amountSpent: activity.amountSpent,
+                    longitude: activity.coordinates?.longitude,
+                    latitude: activity.coordinates?.latitude,
                     });
                     return dbResponseActivity;
                 }));
@@ -160,6 +162,8 @@ export default class BlogService implements IBlogService {
                     images: activity.images?.join(","),
                     sideActivities: JSON.stringify(activity.sideActivities),
                     amountSpent: activity.amountSpent,
+                    longitude: activity.coordinates?.longitude,
+                    latitude: activity.coordinates?.latitude,
                 });
                 return dbResponseActivity;
             }));

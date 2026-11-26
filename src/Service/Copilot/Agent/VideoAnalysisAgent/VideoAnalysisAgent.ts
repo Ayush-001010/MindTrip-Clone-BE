@@ -7,6 +7,7 @@ import VideoAnalysisPrompt from "../../../../Prompt/VideoAnalysisPrompt";
 
 export default class VideoAnalysisAgent {
     private frameBudgetPromise?: Promise<number>;
+    private modelId?: string;
     private useContactSheet = false;
     private maxImageBytes?: number;
 
@@ -35,20 +36,22 @@ export default class VideoAnalysisAgent {
                     await client.start();
                     console.log("[Video AI] Client started; fetching available models");
                     const models = await client.listModels();
-                    console.log("[Video AI] Model lookup finished:", { modelCount: models.length, model: HEAVY_MODEL });
-                    const model = models.find(item => item.id === HEAVY_MODEL);
+                    const model = HEAVY_MODEL === "auto"
+                        ? models.find(item => item.id !== "auto" && item.capabilities.supports.vision)
+                        : models.find(item => item.id === HEAVY_MODEL);
                     if (!model?.capabilities.supports.vision) {
-                        throw new Error(`Video analysis requires a vision-capable model: ${HEAVY_MODEL}`);
+                        throw new Error(`Video analysis requires an available vision-capable model (configured: ${HEAVY_MODEL})`);
                     }
                     const imageLimit = model.capabilities.limits.vision?.max_prompt_images ?? 12;
                     if (!Number.isInteger(imageLimit) || imageLimit < 1) {
-                        throw new Error(`Model ${HEAVY_MODEL} reports an invalid image limit: ${imageLimit}`);
+                        throw new Error(`Model ${model.id} reports an invalid image limit: ${imageLimit}`);
                     }
+                    this.modelId = model.id;
                     this.useContactSheet = imageLimit === 1;
                     this.maxImageBytes = model.capabilities.limits.vision?.max_prompt_image_size;
                     const budget = this.useContactSheet ? 8 : Math.min(12, imageLimit);
                     console.log("[Video AI] Frame input configuration:", {
-                        imageLimit, frameBudget: budget,
+                        model: model.id, imageLimit, frameBudget: budget,
                         mode: this.useContactSheet ? "one contact sheet" : "individual images",
                     });
                     return budget;
@@ -101,6 +104,9 @@ export default class VideoAnalysisAgent {
         transcript: { start: number; end: number; text: string }[];
     }): Promise<VideoMoment[]> {
         const budget = await this.frameBudget();
+        if (!this.modelId) {
+            throw new Error("Video analysis model was not initialized");
+        }
         if (input.frames.length === 0 || input.frames.length > budget) {
             throw new Error(`Video analysis requires between 1 and ${budget} sampled frames`);
         }
@@ -116,7 +122,7 @@ export default class VideoAnalysisAgent {
         }));
         const session = await CopilotClientFactory.getInstance().createSession({
             sessionId: `video-analysis-${randomUUID()}`,
-            model: HEAVY_MODEL,
+            model: this.modelId,
             availableTools: [],
             systemMessage: { content: VideoAnalysisPrompt },
         });

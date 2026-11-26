@@ -104,7 +104,15 @@ export default class ReelDirectorAgent {
       }
       const sceneSec = window.beatTimes[end] - window.beatTimes[cursor];
       if (clip.segmentSeconds !== undefined && sceneSec > clip.segmentSeconds * 2 + 0.001) {
-        throw new Error(`Scene for "${scene.clipId}" is ${sceneSec.toFixed(1)}s but its video segment is only ${clip.segmentSeconds}s`);
+        let maxBeats = 0;
+        while (maxBeats < 16 && cursor + maxBeats + 1 < window.beatTimes.length &&
+          window.beatTimes[cursor + maxBeats + 1] - window.beatTimes[cursor] <= clip.segmentSeconds * 2 + 0.001) {
+          maxBeats++;
+        }
+        const correction = maxBeats
+          ? `use at most ${maxBeats} beat(s) at this position`
+          : "skip this clip or move it to a position where at least one beat fits";
+        throw new Error(`Scene for "${scene.clipId}" is ${sceneSec.toFixed(3)}s but its video segment is only ${clip.segmentSeconds}s; ${correction}`);
       }
       cursor = end;
     }

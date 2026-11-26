@@ -3,7 +3,7 @@ import { IDatabaseResponse } from "../ResponseInterface/IDatabaseResponse";
 
 export default interface IDataBaseService {
     fetchData<T>(tableName : keyof Models , limit?: number , skip?: number, where?: Partial<T> , order?: any): Promise<IDatabaseResponse<T>>;
-    fetchDataWhereIn<T>(tableName : keyof Models , column: keyof T, between: any[]): Promise<IDatabaseResponse<T>>;
+    fetchDataWhereIn<T>(tableName : keyof Models , column: keyof T, between: any[], condition?: Record<string, any>): Promise<IDatabaseResponse<T>>;
     createData<T>(tableName : keyof Models , data: T): Promise<IDatabaseResponse<T>>;
     updateData<T>(tableName : keyof Models , data: Partial<T>, filter?: Partial<T>, returning?: boolean): Promise<IDatabaseResponse<T>>;
     countData<T>(tableName : keyof Models , filter?: Partial<T>): Promise<IDatabaseResponse<number>>;

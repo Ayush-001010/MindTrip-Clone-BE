@@ -15,11 +15,12 @@ export default class DataBaseService implements IDataBaseService {
     }
   };
 
-  fetchDataWhereIn = async<T>(tableName: keyof Models, column: keyof T, between: any[]): Promise<IDatabaseResponse<T>> => {
+  fetchDataWhereIn = async<T>(tableName: keyof Models, column: keyof T, between: any[], condition?: Record<string, any>): Promise<IDatabaseResponse<T>> => {
     try {
       const response = await models[tableName].findAll({
         where: {
-          [column as string]: { [Op.in]: between }
+          [column as string]: { [Op.in]: between },
+          ...condition
         }
       });
       return { dataSuccess: true, data: response as T };

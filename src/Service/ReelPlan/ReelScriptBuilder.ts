@@ -79,7 +79,7 @@ function pickMoment(clip: IReelClip, slotSec: number) {
     return {
       start: Number(segStart.toFixed(3)),
       end: Number(segEnd.toFixed(3)),
-      playbackRate: Number(Math.max(0.5, segLen / slotSec).toFixed(2)),
+      playbackRate: Math.max(0.5, segLen / slotSec),
     };
   }
   const start = segStart + (segLen - slotSec) / 2;
@@ -104,7 +104,7 @@ function pickWithoutAi(places: string[], clips: IReelClip[], slotCount: number) 
   const total = groups.reduce((sum, group) => sum + group.length, 0);
   const target = Math.min(slotCount, total);
 
-  const quota = groups.map(() => 1);
+  const quota = groups.map((_, i) => i < target ? 1 : 0);
   let used = Math.min(groups.length, target);
   while (used < target) {
     let pick = -1;
@@ -164,7 +164,25 @@ export function buildReelScript(input: IReelScriptInput): IReelScript {
     }
   } else {
     const slots = buildSlots(input.pace, times, beatSec);
-    picked = pickWithoutAi(input.places, input.clips, slots.length).map((item, i) => ({ ...item, slot: slots[i] }));
+    const beatsPerScene = Math.max(1, Math.ceil(MIN_SCENE_SEC[input.pace] / beatSec));
+    const selected = pickWithoutAi(input.places, input.clips, slots.length);
+    const selectedClips = new Set(selected.map(item => item.clip));
+    const remaining = pickWithoutAi(input.places, input.clips.filter(clip => !selectedClips.has(clip)), input.clips.length);
+    let cursor = 0;
+    for (const item of [...selected, ...remaining]) {
+      if (picked.length >= slots.length || cursor >= times.length - 1) break;
+      let end = Math.min(cursor + beatsPerScene, times.length - 1);
+      if (item.clip.kind === "video" && item.clip.sourceStart !== undefined && item.clip.sourceEnd !== undefined) {
+        const segmentSec = item.clip.sourceEnd - item.clip.sourceStart;
+        while (end > cursor && times[end] - times[cursor] > segmentSec * 2 + 0.001) end--;
+        if (end === cursor) {
+          warnings.push(`Skipped video ${item.clip.id}: its segment is too short for a beat.`);
+          continue;
+        }
+      }
+      picked.push({ ...item, slot: [times[cursor], times[end]] });
+      cursor = end;
+    }
   }
   if (picked.length === 0) warnings.push("No usable media to build a reel.");
 

@@ -44,8 +44,9 @@ Return ONE JSON object and nothing else, with exactly this shape:
   ]
 }
 
-"beats" is a whole number of beats (1 to 16) the scene stays on screen. Its
-length in seconds is beats * beatSeconds.
+"beats" is a whole number of beats (1 to 16) the scene stays on screen. For
+each scene, its exact length is the difference between the selected window's
+beatTimes at the scene's end and start indices. beatSeconds is only an estimate.
 
 
 ## Music selection and timing (all templates)
@@ -60,7 +61,7 @@ Choose the music window and visual clips together to create a reel that feels na
 
 ### Timing rules
 
-1. The duration of each scene is calculated as beats * beatSeconds. The sum of all scene durations should fall within targetSeconds.min and targetSeconds.max, and must never exceed targetSeconds.max.
+1. Starting at beatTimes[0], calculate each scene's exact duration using the selected window's beatTimes and the cumulative beats of preceding scenes. The sum of all scene durations should fall within targetSeconds.min and targetSeconds.max, and must never exceed targetSeconds.max.
 2. The total number of scene beats must not exceed the available beat intervals in the selected music window (beatTimes.length - 1).
 3. If there is insufficient music duration or good-quality footage to reach the requested minimum duration, prioritize storytelling and visual quality rather than adding weak or repetitive clips. A shorter reel is acceptable.
 4. Match scene duration to the music's energy:
@@ -113,7 +114,8 @@ Never mention or reproduce song lyrics in the output.
    stretch, or a place's scenic views). Avoid a long run of near-identical
    photos. If you use many photos in a row, make the scenes short or
    alternate their framing so it does not feel like a slideshow. Do not give
-   a video scene a length more than about twice its segmentSeconds.
+   a video scene a length greater than twice its segmentSeconds. If it does
+   not fit, use fewer beats, move it to a suitable position, or skip it.
 5. If userSuggestion asks for something specific (for example the last scene
    or the opening), follow it as long as a clip really matches. If no clip
    matches, ignore that part; do not force a wrong clip.

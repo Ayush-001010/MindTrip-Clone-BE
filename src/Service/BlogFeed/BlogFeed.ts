@@ -148,7 +148,9 @@ export default class BlogFeed implements IBlogFeed {
 
     private fetchBlogDetails = async (blogID: string[]) : Promise<IBlogData[] | null> => {
         if(blogID.length === 0) return [];
-        const response = await this.dbInstance.fetchDataWhereIn<any[]>("Blog", "id" as any, blogID);
+        const response = await this.dbInstance.fetchDataWhereIn<any[]>("Blog", "id" as any, blogID , {
+            "isPublished": true
+        });
         const blogsById = new Map<string, IBlogData>();
         (response.data ?? []).forEach((blog: any) => blogsById.set(String(blog.id), blog));
         // Keep the feed order and skip blogs that no longer exist
@@ -156,7 +158,9 @@ export default class BlogFeed implements IBlogFeed {
     }
 
     tredingBlog = async () : Promise<void> => {
-        const allBlogsResponse = await this.dbInstance.fetchData<any>("Blog");
+        const allBlogsResponse = await this.dbInstance.fetchData<any>("Blog",undefined,undefined,{
+            "isPublished": true
+        });
         let allBlogs = allBlogsResponse.data.map((blog: any) => blog.dataValues.id) || [];
         const responseSevenDays = await this.dbInstance.specialQuery("mostLikedLastSevenDays");
         const likeDataForLastSevenDays = responseSevenDays.data as Array<{ blogId: string, likeCount: number }> || [];
@@ -274,7 +278,7 @@ export default class BlogFeed implements IBlogFeed {
 
             // Resolve in parallel but keep the trending order
             const details = await Promise.all(blogIds.map(async (blogId) => {
-                const blogDetails = await this.dbInstance.fetchData<any>("Blog", undefined, undefined, { id: blogId });
+                const blogDetails = await this.dbInstance.fetchData<any>("Blog", undefined, undefined, { id: blogId , isPublished: true });
                 return blogDetails.dataSuccess && blogDetails.data && blogDetails.data.length > 0 ? blogDetails.data[0] : null;
             }));
 
